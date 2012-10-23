@@ -1,0 +1,31 @@
+@charset "utf-8";
+/* CSS Document */
+
+* html .gainlayout {
+	height:1%;
+}
+
+
+h2 {
+	color:#e6e4d8;
+	font-weight:bold;
+	font-style:italic;
+	letter-spacing:-1px;
+	margin: 0 auto 0 auto;
+	font-size:1.25em;
+}
+
+#header {
+	clear:both;
+	border-bottom:#666 thin solid;
+}
+
+#btntgllyrpick, #btnhelp, #btntgllegend {
+	display:inline;
+}
+
+
+.leftbuttons {
+	text-align:left;
+	width:20%;
+}

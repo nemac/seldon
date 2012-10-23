@@ -1,0 +1,116 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+body, td, th {
+	font-family:Arial, Helvetica, sans-serif;
+	color:#222;
+	font-size:11pt;
+}
+
+#titleBar {
+    z-index:5;
+    background:#665f45;
+	padding:5px;
+    display: block;
+    position: relative;
+	font-family:Verdana, Geneva, sans-serif;
+	box-shadow:0px 2px 3px #333;
+}      
+
+#titlebar h2 {
+	color:#e6e4d8;
+	font-weight:bold;
+	font-style:italic;
+	letter-spacing:-1px;
+	margin: 0 auto 0 auto;
+	font-size:1.25em;
+}
+
+
+#leftmenuitems, #selectmenuitems, #maptoolmenuitems, #rightmenuitems {
+	width:25%;
+	position:relative;
+	display:inline-block;
+	height:30px;
+}
+  
+#btntgllyrpick, #btnhelp {
+	float:left;
+}
+
+#btntgllegend {
+	float:right;
+}
+  
+  
+#btntgllyrpick, #btnhelp, #btntgllegend {
+	position:relative;
+	margin: 0 3px 3px 3px;
+}
+
+#mapbase b, #maptheme b {
+	margin-right:3px;
+} 
+  
+#header {
+    z-index:10002;
+    background:#dfddd0;
+    display: block;
+	height:35px;
+	padding-left:3px;
+	box-shadow:3px 1px 5px #333;
+	text-align:center;
+}
+#legend_accordion {
+    float:right;
+    background:#FFFFFF;
+    width:auto;
+    z-index:10001;
+    font-size:.80em; 
+	box-shadow:0px 0px 10px #333;
+	overflow-y:auto;
+	overflow-x:hidden;
+} 
+#legend_accordion .baseLbl {
+    background:#cdcdcd;
+    font-size:1.3em;
+    font-weight:bold;
+}
+#legend_accordion .baseLayersDiv .labelSpan {
+    font-style:italic;
+    font-weight:bold;
+}    
+#layer_accordion {
+    float:left;
+    background:#FFFFFF;
+    width:auto;
+    z-index:10000;
+    position:absolute;
+    font-size:.80em;
+	box-shadow:1px 1px 10px #333;
+	overflow-y:auto;
+	overflow-x:hidden;
+}
+#layer_accordion .baseLbl {
+    background:#cdcdcd;
+    font-size:1.3em;
+    font-weight:bold;
+}
+#layer_accordion .baseLayersDiv .labelSpan {
+    font-style:italic;
+    font-weight:bold;
+}	
+.olControlAttribution {
+    bottom: 5px;
+    font-size: 9px;
+}
+#map {
+   border: 1px solid black;
+   position: absolute;
+   bottom: 0px;
+   top: 0px;
+   left: 0px;
+   right: 0px;
+}
