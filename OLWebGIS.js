@@ -5,11 +5,20 @@ var map, info, mapLayers;
 var currThemeIndex = 0;  //Initialize our user agent string to lower case.
 var layerBool = true;
 var legendBool = true;
+var shareMapURL = document.URL.replace("#","");
+var shareMapTheme = "";
+var shareMapLayers = [,];
+//var shareMapOpacities = [];
+var shareMapAccordionGrp = "";
+var shareMapBaseMap = "";
+var shareMapExtent = "";
+
 
 //Begin Controls Toolbox-------------------------------------------------------------------------------------
 //Panel control is a container for other controls
-var zoomInBox = new OpenLayers.Control.ZoomBox();
-var zoomOutBox = new OpenLayers.Control.ZoomBox({out:true});
+var zoomInTool = new OpenLayers.Control.ZoomBox();
+var zoomOutTool = new OpenLayers.Control.ZoomBox({out:true});
+var dragPanTool = new OpenLayers.Control.DragPan();
 function identify()
 {
     deactivateActiveUserControls();
@@ -158,39 +167,12 @@ $(document).ready(function(){
     //BEGIN READ MENU XML
     //because this is asynchronous it is only function here
     //note: any ampersands, &, in the xml need to be replaced w/ &amp;
-   if ($.browser.msie) //this may not be necessary 
-   {
-        xmlDoc=loadXMLDoc("../config/ews_config.xml");
-        x=xmlDoc.getElementsByTagName('view');
-        for (i=0;i<x.length;i++)
-        {
-            name = x[i].getAttribute('name');
-            label = x[i].getAttribute('label');
-            childrens = x[i].childNodes;
-            mapViews[i] = new mapView(label,name,childrens);
-        }   
-        x=xmlDoc.getElementsByTagName('wmsGroup');
-        for (i=0;i<x.length;i++)
-        {
-            gid = x[i].getAttribute('gid');
-            name = x[i].getAttribute('name');
-            label = x[i].getAttribute('label');
-            childrens = x[i].childNodes;
-            wmsGroups[i] = new wmsGroup(gid,label,name,childrens);
-        }
-        themePicker();
-        layerPicker(mapViews[1]);  //pass the default theme as the current theme
-        initOpenLayers();
-   }
-   else
-   {
-        $.ajax({
-            url: '../config/ews_config.xml', // name of file you want to parse
-            dataType: "xml", // type of file you are trying to read
-            success: parseMenu, // name of the function to call upon success
-            error: function(){alert("Error: Something went wrong reading the ews_config file");}
-        });
-   }
+    $.ajax({
+        url: '../config/ews_config.xml', // name of file you want to parse
+        dataType: "xml", // type of file you are trying to read
+        success: parseMenu, // name of the function to call upon success
+        error: function(){alert("Error: Something went wrong reading the ews_config file");}
+    });
    //END READ XML
 
     $("#btnTglLyrPick").click(function() {
@@ -214,11 +196,11 @@ $(document).ready(function(){
     ); 	
     $("#btnTglLegend").click(function() {
         if (legendBool){
-			$( "#legend_accordion" ).hide("puff");
+			$( "#mapTools_accordion" ).hide("puff");
             legendBool = false;
         }
         else{
-            $( "#legend_accordion" ).show("puff");
+            $( "#mapTools_accordion" ).show("puff");
             legendBool = true;
         }
     });
@@ -246,7 +228,8 @@ $(document).ready(function(){
         }
     ); 
     $("#btnPan").click(function() {
-        alert("Handler for pand called.");
+        deactivateActiveUserControls();
+        dragPanTool.activate();
     });
     $('#btnPan').hover(
         function(){
@@ -290,7 +273,7 @@ $(document).ready(function(){
     ); 
     $("#btnZoomIn").click(function() {
         deactivateActiveUserControls();
-        zoomInBox.activate();
+        zoomInTool.activate();
     });
     $('#btnZoomIn').hover(
         function(){
@@ -303,7 +286,7 @@ $(document).ready(function(){
     ); 
     $("#btnZoomOut").click(function() {
         deactivateActiveUserControls();
-        zoomOutBox.activate();
+        zoomOutTool.activate();
     });
     $('#btnZoomOut').hover(
         function(){
@@ -315,7 +298,8 @@ $(document).ready(function(){
         }
     ); 
     $("#btnHelp").click(function() {
-        alert("Handler for help called.");
+        //alert("Handler for help called.");
+        //getCurrentExtent();
     });
     $('#btnHelp').hover(
         function(){
@@ -429,23 +413,26 @@ function themePicker(){    //BEGIN THEME COMBO
 		//console.log(mapViews[i].label);
 		options[options.length] = new Option(mapViews[i].label, mapViews[i].name);
     }
+    
+    //This is the starting theme
     select.val(defaultOption);
+    shareMapTheme = defaultOption;
+    
+    
     //handler for themeCombo
     $('#themeCombo').change(function() {
-	  //alert($("#themeCombo").val());
-	  //call layerPicker passing it the selected view (theme)
-
-      //updatedMapView = mapViews.filter(function(updatedMapView){return (updatedMapView.name==$("#themeCombo").val());});
-      //filterObjectArrayByVal(arrayOfObjs, searchVal, searchProperty)
-      updatedMapView = filterObjectArrayByVal(mapViews,"name",$("#themeCombo").val());
-      
-      $('#layer_accordion').empty();
-      $("#layer_accordion").accordion('destroy').accordion;
-      $('#legend_accordion').empty();
-      $("#legend_accordion").accordion('destroy').accordion;
-      layerPicker(updatedMapView[0]);
-	  map.destroy();
-	  initOpenLayers();
+          //alert($("#themeCombo").val());
+          //call layerPicker passing it the selected view (theme)
+          //updatedMapView = mapViews.filter(function(updatedMapView){return (updatedMapView.name==$("#themeCombo").val());});
+          //filterObjectArrayByVal(arrayOfObjs, searchVal, searchProperty)
+          updatedMapView = filterObjectArrayByVal(mapViews,"name",$("#themeCombo").val());
+          $('#layer_accordion').empty();
+          $("#layer_accordion").accordion('destroy').accordion;
+          $('#mapTools_accordion').empty();
+          $("#mapTools_accordion").accordion('destroy').accordion;
+          layerPicker(updatedMapView[0]);
+          map.destroy();
+          initOpenLayers();
     });    	
     
 }//END THEME COMBO
@@ -454,26 +441,29 @@ function layerPicker(activeMapView){
     var accordianNum = 2;
 	//console.log(activeMapView);
     //Start of legend accordion
-    $("#legend_accordion").append('<h3><b><a href="#legendAccordion1">Legends (click to clear layer)</a></b></h3>');
-    
+    $("#mapTools_accordion").append('<h3><b><a href="#mapToolsAccordion">Map Tools:</a></b></h3>');
+    $("#mapTools_accordion").append('<div class="mapTools-header">Handle here to drag!</div>');
     //Using currentMapView, build out the layer picker
     //Loop through the viewGroups accordingly
     //For each viewGroup get the name and then find the matching wmsGroup
-    //note: there must be a wmsSubgroup under every wmsGroup the way it is
+    //Note: Specific to this loop, there must be a wmsSubgroup under every wmsGroup the way it is
     //current written.  The ews_config.xml/flex app doesn't have this dependency.
     //BEGIN LAYER PICKER
     activeMapViewViewGroups = activeMapView.viewGroups; 
     i = 0;
     j = 0;
     finishAtJ = activeMapView.viewGroups.length;
+    //This doesn't work in IE 8
+    // $("#layer_accordion").append('<h3><b><a href="#layersAccordion">Layer Picker</a></u></h3>');
+    // $("#layer_accordion").append('<div class="layers-header">Handle here to drag!</div>');
     $(activeMapViewViewGroups).each(function(index) {
         var accordString="";
         if (activeMapViewViewGroups[index].nodeType==1) {
             viewGroupName = this.attributes[0].nodeValue; //this is the viewGroupName
             //activeWMSGroup = wmsGroups.filter(function(wmsGroup){return (wmsGroup.name==viewGroupName);});
 			activeWMSGroup = filterObjectArrayByVal(wmsGroups,"name",viewGroupName);
-            //console.log(activeWMSGroup);
-            $("#layer_accordion").append('<h3><b><a href="#Accordion"'+accordianNum+'>'+activeWMSGroup[0].label+'</a></b></h3>');                
+            //New accordion group
+            $("#layer_accordion").append('<h3><a href="#Accordion"'+accordianNum+'>'+activeWMSGroup[0].label+'</a></h3>');                
             //build the string for the WMS layers of this WMS group
             var wmsSubGroups = activeWMSGroup[0].wmsSubGroups;
             k = 0;
@@ -519,15 +509,7 @@ function layerPicker(activeMapView){
                     return false;
                 }                
             }); 
-            //console.log('"'+accordString+'"');
-            //The draggable causes script issues in IE8 if it is set for more than one accordiog
-            //group.  So limit to top one for now.
-            if (accordianNum==2){
-                $("#layer_accordion").append('<div class="dialog-header">'+accordString+'</div>');
-            }
-            else {
-                $("#layer_accordion").append('<div>'+accordString+'</div>');
-            }
+            $("#layer_accordion").append('<div>'+accordString+'</div>');
             accordianNum = accordianNum + 1;
         }
         j++;
@@ -538,23 +520,33 @@ function layerPicker(activeMapView){
     });  
     // now initiate layer accordion:
     
-    $("#layer_accordion").draggable({handle: '.dialog-header'}); 
+    $("#layer_accordion").draggable({handle: '.layers-header'}); 
     $("#layer_accordion").accordion({ clearStyle: true, autoHeight: false });
     $('#layer_accordion').accordion('activate', 3);
+    shareMapAccordionGrp = "G04";
     $('#layer_accordion').resizable();
+    
+    //Share map part of mapTools
+    $("#mapTools_accordion").append('<h3><a href="#shareMapAccordion">Share this Map</a></h3>');
+    //update the shareMapURL
+    $("#mapTools_accordion").append('<div id="test" class="shrMapURLClass"><p>'+shareMapURL+'</p></div>');    
     
     //loop through activeWMSLayers and create a check event and legend accordingly
 	//problem: activeWMSLayers is updated w/ theme change but not activeOLWMSLayers
 	//soln: just needed to destroy the map on refresh of theme
+    $("#mapTools_accordion").append('<h3><a href="#legendAccordion">Legends</a></h3>');
     for (var i = 0; i < activeWMSLayers.length; i++) {
         $("#chk"+activeWMSLayers[i].lid+"").click( function(){
-            if($(this).is(':checked')){ 
+            if($(this).is(':checked')){ //add
                 wmslid = this.id.replace("chk","")
                 //filteredOLWMSLayer = activeOLWMSLayers.filter(function(WMSLayer){return (WMSLayer.lid==wmslid);});
                 filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",wmslid);
 				map.addLayer(filteredOLWMSLayer[0].OLWMSLayer);
                 //begin add legend graphic part
-                $("#legend_accordion").append('<div id="lgd'+filteredOLWMSLayer[0].lid+'" class="lgd'+filteredOLWMSLayer[0].lid+'"><img src="'+filteredOLWMSLayer[0].legend+'"/></div>');
+                $("#mapTools_accordion").append('<div id="lgd'+filteredOLWMSLayer[0].lid+'" class="lgd'+filteredOLWMSLayer[0].lid+'"><img src="'+filteredOLWMSLayer[0].legend+'"/></div>');
+                //add to shareMapURL
+                //shareMapLayers.push(wmslid);
+                //shareMapURL = shareMapURL + "layers="+shareMapLayers.join()+"&"
                 var lidForLegend = filteredOLWMSLayer[0].lid
                 $("#lgd"+lidForLegend+"").click(function() { //remove
                     //remove legend graphic, layerpicker checkedbox and map layer
@@ -575,12 +567,12 @@ function layerPicker(activeMapView){
             }
         });  
     }  
-
+    
     // now initiate layer accordion
-    $("#legend_accordion").draggable();
-    $("#legend_accordion").accordion({ clearStyle: true, autoHeight: false });
-    $('#legend_accordion').accordion('activate', 1);
-    $('#legend_accordion').resizable();    
+    $("#mapTools_accordion").draggable({handle: '.mapTools-header'});
+    $("#mapTools_accordion").accordion({ clearStyle: true, autoHeight: false });
+    $('#mapTools_accordion').accordion('activate', 2);
+    $('#mapTools_accordion').resizable();  
     
     //make header draggable
     $("#header").draggable();
@@ -595,7 +587,6 @@ $(".imgDialog").live("click",function(e){
     $("#opacityDialog").dialog({ zIndex:10050, 
         position:"left",
         autoOpen: false,
-        modal: true,
         hide:"explode",
         beforeClose: function(event, ui) {isDialogInitialized==false;}
     });
@@ -625,7 +616,7 @@ $(".imgDialog").live("click",function(e){
 		},
 		value:100
 	});
-    //prototype masking
+    //A prototype of mask functionality
     //currently only on MODIS phenology derived fall bown down layer
     if (opacityLID=="AIT") {
         $("#opacityDialog").append('<p class="maskLabel">Layer Masking Options:</p>');
@@ -652,9 +643,6 @@ $(".imgDialog").live("click",function(e){
 });
 
 
-
-
-
 //BEGIN initOpenLayers--------------------------------------------------------------
 function initOpenLayers() {
     //Start position for the map (hardcoded here for simplicity,
@@ -673,8 +661,8 @@ function initOpenLayers() {
 			           }
 			       }),
 		       new OpenLayers.Control.Attribution(),
-               zoomInBox,
-               zoomOutBox
+               zoomInTool,
+               zoomOutTool
 		       ],
 		maxExtent: new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34),
 		maxResolution: 156543.0399,
@@ -695,16 +683,16 @@ function initOpenLayers() {
 
     //street map
     var baseMap = new OpenLayers.Layer.Google(
-            "Streets", // the default
-            {numZoomLevels: 20}
+                "Streets", // the default
+                {numZoomLevels: 20}
         );
     baseMapLayers[0] = new baseMapLayer("Streets",baseMap);
     
     //satellite map
     var baseMap = new OpenLayers.Layer.Google(
-            "Physical",
-            {type: google.maps.MapTypeId.TERRAIN}
-            // used to be {type: G_PHYSICAL_MAP}
+                "Physical",
+                {type: google.maps.MapTypeId.TERRAIN}
+                // used to be {type: G_PHYSICAL_MAP}
         );
     baseMapLayers[1] = new baseMapLayer("Physical",baseMap);
     
@@ -714,6 +702,14 @@ function initOpenLayers() {
                 {type: google.maps.MapTypeId.SATELLITE, numZoomLevels: 22}
             );
     baseMapLayers[2] = new baseMapLayer("Satellite",baseMap);    
+    
+    var baseMap = new OpenLayers.Layer.ArcGIS93Rest(
+        'ESRI_Streets', 
+        'http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/export?f=image', 
+        {layers: 'show:0'},
+        {}
+    );         
+    baseMapLayers[3] = new baseMapLayer("ESRI_Streets",baseMap);    
     
     $('#baseCombo').change(function() {
         //alert($("#baseCombo").val());
@@ -727,6 +723,9 @@ function initOpenLayers() {
         else if ($("#baseCombo").val()=="Satellite"){
             i=2;
         }
+        else if ($("#baseCombo").val()=="ESRI_Streets"){
+            i=3;
+        }        
         map.addLayers([baseMapLayers[i].OLBaseMapLayer]);
         //put the new base back in the 0 spot
         var baseLyr = map.getLayersByName(baseMapLayers[i].OLBaseMapLayer.name)[0];
@@ -790,10 +789,10 @@ function initOpenLayers() {
     
     map.addLayers([baseMapLayers[0].OLBaseMapLayer,activeOLWMSLayers[1].OLWMSLayer,activeOLWMSLayers[33].OLWMSLayer]);
     //begin default layers prep------------
-    
     //This is bad: I have hard-coded the starting layers
-    $("#legend_accordion").append('<div id="lgd'+activeOLWMSLayers[1].lid+'" class="lgd'+activeOLWMSLayers[1].lid+'"><img src="'+activeOLWMSLayers[1].legend+'"/></div>'); 
-    $("#legend_accordion").append('<div id="lgd'+activeOLWMSLayers[33].lid+'" class="lgd'+activeOLWMSLayers[33].lid+'"><img src="'+activeOLWMSLayers[33].legend+'"/></div>');     
+    //states
+    $("#mapTools_accordion").append('<div id="lgd'+activeOLWMSLayers[1].lid+'" class="lgd'+activeOLWMSLayers[1].lid+'"><img src="'+activeOLWMSLayers[1].legend+'"/></div>'); 
+    shareMapLayers.push(activeOLWMSLayers[1].lid,1);    
     $("#lgd"+activeOLWMSLayers[1].lid+"").click(function() {
         //remove legend graphic, layerpicker checkedbox and map layer
         $('div').remove('.lgd'+activeOLWMSLayers[1].lid+''); //remove legend graphic
@@ -801,7 +800,11 @@ function initOpenLayers() {
         filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",activeOLWMSLayers[1].lid);
 		map.removeLayer(filteredOLWMSLayer[0].OLWMSLayer); //remove map layer
         $('input:checkbox[id="chk'+filteredOLWMSLayer[0].lid+'"]').attr('checked',false);
-    });  
+    });
+    
+    //current NRT product
+    $("#mapTools_accordion").append('<div id="lgd'+activeOLWMSLayers[33].lid+'" class="lgd'+activeOLWMSLayers[33].lid+'"><img src="'+activeOLWMSLayers[33].legend+'"/></div>');     
+    shareMapLayers.push(activeOLWMSLayers[33].lid,1);
     $("#lgd"+activeOLWMSLayers[33].lid+"").click(function() {
         //remove legend graphic, layerpicker checkedbox and map layer
         $('div').remove('.lgd'+activeOLWMSLayers[33].lid+''); //remove legend graphic
@@ -809,14 +812,58 @@ function initOpenLayers() {
         filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",activeOLWMSLayers[33].lid);
 		map.removeLayer(filteredOLWMSLayer[0].OLWMSLayer); //remove map layer
         $('input:checkbox[id="chk'+filteredOLWMSLayer[0].lid+'"]').attr('checked',false);
-    });  
-    
+    }); 
     //end default layers prep------------
-    
-    
+
+    //update shareMapURL
+    //shareMapURL = shareMapURL + "layers="+shareMapLayers.join()+"&"
+    currentExtent = getCurrentExtent();
+    buildShareMapURL(shareMapTheme, shareMapLayers, "G04", "Streets", currentExtent);
+       
     var lonLat = new OpenLayers.LonLat(lon, lat).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
-    map.setCenter(lonLat, zoom);
+    map.setCenter(lonLat, zoom); //map object not active until here
 
 }//END initOpenLayers--------------------------------------------------------------
 
+//URL format:
+http://rain.nemac.org/~derek/fswms/html/view/index.html?
+
+//?theme=CONUS_Vegetation_Monitoring_Tools&layers=AAB,AA,&alphas=1,1,&accgp=G01&basemap=Streets&extent=-14604362.670799732,2511414.272133383,-6395637.329200267,6488585.727866617
+//?theme=MODIS_Forest_Change_Products&layers=AAB,AA&alphas=1,1&accgp=G04&basemap=Streets&extent=-14604362.670799732,2538210.8616583524,-6395637.329200267,6515382.3173915865
+
+function buildShareMapURL(theme,layers,accgp,basemap,extent)
+{
+    shareMapURL = ""+document.URL.replace("#","")+"?";
+    shareMapURL = shareMapURL+"theme="+theme;
+    //loop through layers array
+    var layersArray = [];
+    var alphasArray = [];
+    for (var i = 1; i < layers.length; i=i+2) 
+    {
+        layersArray.push(layers[i]);
+        alphasArray.push(layers[i+1]);
+    }
+    shareMapURL = shareMapURL+"&layers="+layersArray.join()+"&alphas="+alphasArray.join()+"&accgp="+accgp+"&basemap="+basemap+"&extent="+extent;
+    $('.shrMapURLClass').html("<textarea rows=\"6\" cols=\"60\">"+shareMapURL+"</textarea>");
+    //return shareMapURL;
+}
+
+function processShareMapURL(theme,layers,accgp,basemap,extent)
+{
+    return "";
+}
+
+function getCurrentExtent()
+//made to get the extent into FCAV format
+{
+
+    extent = map.getExtent();
+    if (extent != null)
+    {
+        return extent.left+","+extent.bottom+","+extent.right+","+extent.top;
+    }
+    {
+        return "-14604362.670799732,2538210.8616583524,-6395637.329200267,6515382.3173915865";
+    }
+}
 

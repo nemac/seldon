@@ -63,7 +63,7 @@ body, td, th {
 	box-shadow:3px 1px 5px #333;
 	text-align:center;
 }
-#legend_accordion {
+#mapTools_accordion {
     float:right;
     background:#FFFFFF;
     width:auto;
@@ -73,12 +73,12 @@ body, td, th {
 	overflow-y:auto;
 	overflow-x:hidden;
 } 
-#legend_accordion .baseLbl {
+#mapTools_accordion .baseLbl {
     background:#cdcdcd;
     font-size:1.3em;
     font-weight:bold;
 }
-#legend_accordion .baseLayersDiv .labelSpan {
+#mapTools_accordion .baseLayersDiv .labelSpan {
     font-style:italic;
     font-weight:bold;
 }    
