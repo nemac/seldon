@@ -7,11 +7,54 @@ var layerBool = true;
 var legendBool = true;
 var shareMapURL = document.URL.replace("#","");
 var shareMapTheme = "";
-var shareMapLayers = [,];
-//var shareMapOpacities = [];
 var shareMapAccordionGrp = "";
 var shareMapBaseMap = "";
 var shareMapExtent = "";
+var sharedMapURL = false;
+//Begin define object arrays-----------------------------------------
+var activeMapLayers = new Array();
+function activeMapLayer(lid,opacity)
+{
+    this.lid=lid;
+    this.opacity=opacity;
+}
+
+var mapViews = new Array();
+function mapView(label,name,viewGroups)
+{
+    this.label=label;
+    this.name=name;
+    this.viewGroups=viewGroups;
+}
+
+var wmsGroups = new Array();
+function wmsGroup(gid,label,name, wmsSubGroups)
+{
+    this.gid=gid; 
+    this.label=label;
+    this.name=name;
+    this.wmsSubGroups=wmsSubGroups;
+}
+
+//Keep track of all of the active wms layers for layerPicker
+var activeWMSLayers = new Array();
+function activeWMSLayer(lid,name,layers,url,legend)
+{
+    this.lid=lid; 
+    this.name=name;
+    this.layers=layers;
+    this.url=url;
+    this.legend=legend;
+}
+
+var activeOLWMSLayers = new Array();//need to keep track of all of the active OL wms layers
+function activeOLWMSLayer(lid, legend, OLWMSLayer)
+{
+    this.lid=lid; 
+    this.legend=legend;
+    this.OLWMSLayer=OLWMSLayer;
+}
+//End object arrays------------------------------------------
 
 
 //Begin Controls Toolbox-------------------------------------------------------------------------------------
@@ -92,6 +135,8 @@ function deactivateActiveUserControls()
     }
 }
 
+//This is a generic function to look up items in object arrays
+//It is used extensively throughout this application.
 function filterObjectArrayByVal(arrayOfObjs, searchVal, searchProperty)
 {
     var test = String(searchVal);
@@ -107,63 +152,14 @@ function filterObjectArrayByVal(arrayOfObjs, searchVal, searchProperty)
 
 //End Controls Toolbox-------------------------------------------------------------------------------------
 
-//Begin Layer/Theme Objects------------------------------------------
-var mapViews = new Array();
-function mapView(label,name,viewGroups)
-{
-    this.label=label;
-    this.name=name;
-    this.viewGroups=viewGroups;
-}
-
-var wmsGroups = new Array();
-function wmsGroup(gid,label,name, wmsSubGroups)
-{
-    this.gid=gid; 
-    this.label=label;
-    this.name=name;
-    this.wmsSubGroups=wmsSubGroups;
-}
-
-//need to keep track of all of the active wms layers that 
-//have been put into the layer picker so that we can 
-//turn them on/off accordingly...
-var activeWMSLayers = new Array();
-function activeWMSLayer(lid,name,layers,url,legend)
-{
-    this.lid=lid; 
-    this.name=name;
-    this.layers=layers;
-    this.url=url;
-    this.legend=legend;
-}
-
-var activeOLWMSLayers = new Array();//need to keep track of all of the active OL wms layers
-function activeOLWMSLayer(lid, legend, OLWMSLayer)
-{
-    this.lid=lid; 
-    this.legend=legend;
-    this.OLWMSLayer=OLWMSLayer;
-}
-//Begin Layer/Theme Objects------------------------------------------
-
-function loadXMLDoc(dname)
-{
-    if (window.XMLHttpRequest)
-      {
-        xhttp=new XMLHttpRequest();
-      }
-    else
-      {
-        xhttp=new ActiveXObject("Microsoft.XMLHTTP");
-      }
-    xhttp.open("GET",dname,false);
-    xhttp.send();
-    return xhttp.responseXML;
-}  
 
 //JQUERY INIT--------------------------------------------------------------
 $(document).ready(function(){
+
+    if (shareMapURL.indexOf("alphas")!= -1)
+    {
+        sharedMapURL = true;
+    }
     //BEGIN READ MENU XML
     //because this is asynchronous it is only function here
     //note: any ampersands, &, in the xml need to be replaced w/ &amp;
@@ -173,8 +169,7 @@ $(document).ready(function(){
         success: parseMenu, // name of the function to call upon success
         error: function(){alert("Error: Something went wrong reading the ews_config file");}
     });
-   //END READ XML
-
+    
     $("#btnTglLyrPick").click(function() {
         if (layerBool){
 			$( "#layer_accordion" ).hide("puff");
@@ -331,13 +326,248 @@ function parseMenu(document){
 	
 	//how to query a xml object by property val:
     //var wanted = wmsGroups.filter(function(wmsGroup){return (wmsGroup.gid=="G02");});
-    //console.log("wmsGroupByGID "+ wanted[0].label);
     
-    themePicker();
-    layerPicker(mapViews[1]);  //pass the default theme as the current theme
+    if (!sharedMapURL)
+    {
+        themePicker(mapViews[1].name);
+        //Add the default layers to activeWMSLayers
+        //AAB,AA
+        activeMapLayers.push(new activeMapLayer("AAB", 1));
+        activeMapLayers.push(new activeMapLayer("AA", 1));
+        
+        layerPicker(mapViews[1]);  //pass the default theme as the current theme
+    }
+    else //this is a shared url handle accordingly
+    {
+        processSharedMapURL(); //this updates shareMapTheme
+        themePicker(shareMapTheme);
+        for (var j = 0; j < mapViews.length; j++) 
+        {
+            if (mapViews[j].name==shareMapTheme)
+            {
+                layerPicker(mapViews[j]);
+            }
+        }
+        
+    }
     initOpenLayers();
 }
 
+function themePicker(themeName){    //BEGIN THEME COMBO
+    //var defaultOption = mapViews[1].name;
+    var select = $('#themeCombo');
+    if(select.prop) {
+  	  var options = select.prop('options');
+    }
+    else {
+	  var options = select.attr('options');
+    }
+    $('option', select).remove();
+    //loop through and get items out of mapViews array of mapView objects
+    for (var i = 0; i < mapViews.length; i++) {
+		//console.log(mapViews[i].label);
+		options[options.length] = new Option(mapViews[i].label, mapViews[i].name);
+    }
+    
+    //This is the starting theme
+    select.val(themeName);
+    shareMapTheme = themeName;
+    
+    //handler for themeCombo
+    $('#themeCombo').change(function() {
+          //alert($("#themeCombo").val());
+          //call layerPicker passing it the selected view (theme)
+          updatedMapView = filterObjectArrayByVal(mapViews,"name",$("#themeCombo").val());
+          $('#layer_accordion').empty();
+          $("#layer_accordion").accordion('destroy').accordion;
+          $('#mapTools_accordion').empty();
+          $("#mapTools_accordion").accordion('destroy').accordion;
+          layerPicker(updatedMapView[0]);
+          map.destroy();
+          initOpenLayers();
+          //update shareMapURL
+          shareMapTheme = updatedMapView[0].name;
+          currentExtent = getCurrentExtent();
+          buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, "Streets", currentExtent);
+    });    	
+    
+}//END THEME COMBO
+
+function layerPicker(activeMapView){
+    var accordianNum = 2;
+	//console.log(activeMapView);
+    //Start of legend accordion
+    $("#mapTools_accordion").append('<h3><b><a href="#mapToolsAccordion">Map Tools:</a></b></h3>');
+    $("#mapTools_accordion").append('<div class="mapTools-header">Handle here to drag!</div>');
+    //Using currentMapView, build out the layer picker
+    //Loop through the viewGroups accordingly
+    //For each viewGroup get the name and then find the matching wmsGroup
+    //Note: Specific to this loop, there must be a wmsSubgroup under every wmsGroup the way it is
+    //current written.  The ews_config.xml/flex app doesn't have this dependency.
+    //BEGIN LAYER PICKER
+    activeMapViewViewGroups = activeMapView.viewGroups; 
+    i = 0;
+    j = 0;
+    finishAtJ = activeMapView.viewGroups.length;
+    //This doesn't work in IE 8
+    $("#layer_accordion").append('<h3><b><a href="#layersAccordion">Layer Picker:</a></b></h3>');
+    $("#layer_accordion").append('<div class="layers-header">Handle here to drag!</div>');
+    $(activeMapViewViewGroups).each(function(index) {
+        var accordString="";
+        if (activeMapViewViewGroups[index].nodeType==1) {
+            viewGroupName = this.attributes[0].nodeValue; //this is the viewGroupName
+			activeWMSGroup = filterObjectArrayByVal(wmsGroups,"name",viewGroupName);
+            //New accordion group
+            $("#layer_accordion").append('<h3><a href=#Accordion'+accordianNum+' gid='+activeWMSGroup[0].gid+'>'+activeWMSGroup[0].label+'</a></h3>');                            
+            //build the string for the WMS layers of this WMS group
+            var wmsSubGroups = activeWMSGroup[0].wmsSubGroups;
+            k = 0;
+            finishAtK = wmsSubGroups.length;
+            $(wmsSubGroups).each(function(index) {
+                if (wmsSubGroups[index].nodeType==1) {
+                    wmsSubGroupName = this.attributes[0].nodeValue; 
+                    accordString = accordString + '<p><i>'+wmsSubGroupName+':</i></p>';
+                    var wmsLayers = $(this).children();//ahhh .children is how to get just the elements
+                    l = 0;
+                    finishAtL = wmsLayers.length;                    
+                    $(wmsLayers).each(function(index) {
+                        lid=$(this).attr("lid");
+                        name=$(this).attr("name");
+                        layers=$(this).attr("layers"); 
+                        url=$(this).attr("url");
+                        legend=$(this).attr("legend");
+                        anyMore=$(this).next();
+                        if (anyMore.length>0){
+                            //if ((layers=="states" || layers=="EFETAC-NASA_current" ) && (!sharedMapURL)){ //this is a tacky way to check for default layers
+                            if (checkForActiveLID(lid))
+                            {
+                                accordString = accordString + '<input type="checkbox" id="chk'+lid+'" checked="checked"/><label for="chk'+lid+'">'+name+'</label>&nbsp;<img class="imgDialog" id="'+lid+'" src="icons/settings.png"/><br>'
+                            }
+                            else {
+                                accordString = accordString + '<input type="checkbox" id="chk'+lid+'"/><label for="chk'+lid+'">'+name+'</label>&nbsp;<img class="imgDialog" id="'+lid+'" src="icons/settings.png"/><br>'
+                            }
+                        }
+                        else{
+                            accordString = accordString + '<input type="checkbox" id="chk'+lid+'"/><label for="chk'+lid+'">'+name+'</label>&nbsp;<img class="imgDialog" id="'+lid+'" src="icons/settings.png"/>'
+                        }
+                        activeWMSLayers[i] = new activeWMSLayer(lid,name,layers,url,legend);
+                        i++;
+                        l++;
+                        if (l==finishAtL)
+                        {
+                            return false;
+                        }                          
+                    });
+                }
+                k++;
+                if (k==finishAtK)
+                {
+                    return false;
+                }                
+            }); 
+            $("#layer_accordion").append('<div>'+accordString+'</div>');
+            accordianNum = accordianNum + 1;
+        }
+        j++;
+        if (j==finishAtJ)
+        {
+            return false;
+        }
+    });  
+    // now initiate layer accordion:
+    
+    $("#layer_accordion").draggable({handle: '.layers-header'}); 
+    $("#layer_accordion").accordion({ clearStyle: true, autoHeight: false });
+    $('#layer_accordion').accordion('activate', 4);
+    shareMapAccordionGrp = "G04";  //hardcoded starting accordion per the previous line
+    $('#layer_accordion').resizable();
+
+    //Handler from accordion change on the layerPicker
+    //specifically used to change up the shareMapURL
+    $('.layerAccordionClass').bind('accordionchange', function(event, ui) {
+        //ui.newContent.context.innerHTML
+        //<span class="ui-icon ui-icon-triangle-1-s"></span><a tabindex="-1" href="#Accordion3" gid="G02">Fires</a>
+        var html = ui.newContent.context.innerHTML;
+        var code = $(html);
+        //shareMapAccordionGrp = code[1].attributes[1].value;
+        shareMapAccordionGrp = code[1].getAttribute("gid")
+        //update shareMapURL
+        currentExtent = getCurrentExtent();
+        buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, "Streets", currentExtent);
+    });
+
+    
+    //Share map part of mapTools
+    $("#mapTools_accordion").append('<h3><a href="#shareMapAccordion">Share this Map</a></h3>');
+    //Update the shareMapURL
+    $("#mapTools_accordion").append('<div id="test" class="shrMapURLClass"><p>'+shareMapURL+'</p></div>');    
+    
+    //Loop through activeWMSLayers and create a check event in layerPicker and legend accordingly
+	//problem: activeWMSLayers is updated w/ theme change but not activeOLWMSLayers
+	//soln: just needed to destroy the map on refresh of theme
+    $("#mapTools_accordion").append('<h3><a href="#legendAccordion">Legends</a></h3>');
+    for (var i = 0; i < activeWMSLayers.length; i++) {
+        $("#chk"+activeWMSLayers[i].lid+"").click( function(){
+            if($(this).is(':checked')){ //layerPicker checked
+                wmslid = this.id.replace("chk","")
+                filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",wmslid);
+				map.addLayer(filteredOLWMSLayer[0].OLWMSLayer);
+                //begin add legend graphic part
+                $("#mapTools_accordion").append('<div id="lgd'+filteredOLWMSLayer[0].lid+'" class="lgd'+filteredOLWMSLayer[0].lid+'"><img src="'+filteredOLWMSLayer[0].legend+'"/></div>');
+                var lidForLegend = filteredOLWMSLayer[0].lid
+                if (!checkForActiveLID(filteredOLWMSLayer[0].lid))
+                {
+                    activeMapLayers.push(new activeMapLayer(filteredOLWMSLayer[0].lid, 1));
+                }
+                //update shareMapURL
+                currentExtent = getCurrentExtent();
+                buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, "Streets", currentExtent);
+                $("#lgd"+lidForLegend+"").click(function() { //remove by legend click
+                    //remove legend graphic, layerpicker checkedbox and map layer
+                    $('div').remove('.lgd'+lidForLegend+''); //remove legend graphic
+                    filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",lidForLegend);
+					map.removeLayer(filteredOLWMSLayer[0].OLWMSLayer); //remove map layer
+                    $('input:checkbox[id="chk'+filteredOLWMSLayer[0].lid+'"]').attr('checked',false);
+                    //remove lid from activeMapLayers, update shareMapURL with legend click
+                    for (var i = 0; i < activeMapLayers.length; i++) {
+                        if (activeMapLayers[i].lid==filteredOLWMSLayer[0].lid)
+                        {    
+                            activeMapLayers.splice(i, 1);
+                        }
+                    }
+                    //update shareMapURL
+                    currentExtent = getCurrentExtent();
+                    buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, "Streets", currentExtent);
+                }); //end add legend graphic part    
+            }
+            else { //layerPicker unchecked
+                wmslid = this.id.replace("chk","")
+                filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",wmslid);
+				map.removeLayer(filteredOLWMSLayer[0].OLWMSLayer);
+                $('div').remove('.lgd'+filteredOLWMSLayer[0].lid+'');
+                //remove lid from activeMapLayers, update shareMapURL with layerPicker click
+                for (var i = 0; i < activeMapLayers.length; i++) {
+                    if (activeMapLayers[i].lid==filteredOLWMSLayer[0].lid)
+                    {    
+                        activeMapLayers.splice(i, 1);
+                    }
+                }
+                //update shareMapURL
+                currentExtent = getCurrentExtent();
+                buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, "Streets", currentExtent);
+            }
+        });  
+    }  
+    
+    // now initiate layer accordion
+    $("#mapTools_accordion").draggable({handle: '.mapTools-header'});
+    $("#mapTools_accordion").accordion({ clearStyle: true, autoHeight: false });
+    $('#mapTools_accordion').accordion('activate', 2);
+    $('#mapTools_accordion').resizable();  
+    
+    //make header draggable
+    $("#header").draggable();
+}//end layerPicker
 
 function processGML(gmlString){
      var string2Return = "";
@@ -398,186 +628,6 @@ function processGML(gmlString){
     return string2Return;
 }
 
-function themePicker(){    //BEGIN THEME COMBO
-    var defaultOption = mapViews[1].name;
-    var select = $('#themeCombo');
-    if(select.prop) {
-  	  var options = select.prop('options');
-    }
-    else {
-	  var options = select.attr('options');
-    }
-    $('option', select).remove();
-    //loop through and get items out of mapViews array of mapView objects
-    for (var i = 0; i < mapViews.length; i++) {
-		//console.log(mapViews[i].label);
-		options[options.length] = new Option(mapViews[i].label, mapViews[i].name);
-    }
-    
-    //This is the starting theme
-    select.val(defaultOption);
-    shareMapTheme = defaultOption;
-    
-    
-    //handler for themeCombo
-    $('#themeCombo').change(function() {
-          //alert($("#themeCombo").val());
-          //call layerPicker passing it the selected view (theme)
-          //updatedMapView = mapViews.filter(function(updatedMapView){return (updatedMapView.name==$("#themeCombo").val());});
-          //filterObjectArrayByVal(arrayOfObjs, searchVal, searchProperty)
-          updatedMapView = filterObjectArrayByVal(mapViews,"name",$("#themeCombo").val());
-          $('#layer_accordion').empty();
-          $("#layer_accordion").accordion('destroy').accordion;
-          $('#mapTools_accordion').empty();
-          $("#mapTools_accordion").accordion('destroy').accordion;
-          layerPicker(updatedMapView[0]);
-          map.destroy();
-          initOpenLayers();
-    });    	
-    
-}//END THEME COMBO
-
-function layerPicker(activeMapView){
-    var accordianNum = 2;
-	//console.log(activeMapView);
-    //Start of legend accordion
-    $("#mapTools_accordion").append('<h3><b><a href="#mapToolsAccordion">Map Tools:</a></b></h3>');
-    $("#mapTools_accordion").append('<div class="mapTools-header">Handle here to drag!</div>');
-    //Using currentMapView, build out the layer picker
-    //Loop through the viewGroups accordingly
-    //For each viewGroup get the name and then find the matching wmsGroup
-    //Note: Specific to this loop, there must be a wmsSubgroup under every wmsGroup the way it is
-    //current written.  The ews_config.xml/flex app doesn't have this dependency.
-    //BEGIN LAYER PICKER
-    activeMapViewViewGroups = activeMapView.viewGroups; 
-    i = 0;
-    j = 0;
-    finishAtJ = activeMapView.viewGroups.length;
-    //This doesn't work in IE 8
-    // $("#layer_accordion").append('<h3><b><a href="#layersAccordion">Layer Picker</a></u></h3>');
-    // $("#layer_accordion").append('<div class="layers-header">Handle here to drag!</div>');
-    $(activeMapViewViewGroups).each(function(index) {
-        var accordString="";
-        if (activeMapViewViewGroups[index].nodeType==1) {
-            viewGroupName = this.attributes[0].nodeValue; //this is the viewGroupName
-            //activeWMSGroup = wmsGroups.filter(function(wmsGroup){return (wmsGroup.name==viewGroupName);});
-			activeWMSGroup = filterObjectArrayByVal(wmsGroups,"name",viewGroupName);
-            //New accordion group
-            $("#layer_accordion").append('<h3><a href="#Accordion"'+accordianNum+'>'+activeWMSGroup[0].label+'</a></h3>');                
-            //build the string for the WMS layers of this WMS group
-            var wmsSubGroups = activeWMSGroup[0].wmsSubGroups;
-            k = 0;
-            finishAtK = wmsSubGroups.length;
-            $(wmsSubGroups).each(function(index) {
-                if (wmsSubGroups[index].nodeType==1) {
-                    wmsSubGroupName = this.attributes[0].nodeValue; 
-                    accordString = accordString + '<p><i>'+wmsSubGroupName+':</i></p>';
-                    var wmsLayers = $(this).children();//ahhh .children is how to get just the elements
-                    l = 0;
-                    finishAtL = wmsLayers.length;                    
-                    $(wmsLayers).each(function(index) {
-                        lid=$(this).attr("lid");
-                        name=$(this).attr("name");
-                        layers=$(this).attr("layers"); 
-                        url=$(this).attr("url");
-                        legend=$(this).attr("legend");
-                        anyMore=$(this).next();
-                        if (anyMore.length>0){
-                            if (layers=="states" || layers=="EFETAC-NASA_current" ){ //this is a tacky way to check for default layers
-                                accordString = accordString + '<input type="checkbox" id="chk'+lid+'" checked="checked"/><label for="chk'+lid+'">'+name+'</label>&nbsp;<img class="imgDialog" id="'+lid+'" src="icons/settings.png"/><br>'
-                                //accordString = accordString + '<input type="checkbox" id="chk'+lid+'" checked="checked"/><label for="chk'+lid+'">'+name+'</label>&nbsp;<img id="gear'+lid+'" src="icons/settings.png"/><br>'
-                            }
-                            else {
-                                accordString = accordString + '<input type="checkbox" id="chk'+lid+'"/><label for="chk'+lid+'">'+name+'</label>&nbsp;<img class="imgDialog" id="'+lid+'" src="icons/settings.png"/><br>'
-                            }
-                        }
-                        else{
-                            accordString = accordString + '<input type="checkbox" id="chk'+lid+'"/><label for="chk'+lid+'">'+name+'</label>&nbsp;<img class="imgDialog" id="'+lid+'" src="icons/settings.png"/>'
-                        }
-                        activeWMSLayers[i] = new activeWMSLayer(lid,name,layers,url,legend);
-                        i++;
-                        l++;
-                        if (l==finishAtL)
-                        {
-                            return false;
-                        }                          
-                    });
-                }
-                k++;
-                if (k==finishAtK)
-                {
-                    return false;
-                }                
-            }); 
-            $("#layer_accordion").append('<div>'+accordString+'</div>');
-            accordianNum = accordianNum + 1;
-        }
-        j++;
-        if (j==finishAtJ)
-        {
-            return false;
-        }
-    });  
-    // now initiate layer accordion:
-    
-    $("#layer_accordion").draggable({handle: '.layers-header'}); 
-    $("#layer_accordion").accordion({ clearStyle: true, autoHeight: false });
-    $('#layer_accordion').accordion('activate', 3);
-    shareMapAccordionGrp = "G04";
-    $('#layer_accordion').resizable();
-    
-    //Share map part of mapTools
-    $("#mapTools_accordion").append('<h3><a href="#shareMapAccordion">Share this Map</a></h3>');
-    //update the shareMapURL
-    $("#mapTools_accordion").append('<div id="test" class="shrMapURLClass"><p>'+shareMapURL+'</p></div>');    
-    
-    //loop through activeWMSLayers and create a check event and legend accordingly
-	//problem: activeWMSLayers is updated w/ theme change but not activeOLWMSLayers
-	//soln: just needed to destroy the map on refresh of theme
-    $("#mapTools_accordion").append('<h3><a href="#legendAccordion">Legends</a></h3>');
-    for (var i = 0; i < activeWMSLayers.length; i++) {
-        $("#chk"+activeWMSLayers[i].lid+"").click( function(){
-            if($(this).is(':checked')){ //add
-                wmslid = this.id.replace("chk","")
-                //filteredOLWMSLayer = activeOLWMSLayers.filter(function(WMSLayer){return (WMSLayer.lid==wmslid);});
-                filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",wmslid);
-				map.addLayer(filteredOLWMSLayer[0].OLWMSLayer);
-                //begin add legend graphic part
-                $("#mapTools_accordion").append('<div id="lgd'+filteredOLWMSLayer[0].lid+'" class="lgd'+filteredOLWMSLayer[0].lid+'"><img src="'+filteredOLWMSLayer[0].legend+'"/></div>');
-                //add to shareMapURL
-                //shareMapLayers.push(wmslid);
-                //shareMapURL = shareMapURL + "layers="+shareMapLayers.join()+"&"
-                var lidForLegend = filteredOLWMSLayer[0].lid
-                $("#lgd"+lidForLegend+"").click(function() { //remove
-                    //remove legend graphic, layerpicker checkedbox and map layer
-                    $('div').remove('.lgd'+lidForLegend+''); //remove legend graphic
-                    //filteredOLWMSLayer = activeOLWMSLayers.filter(function(WMSLayer){return (WMSLayer.lid==lidForLegend);});
-                    filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",lidForLegend);
-					map.removeLayer(filteredOLWMSLayer[0].OLWMSLayer); //remove map layer
-                    $('input:checkbox[id="chk'+filteredOLWMSLayer[0].lid+'"]').attr('checked',false);
-                });               
-                //end add legend graphic part
-            }
-            else {
-                wmslid = this.id.replace("chk","")
-                //filteredOLWMSLayer = activeOLWMSLayers.filter(function(WMSLayer){return (WMSLayer.lid==wmslid);});
-                filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",wmslid);
-				map.removeLayer(filteredOLWMSLayer[0].OLWMSLayer);
-                $('div').remove('.lgd'+filteredOLWMSLayer[0].lid+'');
-            }
-        });  
-    }  
-    
-    // now initiate layer accordion
-    $("#mapTools_accordion").draggable({handle: '.mapTools-header'});
-    $("#mapTools_accordion").accordion({ clearStyle: true, autoHeight: false });
-    $('#mapTools_accordion').accordion('activate', 2);
-    $('#mapTools_accordion').resizable();  
-    
-    //make header draggable
-    $("#header").draggable();
-}//end layerPicker
-
 
 //This was trick see soln at:
 //http://stackoverflow.com/questions/6560142/jquery-calling-click-on-an-autogenerated-img-inside
@@ -593,39 +643,62 @@ $(".imgDialog").live("click",function(e){
     $('#opacityDialog').dialog('open');
     var opacityLID = $(this).attr("id");
     filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",opacityLID);
-    if (isDialogInitialized==false)
-    {
-        lastOpacityLID = opacityLID;
-        $("#opacityDialog").prepend('<p class="opacityLabel">'+filteredOLWMSLayer[0].OLWMSLayer.name+':</p>');
-        isDialogInitialized = true;
-    }
-    else if (lastOpacityLID!=opacityLID) //this is new one
-    {
-        $('.opacityLabel').remove();
-        $('.maskLabel').remove();
-        lastOpacityLID = opacityLID;
-        $("#opacityDialog").prepend('<p class="opacityLabel">'+filteredOLWMSLayer[0].OLWMSLayer.name+':</p>');
-        isDialogInitialized = true;    
-    }
+
     $("#opacitySlider" ).slider({
 		change: function(event, ui) { 
 			var newOpacity = ui.value/100;
 			//OpenLayers.Layer.setOpacity(float);
 			filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",opacityLID);
             filteredOLWMSLayer[0].OLWMSLayer.setOpacity(newOpacity);
+            $( "#opacityValue" ).val( ui.value + "%" );
+            //update shareMapURL
+            //Using opacityLID adjust activeMapLayers accordingly;
+            for (var i = 0; i < activeMapLayers.length; i++) 
+            {
+                if (activeMapLayers[i].lid==opacityLID)
+                {
+                    if (ui.value=="100")
+                    {
+                        activeMapLayers[i].opacity = "1";
+                    }
+                    else
+                    {
+                        activeMapLayers[i].opacity = "."+ui.value;
+                    }
+                }
+            }
+            currentExtent = getCurrentExtent();
+            buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, "Streets", currentExtent);
 		},
-		value:100
+        value:0
 	});
+
+    if (isDialogInitialized==false)
+    {
+        lastOpacityLID = opacityLID;
+        $("#opacityDialog").prepend('<p class="opacityLabel">'+filteredOLWMSLayer[0].OLWMSLayer.name+':</p>');
+        $("#opacityDialog").append('<input type="text" size="3" id="opacityValue" />');
+        $("#opacityValue" ).val($( "#opacitySlider" ).slider( "value" ) + "%" );
+        isDialogInitialized = true;
+    }
+    else if (lastOpacityLID!=opacityLID) //this is new one
+    {
+        $('.opacityLabel').remove();
+        $('.maskLabel').remove();
+        $('#opacityValue').remove();
+        lastOpacityLID = opacityLID;
+        $("#opacityDialog").prepend('<p class="opacityLabel">'+filteredOLWMSLayer[0].OLWMSLayer.name+':</p>');
+        $("#opacityDialog").append('<input type="text" size="3" id="opacityValue" />');
+        $("#opacityValue" ).val($( "#opacitySlider" ).slider( "value" ) + "%" );
+        isDialogInitialized = true;    
+    }
+
     //A prototype of mask functionality
     //currently only on MODIS phenology derived fall bown down layer
     if (opacityLID=="AIT") {
         $("#opacityDialog").append('<p class="maskLabel">Layer Masking Options:</p>');
         $("#opacityDialog").append('<input type="radio" class="maskLabel" name="maskNLCD" id="forestNLCD" value="forestNLCD">Forest<br>');
         $("#opacityDialog").append('<input type="radio" class="maskLabel" name="maskNLCD" id="urbanNLCD" value="urbanNLCD">Urban<br>');
-        
-        // $("#forestNLCD").click(function() { //remove
-        // });         
-        
         $("#urbanNLCD").click(function() { //remove
             var urbanMask = new OpenLayers.Layer.WMS(
                 'FallBrownDownUrbanMask09', 
@@ -684,14 +757,24 @@ function initOpenLayers() {
     //street map
     var baseMap = new OpenLayers.Layer.Google(
                 "Streets", // the default
-                {numZoomLevels: 20}
+                {numZoomLevels: 20},
+                {
+                    buffer: 0,
+                    tileSize: new OpenLayers.Size(512, 256)
+                }                                
         );
     baseMapLayers[0] = new baseMapLayer("Streets",baseMap);
     
     //satellite map
     var baseMap = new OpenLayers.Layer.Google(
                 "Physical",
-                {type: google.maps.MapTypeId.TERRAIN}
+                {
+                    type: google.maps.MapTypeId.TERRAIN
+                },
+                {
+                    buffer: 0,
+                    tileSize: new OpenLayers.Size(512, 256)
+                }                
                 // used to be {type: G_PHYSICAL_MAP}
         );
     baseMapLayers[1] = new baseMapLayer("Physical",baseMap);
@@ -785,51 +868,83 @@ function initOpenLayers() {
         activeOLWMSLayers[i] = new activeOLWMSLayer(lid, legend, mapLayer);
     }  
 
+    if (!sharedMapURL) { //Begin default layers prep------------>
+        //This is probably bad design: I have hard-coded the starting layers
+        //States
+        $("#mapTools_accordion").append('<div id="lgd'+activeOLWMSLayers[1].lid+'" class="lgd'+activeOLWMSLayers[1].lid+'"><img src="'+activeOLWMSLayers[1].legend+'"/></div>'); 
+        if (!checkForActiveLID(activeOLWMSLayers[1].lid))
+        {
+            activeMapLayers.push(new activeMapLayer(activeOLWMSLayers[1].lid, 1));
+        }
+        $("#lgd"+activeOLWMSLayers[1].lid+"").click(function() {
+            //remove legend graphic, layerpicker checkedbox and map layer
+            $('div').remove('.lgd'+activeOLWMSLayers[1].lid+''); //remove legend graphic
+            //filteredOLWMSLayer = activeOLWMSLayers.filter(function(WMSLayer){return (WMSLayer.lid==activeOLWMSLayers[1].lid);});
+            filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",activeOLWMSLayers[1].lid);
+            map.removeLayer(filteredOLWMSLayer[0].OLWMSLayer); //remove map layer
+            $('input:checkbox[id="chk'+filteredOLWMSLayer[0].lid+'"]').attr('checked',false);
+            //remove lid from activeMapLayers, update shareMapURL with legend click
+            for (var i = 0; i < activeMapLayers.length; i++) {
+                if (activeMapLayers[i].lid==filteredOLWMSLayer[0].lid)
+                {    
+                    activeMapLayers.splice(i, 1);
+                }
+            }
+            //update shareMapURL
+            currentExtent = getCurrentExtent();
+            buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, "Streets", currentExtent);
+        });
+        //Current NRT product
+        $("#mapTools_accordion").append('<div id="lgd'+activeOLWMSLayers[33].lid+'" class="lgd'+activeOLWMSLayers[33].lid+'"><img src="'+activeOLWMSLayers[33].legend+'"/></div>');     
+        if (!checkForActiveLID(activeOLWMSLayers[33].lid))
+        {
+            activeMapLayers.push(new activeMapLayer(activeOLWMSLayers[33].lid, 1));
+        }
+        $("#lgd"+activeOLWMSLayers[33].lid+"").click(function() {
+            //remove legend graphic, layerpicker checkedbox and map layer
+            $('div').remove('.lgd'+activeOLWMSLayers[33].lid+''); //remove legend graphic
+            //filteredOLWMSLayer = activeOLWMSLayers.filter(function(WMSLayer){return (WMSLayer.lid==activeOLWMSLayers[1].lid);});
+            filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",activeOLWMSLayers[33].lid);
+            map.removeLayer(filteredOLWMSLayer[0].OLWMSLayer); //remove map layer
+            $('input:checkbox[id="chk'+filteredOLWMSLayer[0].lid+'"]').attr('checked',false);
+            //remove lid from activeMapLayers, update shareMapURL with legend click
+            for (var i = 0; i < activeMapLayers.length; i++) {
+                if (activeMapLayers[i].lid==filteredOLWMSLayer[0].lid)
+                {    
+                    activeMapLayers.splice(i,1);
+                }
+            }
+            //update shareMapURL
+            currentExtent = getCurrentExtent();
+            buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, "Streets", currentExtent);
+        }); 
 
-    
-    map.addLayers([baseMapLayers[0].OLBaseMapLayer,activeOLWMSLayers[1].OLWMSLayer,activeOLWMSLayers[33].OLWMSLayer]);
-    //begin default layers prep------------
-    //This is bad: I have hard-coded the starting layers
-    //states
-    $("#mapTools_accordion").append('<div id="lgd'+activeOLWMSLayers[1].lid+'" class="lgd'+activeOLWMSLayers[1].lid+'"><img src="'+activeOLWMSLayers[1].legend+'"/></div>'); 
-    shareMapLayers.push(activeOLWMSLayers[1].lid,1);    
-    $("#lgd"+activeOLWMSLayers[1].lid+"").click(function() {
-        //remove legend graphic, layerpicker checkedbox and map layer
-        $('div').remove('.lgd'+activeOLWMSLayers[1].lid+''); //remove legend graphic
-        //filteredOLWMSLayer = activeOLWMSLayers.filter(function(WMSLayer){return (WMSLayer.lid==activeOLWMSLayers[1].lid);});
-        filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",activeOLWMSLayers[1].lid);
-		map.removeLayer(filteredOLWMSLayer[0].OLWMSLayer); //remove map layer
-        $('input:checkbox[id="chk'+filteredOLWMSLayer[0].lid+'"]').attr('checked',false);
-    });
-    
-    //current NRT product
-    $("#mapTools_accordion").append('<div id="lgd'+activeOLWMSLayers[33].lid+'" class="lgd'+activeOLWMSLayers[33].lid+'"><img src="'+activeOLWMSLayers[33].legend+'"/></div>');     
-    shareMapLayers.push(activeOLWMSLayers[33].lid,1);
-    $("#lgd"+activeOLWMSLayers[33].lid+"").click(function() {
-        //remove legend graphic, layerpicker checkedbox and map layer
-        $('div').remove('.lgd'+activeOLWMSLayers[33].lid+''); //remove legend graphic
-        //filteredOLWMSLayer = activeOLWMSLayers.filter(function(WMSLayer){return (WMSLayer.lid==activeOLWMSLayers[1].lid);});
-        filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",activeOLWMSLayers[33].lid);
-		map.removeLayer(filteredOLWMSLayer[0].OLWMSLayer); //remove map layer
-        $('input:checkbox[id="chk'+filteredOLWMSLayer[0].lid+'"]').attr('checked',false);
-    }); 
-    //end default layers prep------------
+        //update shareMapURL
+        currentExtent = getCurrentExtent();
+        buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, "Streets", currentExtent);
+        map.addLayers([baseMapLayers[0].OLBaseMapLayer,activeOLWMSLayers[1].OLWMSLayer,activeOLWMSLayers[33].OLWMSLayer]);
+        var lonLat = new OpenLayers.LonLat(lon, lat).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
+        map.setCenter(lonLat, zoom); //map object not active until here
+    }//End default layers prep meeting if (!sharedMapURL)------------
+    else //This is a shared URL
+    {
+        for (var i = 0; i < activeMapLayers.length; i++) 
+        {
+            filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",activeMapLayers[i].lid);
+            map.addLayer(filteredOLWMSLayer[0].OLWMSLayer);
+        }        
+        
+        map.addLayers([baseMapLayers[0].OLBaseMapLayer]);
 
-    //update shareMapURL
-    //shareMapURL = shareMapURL + "layers="+shareMapLayers.join()+"&"
-    currentExtent = getCurrentExtent();
-    buildShareMapURL(shareMapTheme, shareMapLayers, "G04", "Streets", currentExtent);
+        extentArray = shareMapExtent.split(",");
+        bounds = new OpenLayers.Bounds(extentArray[0], extentArray[1],extentArray[2], extentArray[3]);	
+        map.zoomToExtent(bounds);
+        //add the activeMapLayers
+    }
        
-    var lonLat = new OpenLayers.LonLat(lon, lat).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
-    map.setCenter(lonLat, zoom); //map object not active until here
 
 }//END initOpenLayers--------------------------------------------------------------
 
-//URL format:
-http://rain.nemac.org/~derek/fswms/html/view/index.html?
-
-//?theme=CONUS_Vegetation_Monitoring_Tools&layers=AAB,AA,&alphas=1,1,&accgp=G01&basemap=Streets&extent=-14604362.670799732,2511414.272133383,-6395637.329200267,6488585.727866617
-//?theme=MODIS_Forest_Change_Products&layers=AAB,AA&alphas=1,1&accgp=G04&basemap=Streets&extent=-14604362.670799732,2538210.8616583524,-6395637.329200267,6515382.3173915865
 
 function buildShareMapURL(theme,layers,accgp,basemap,extent)
 {
@@ -838,25 +953,61 @@ function buildShareMapURL(theme,layers,accgp,basemap,extent)
     //loop through layers array
     var layersArray = [];
     var alphasArray = [];
-    for (var i = 1; i < layers.length; i=i+2) 
+    for (var i = 0; i < layers.length; i++) 
     {
-        layersArray.push(layers[i]);
-        alphasArray.push(layers[i+1]);
+        layersArray.push(layers[i].lid);
+        alphasArray.push(layers[i].opacity);
     }
     shareMapURL = shareMapURL+"&layers="+layersArray.join()+"&alphas="+alphasArray.join()+"&accgp="+accgp+"&basemap="+basemap+"&extent="+extent;
     $('.shrMapURLClass').html("<textarea rows=\"6\" cols=\"60\">"+shareMapURL+"</textarea>");
     //return shareMapURL;
 }
 
-function processShareMapURL(theme,layers,accgp,basemap,extent)
+function checkForActiveLID(lid)
 {
-    return "";
+    alreadyThere = false;
+    for (var i = 0; i < activeMapLayers.length; i++) 
+    {
+        if (activeMapLayers[i].lid==lid)
+        {
+            alreadyThere = true;
+        }
+    }
+    return alreadyThere;
+}
+
+function processSharedMapURL()
+//Process the shareMapURL and make active the appropriate 
+//layers and such
+{
+    var vars = [], hash;
+        var q = document.URL.split('?')[1];
+        if(q != undefined){
+            q = q.split('&');
+            for(var i = 0; i < q.length; i++){
+                hash = q[i].split('=');
+                vars.push(hash[1]);
+                vars[hash[0]] = hash[1];
+            }
+        }
+    shareMapTheme = vars.theme;
+    shareMapAccordionGrp = vars.accgp;
+    shareMapBaseMap = vars.basemap;
+    shareMapExtent = vars.extent;
+    layersArray = vars.layers.split(",");
+    alphasArray = vars.alphas.split(",");
+    for (var i = 0; i < layersArray.length; i++) 
+    {
+        if (layersArray[i] != "")
+        {    
+            activeMapLayers.push(new activeMapLayer(layersArray[i],alphasArray[i]));
+        }
+    }    
 }
 
 function getCurrentExtent()
-//made to get the extent into FCAV format
+//Used to get the extent into FCAV format
 {
-
     extent = map.getExtent();
     if (extent != null)
     {
