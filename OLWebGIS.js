@@ -2,13 +2,22 @@
 //that console.log is not liked per say by IE 9 so comment those out for production
 //begin global declarations-----------------------------------
 var map, info, mapLayers;
-var currThemeIndex = 0;  //Initialize our user agent string to lower case.
+var currThemeIndex = 0;  //initialize our theme index 
 var layerBool = true;
 var legendBool = true;
+var initShareMapURL = document.URL;
+//check for ?
+var n=initShareMapURL.indexOf("?")
+if (n!=-1) //this is one that has already vars added to it
+{
+	initShareMapURL = initShareMapURL.substring(0, n)
+}
+//add ? back
+initShareMapURL = initShareMapURL.replace("#","")+"?";
 var shareMapURL = document.URL.replace("#","");
 var shareMapTheme = "";
 var shareMapAccordionGrp = "";
-var shareMapBaseMap = "";
+var shareMapBaseMap = "Streets";
 var shareMapExtent = "";
 var sharedMapURL = false;
 //Begin define object arrays-----------------------------------------
@@ -56,12 +65,68 @@ function activeOLWMSLayer(lid, legend, OLWMSLayer)
 }
 //End object arrays------------------------------------------
 
+var lastPopup = undefined;
 
 //Begin Controls Toolbox-------------------------------------------------------------------------------------
 //Panel control is a container for other controls
 var zoomInTool = new OpenLayers.Control.ZoomBox();
 var zoomOutTool = new OpenLayers.Control.ZoomBox({out:true});
 var dragPanTool = new OpenLayers.Control.DragPan();
+OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {                
+                defaultHandlerOptions: {
+                    'single': true,
+                    'double': false,
+                    'pixelTolerance': 0,
+                    'stopSingle': false,
+                    'stopDouble': false
+                },
+                initialize: function(options) {
+                    this.handlerOptions = OpenLayers.Util.extend(
+                        {}, this.defaultHandlerOptions
+                    );
+                    OpenLayers.Control.prototype.initialize.apply(
+                        this, arguments
+                    ); 
+                    this.handler = new OpenLayers.Handler.Click(
+                        this, {
+                            'click': this.trigger
+                        }, this.handlerOptions
+                    );
+                }, 
+                trigger: function(e) {
+                    var lonlat = map.getLonLatFromPixel(e.xy);
+                    $('#myMultigraph').remove();
+                    if (lastPopup) 
+                    {
+                        map.removePopup(lastPopup);
+                    }
+                    map.addPopup(lastPopup = new OpenLayers.Popup.FramedCloud(
+                              "Feature Info:", 
+                              lonlat,
+                              null,
+                              '<div id="myMultigraphMessage">Loading...</div><div id="myMultigraph" style="width: 600px; height: 300px;"></div>',
+                              null,
+                              true));
+                    var multiDriver;
+                    if ($.browser.msie) {
+                        multiDriver = "raphael";
+                    }
+                    else {
+                        multiDriver = "canvas";
+                    }
+                    
+                    window.multigraph.core.Multigraph.createGraph({
+                        'div'    : 'myMultigraph',
+                        'mugl'   : "http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+lonlat.lon+","+lonlat.lat,
+                        'driver' : multiDriver // change 'canvas' to 'raphael' to test in IE
+                    }).done(function() {
+                            $('#myMultigraphMessage').remove();
+                        });
+                }
+            });
+var clickTool = new OpenLayers.Control.Click();
+
+            
 function identify()
 {
     deactivateActiveUserControls();
@@ -255,7 +320,10 @@ $(document).ready(function(){
     $("#btnMultiGraph").click(function() {
         //http://openlayers.org/dev/examples/click.html
         //http://dev.openlayers.org/releases/OpenLayers-2.12/doc/apidocs/files/OpenLayers/Handler/Click-js.html
-        alert("multigraph");
+        //http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,-11915561.548108513,4714792.352997124
+        deactivateActiveUserControls();
+        map.addControl(clickTool);
+        clickTool.activate();        
     });
     $('#btnMultiGraph').hover(
         function(){
@@ -351,6 +419,13 @@ function parseMenu(document){
         
     }
     initOpenLayers();
+	//Loop through activeMapLayers turning on shared layer legends
+	for (var k = 0; k < activeMapLayers.length; k++) 
+    {
+       ert = activeMapLayers[k];
+    }  	
+	//Activate shared accordion group
+	jkl = shareMapAccordionGrp;
 }
 
 function themePicker(themeName){    //BEGIN THEME COMBO
@@ -388,7 +463,7 @@ function themePicker(themeName){    //BEGIN THEME COMBO
           //update shareMapURL
           shareMapTheme = updatedMapView[0].name;
           currentExtent = getCurrentExtent();
-          buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, "Streets", currentExtent);
+          buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
     });    	
     
 }//END THEME COMBO
@@ -399,7 +474,7 @@ function layerPicker(activeMapView){
     //Start of legend accordion
     $("#mapTools_accordion").append('<h3><b><a href="#mapToolsAccordion">Map Tools:</a></b></h3>');
     $("#mapTools_accordion").append('<div class="mapTools-header">Handle here to drag!</div>');
-    //Using currentMapView, build out the layer picker
+    //Build out the layer picker
     //Loop through the viewGroups accordingly
     //For each viewGroup get the name and then find the matching wmsGroup
     //Note: Specific to this loop, there must be a wmsSubgroup under every wmsGroup the way it is
@@ -409,7 +484,6 @@ function layerPicker(activeMapView){
     i = 0;
     j = 0;
     finishAtJ = activeMapView.viewGroups.length;
-    //This doesn't work in IE 8
     $("#layer_accordion").append('<h3><b><a href="#layersAccordion">Layer Picker:</a></b></h3>');
     $("#layer_accordion").append('<div class="layers-header">Handle here to drag!</div>');
     $(activeMapViewViewGroups).each(function(index) {
@@ -493,7 +567,7 @@ function layerPicker(activeMapView){
         shareMapAccordionGrp = code[1].getAttribute("gid")
         //update shareMapURL
         currentExtent = getCurrentExtent();
-        buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, "Streets", currentExtent);
+        buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
     });
 
     
@@ -502,7 +576,7 @@ function layerPicker(activeMapView){
     //Update the shareMapURL
     $("#mapTools_accordion").append('<div id="test" class="shrMapURLClass"><p>'+shareMapURL+'</p></div>');    
     
-    //Loop through activeWMSLayers and create a check event in layerPicker and legend accordingly
+    //Loop through all activeWMSLayers and create a check event in layerPicker and legend accordingly
 	//problem: activeWMSLayers is updated w/ theme change but not activeOLWMSLayers
 	//soln: just needed to destroy the map on refresh of theme
     $("#mapTools_accordion").append('<h3><a href="#legendAccordion">Legends</a></h3>');
@@ -521,7 +595,7 @@ function layerPicker(activeMapView){
                 }
                 //update shareMapURL
                 currentExtent = getCurrentExtent();
-                buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, "Streets", currentExtent);
+                buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
                 $("#lgd"+lidForLegend+"").click(function() { //remove by legend click
                     //remove legend graphic, layerpicker checkedbox and map layer
                     $('div').remove('.lgd'+lidForLegend+''); //remove legend graphic
@@ -537,7 +611,7 @@ function layerPicker(activeMapView){
                     }
                     //update shareMapURL
                     currentExtent = getCurrentExtent();
-                    buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, "Streets", currentExtent);
+                    buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
                 }); //end add legend graphic part    
             }
             else { //layerPicker unchecked
@@ -554,7 +628,7 @@ function layerPicker(activeMapView){
                 }
                 //update shareMapURL
                 currentExtent = getCurrentExtent();
-                buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, "Streets", currentExtent);
+                buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
             }
         });  
     }  
@@ -646,7 +720,7 @@ $(".imgDialog").live("click",function(e){
 
     $("#opacitySlider" ).slider({
 		change: function(event, ui) { 
-			var newOpacity = ui.value/100;
+			var newOpacity = 1-ui.value/100;
 			//OpenLayers.Layer.setOpacity(float);
 			filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",opacityLID);
             filteredOLWMSLayer[0].OLWMSLayer.setOpacity(newOpacity);
@@ -663,12 +737,12 @@ $(".imgDialog").live("click",function(e){
                     }
                     else
                     {
-                        activeMapLayers[i].opacity = "."+ui.value;
+                        activeMapLayers[i].opacity = newOpacity;
                     }
                 }
             }
             currentExtent = getCurrentExtent();
-            buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, "Streets", currentExtent);
+            buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
 		},
         value:0
 	});
@@ -676,8 +750,9 @@ $(".imgDialog").live("click",function(e){
     if (isDialogInitialized==false)
     {
         lastOpacityLID = opacityLID;
-        $("#opacityDialog").prepend('<p class="opacityLabel">'+filteredOLWMSLayer[0].OLWMSLayer.name+':</p>');
-        $("#opacityDialog").append('<input type="text" size="3" id="opacityValue" />');
+        $("#opacityDialog").prepend('<div style="white-space:nowrap"><label class="opacityLabel">'+filteredOLWMSLayer[0].OLWMSLayer.name+':</label><input style="border-color:transparent;" type="text" size="3" id="opacityValue" /></div></br>');
+        //$("#opacitySlider").append('<div class="opacitySteps"><span style="display:inline-block;width: 1&#37;text-align:left;margin-right: 8&#37;"><br>0&#37</span><span style="display:inline-block;width: 20&#37;text-align:right;margin-left: 62&#37;">100&#37</span></div>');
+        //$("#opacityDialog").append('<input type="text" size="3" id="opacityValue" />');
         $("#opacityValue" ).val($( "#opacitySlider" ).slider( "value" ) + "%" );
         isDialogInitialized = true;
     }
@@ -685,10 +760,13 @@ $(".imgDialog").live("click",function(e){
     {
         $('.opacityLabel').remove();
         $('.maskLabel').remove();
+        $('.opacitySteps').remove();
         $('#opacityValue').remove();
         lastOpacityLID = opacityLID;
-        $("#opacityDialog").prepend('<p class="opacityLabel">'+filteredOLWMSLayer[0].OLWMSLayer.name+':</p>');
-        $("#opacityDialog").append('<input type="text" size="3" id="opacityValue" />');
+        
+        $("#opacityDialog").prepend('<div style="white-space:nowrap"><label class="opacityLabel">'+filteredOLWMSLayer[0].OLWMSLayer.name+':</label><input style="border-color:transparent;" type="text" size="3" id="opacityValue" /></div></br>');
+        //$("#opacitySlider").append('<div class="opacitySteps"><span style="display:inline-block;width: 1&#37;text-align:left;margin-right: 8&#37;"><br>0&#37</span><span style="display:inline-block;width: 20&#37;text-align:right;margin-left: 62&#37;">100&#37</span></div>');        
+        //$("#opacityDialog").append('<input type="text" size="3" id="opacityValue" />');
         $("#opacityValue" ).val($( "#opacitySlider" ).slider( "value" ) + "%" );
         isDialogInitialized = true;    
     }
@@ -737,6 +815,11 @@ function initOpenLayers() {
                zoomInTool,
                zoomOutTool
 		       ],
+        eventListeners: 
+            {
+                "moveend": mapEvent,
+                "zoomend": mapEvent
+            },               
 		maxExtent: new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34),
 		maxResolution: 156543.0399,
 	        zoom: 1,
@@ -744,6 +827,15 @@ function initOpenLayers() {
 		projection: new OpenLayers.Projection("EPSG:900913"),
 		displayProjection: new OpenLayers.Projection("EPSG:4326")
     });    
+    
+    //Define custom map event listeners
+    //Occurs on zoom in/out
+    function mapEvent(event) {
+        //update shareMapURL
+        currentExtent = getCurrentExtent();
+        shareMapURL = "";
+        buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
+    }    
     
     //Begin Populate base maps
     //This could be moved to the config xml alternatively
@@ -755,44 +847,80 @@ function initOpenLayers() {
     }  
 
     //street map
-    var baseMap = new OpenLayers.Layer.Google(
-                "Streets", // the default
-                {numZoomLevels: 20},
-                {
-                    buffer: 0,
-                    tileSize: new OpenLayers.Size(512, 256)
-                }                                
-        );
-    baseMapLayers[0] = new baseMapLayer("Streets",baseMap);
-    
-    //satellite map
-    var baseMap = new OpenLayers.Layer.Google(
-                "Physical",
-                {
-                    type: google.maps.MapTypeId.TERRAIN
-                },
-                {
-                    buffer: 0,
-                    tileSize: new OpenLayers.Size(512, 256)
-                }                
-                // used to be {type: G_PHYSICAL_MAP}
-        );
-    baseMapLayers[1] = new baseMapLayer("Physical",baseMap);
-    
-    //physical map
-    var baseMap = new OpenLayers.Layer.Google(
-                "Satellite",
-                {type: google.maps.MapTypeId.SATELLITE, numZoomLevels: 22}
-            );
-    baseMapLayers[2] = new baseMapLayer("Satellite",baseMap);    
-    
+    //tileSize: new OpenLayers.Size(600,600)
+    //singleTile: true
     var baseMap = new OpenLayers.Layer.ArcGIS93Rest(
-        'ESRI_Streets', 
+        'Streets',
         'http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/export?f=image', 
         {layers: 'show:0'},
-        {}
+        {
+            isBaseLayer: true, 
+            transitionEffect: 'resize',
+            tileSize: new OpenLayers.Size(600,600),
+            ratio: 1,            
+            buffer: 2
+        }
+    );
+    baseMapLayers[0] = new baseMapLayer("Streets",baseMap);  
+    
+    //satellite map
+    var baseMap = new OpenLayers.Layer.ArcGIS93Rest(
+        'Basic',
+        'http://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/export?f=image', 
+        {layers: 'show:0'},
+        {
+            isBaseLayer: true, 
+            transitionEffect: 'resize',
+            tileSize: new OpenLayers.Size(600,600),
+            ratio: 1,            
+            buffer: 2
+        }                
+    );
+    baseMapLayers[1] = new baseMapLayer("Basic",baseMap);
+    
+    //imagery map
+    var baseMap = new OpenLayers.Layer.ArcGIS93Rest(
+        'Imagery',
+        'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?f=image', 
+        {layers: 'show:0'},
+        {
+            isBaseLayer: true, 
+            transitionEffect: 'resize',
+            tileSize: new OpenLayers.Size(600,600),
+            ratio: 1,            
+            buffer: 2
+        }                
+    );
+    baseMapLayers[2] = new baseMapLayer("Imagery",baseMap);    
+    
+    var baseMap = new OpenLayers.Layer.ArcGIS93Rest(
+        'Topo_Map', 
+        'http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/export?f=image', 
+        {layers: 'show:0'},
+        {
+            isBaseLayer: true, 
+            transitionEffect: 'resize',
+            tileSize: new OpenLayers.Size(600,600),
+            ratio: 1,            
+            buffer: 2       
+        }
     );         
-    baseMapLayers[3] = new baseMapLayer("ESRI_Streets",baseMap);    
+    baseMapLayers[3] = new baseMapLayer("Topo_Map",baseMap);    
+
+    var baseMap = new OpenLayers.Layer.ArcGIS93Rest(
+        'Relief', 
+        'http://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/export?f=image', 
+        {layers: 'show:0'},
+        {
+                isBaseLayer: true, 
+                transitionEffect: 'resize',
+                tileSize: new OpenLayers.Size(600,600),
+                ratio: 1,            
+                buffer: 2      
+        }
+    );         
+    baseMapLayers[4] = new baseMapLayer("Relief",baseMap);    
+
     
     $('#baseCombo').change(function() {
         //alert($("#baseCombo").val());
@@ -800,23 +928,48 @@ function initOpenLayers() {
         map.removeLayer(map.layers[0]);
         
         i=0
-        if ($("#baseCombo").val()=="Physical"){
+        if ($("#baseCombo").val()=="Basic"){
             i=1;
+            shareMapBaseMap = "Basic";
+            buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
         }
-        else if ($("#baseCombo").val()=="Satellite"){
+        else if ($("#baseCombo").val()=="Imagery"){
             i=2;
+            shareMapBaseMap = "Imagery";
+            buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
         }
-        else if ($("#baseCombo").val()=="ESRI_Streets"){
+        else if ($("#baseCombo").val()=="Topo_Map"){
             i=3;
-        }        
+            shareMapBaseMap = "Topo_Map";
+            buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
+        }
+        else if ($("#baseCombo").val()=="Relief"){
+            i=4;
+            shareMapBaseMap = "Relief";
+            buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
+        }         
+       
         map.addLayers([baseMapLayers[i].OLBaseMapLayer]);
         //put the new base back in the 0 spot
         var baseLyr = map.getLayersByName(baseMapLayers[i].OLBaseMapLayer.name)[0];
         map.setLayerIndex(baseLyr, 0);
     });
     
+    
     //populate dropdown for base maps
-    var defaultOption = baseMapLayers[0].name;
+    //var defaultOption = baseMapLayers[0].name;
+    //Actually, first check if shared or not
+    if (!sharedMapURL)
+    {
+        var defaultOption = baseMapLayers[0].name;
+    }
+    else //is sharedMapURL
+    {
+        var filteredBaseLayer = filterObjectArrayByVal(baseMapLayers,"name",shareMapBaseMap);
+        var defaultOption = filteredBaseLayer[0].name;
+    }
+    
+    
     var select = $('#baseCombo');
     if(select.prop) {
   	  var options = select.prop('options');
@@ -860,7 +1013,7 @@ function initOpenLayers() {
             {
                 isBaseLayer: false, 
                 transitionEffect: 'resize',
-                singleTile: true,
+                tileSize: new OpenLayers.Size(600,600),
                 ratio: 1,            
                 buffer: 2
             }
@@ -892,7 +1045,7 @@ function initOpenLayers() {
             }
             //update shareMapURL
             currentExtent = getCurrentExtent();
-            buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, "Streets", currentExtent);
+            buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
         });
         //Current NRT product
         $("#mapTools_accordion").append('<div id="lgd'+activeOLWMSLayers[33].lid+'" class="lgd'+activeOLWMSLayers[33].lid+'"><img src="'+activeOLWMSLayers[33].legend+'"/></div>');     
@@ -916,26 +1069,31 @@ function initOpenLayers() {
             }
             //update shareMapURL
             currentExtent = getCurrentExtent();
-            buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, "Streets", currentExtent);
+            buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
         }); 
 
         //update shareMapURL
         currentExtent = getCurrentExtent();
-        buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, "Streets", currentExtent);
+        buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
         map.addLayers([baseMapLayers[0].OLBaseMapLayer,activeOLWMSLayers[1].OLWMSLayer,activeOLWMSLayers[33].OLWMSLayer]);
         var lonLat = new OpenLayers.LonLat(lon, lat).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
         map.setCenter(lonLat, zoom); //map object not active until here
     }//End default layers prep meeting if (!sharedMapURL)------------
     else //This is a shared URL
     {
+
         for (var i = 0; i < activeMapLayers.length; i++) 
         {
             filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",activeMapLayers[i].lid);
             map.addLayer(filteredOLWMSLayer[0].OLWMSLayer);
         }        
-        
-        map.addLayers([baseMapLayers[0].OLBaseMapLayer]);
 
+        var filteredBaseLayer = filterObjectArrayByVal(baseMapLayers,"name",shareMapBaseMap);
+        map.addLayer(filteredBaseLayer[0].OLBaseMapLayer);
+        //put the new base back in the 0 spot
+        var baseLyr = map.getLayersByName(filteredBaseLayer[0].OLBaseMapLayer.name)[0];
+        map.setLayerIndex(baseLyr, 0);
+        
         extentArray = shareMapExtent.split(",");
         bounds = new OpenLayers.Bounds(extentArray[0], extentArray[1],extentArray[2], extentArray[3]);	
         map.zoomToExtent(bounds);
@@ -948,8 +1106,9 @@ function initOpenLayers() {
 
 function buildShareMapURL(theme,layers,accgp,basemap,extent)
 {
-    shareMapURL = ""+document.URL.replace("#","")+"?";
-    shareMapURL = shareMapURL+"theme="+theme;
+    shareMapURL = "";
+    //only get the root of a URL, hence the init one
+    shareMapURL = initShareMapURL+"theme="+theme;
     //loop through layers array
     var layersArray = [];
     var alphasArray = [];
@@ -996,7 +1155,9 @@ function processSharedMapURL()
     shareMapExtent = vars.extent;
     layersArray = vars.layers.split(",");
     alphasArray = vars.alphas.split(",");
-    for (var i = 0; i < layersArray.length; i++) 
+    //put the layers shared onto the activeMapLayers so that
+	//then can later be utilized to turn things on e.g. legend
+	for (var i = 0; i < layersArray.length; i++) 
     {
         if (layersArray[i] != "")
         {    
