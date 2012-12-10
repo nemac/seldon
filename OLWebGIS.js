@@ -402,8 +402,7 @@ function parseMenu(document){
         //AAB,AA
         activeMapLayers.push(new activeMapLayer("AAB", 1));
         activeMapLayers.push(new activeMapLayer("AA", 1));
-        
-        layerPicker(mapViews[1]);  //pass the default theme as the current theme
+        layerPicker(mapViews[1], 4);  //pass the default theme as the current theme
     }
     else //this is a shared url handle accordingly
     {
@@ -413,19 +412,22 @@ function parseMenu(document){
         {
             if (mapViews[j].name==shareMapTheme)
             {
-                layerPicker(mapViews[j]);
+                
+                for (k = 0; k < wmsGroups.length; k++) {
+                    if (wmsGroups[k].gid === shareMapAccordionGrp) {
+                        var accordGrpToOpen = k+1;
+                    }
+                }                
+                layerPicker(mapViews[j], accordGrpToOpen);
             }
         }
-        
-    }
+        // Check on any layers that were shared
+        for (var k = 0; k < activeMapLayers.length; k++) 
+        {
+           activeSharedLID = activeMapLayers[k].lid;
+        }          
+    }// end share map url
     initOpenLayers();
-	//Loop through activeMapLayers turning on shared layer legends
-	for (var k = 0; k < activeMapLayers.length; k++) 
-    {
-       ert = activeMapLayers[k];
-    }  	
-	//Activate shared accordion group
-	jkl = shareMapAccordionGrp;
 }
 
 function themePicker(themeName){    //BEGIN THEME COMBO
@@ -457,7 +459,7 @@ function themePicker(themeName){    //BEGIN THEME COMBO
           $("#layer_accordion").accordion('destroy').accordion;
           $('#mapTools_accordion').empty();
           $("#mapTools_accordion").accordion('destroy').accordion;
-          layerPicker(updatedMapView[0]);
+          layerPicker(updatedMapView[0], 4);
           map.destroy();
           initOpenLayers();
           //update shareMapURL
@@ -468,7 +470,7 @@ function themePicker(themeName){    //BEGIN THEME COMBO
     
 }//END THEME COMBO
 
-function layerPicker(activeMapView){
+function layerPicker(activeMapView, openToAccordGrp){
     var accordianNum = 2;
 	//console.log(activeMapView);
     //Start of legend accordion
@@ -552,7 +554,7 @@ function layerPicker(activeMapView){
     
     $("#layer_accordion").draggable({handle: '.layers-header'}); 
     $("#layer_accordion").accordion({ clearStyle: true, autoHeight: false });
-    $('#layer_accordion').accordion('activate', 4);
+    $('#layer_accordion').accordion('activate', openToAccordGrp);
     shareMapAccordionGrp = "G04";  //hardcoded starting accordion per the previous line
     $('#layer_accordion').resizable();
 
@@ -774,19 +776,67 @@ $(".imgDialog").live("click",function(e){
     //A prototype of mask functionality
     //currently only on MODIS phenology derived fall bown down layer
     if (opacityLID=="AIT") {
-        $("#opacityDialog").append('<p class="maskLabel">Layer Masking Options:</p>');
-        $("#opacityDialog").append('<input type="radio" class="maskLabel" name="maskNLCD" id="forestNLCD" value="forestNLCD">Forest<br>');
-        $("#opacityDialog").append('<input type="radio" class="maskLabel" name="maskNLCD" id="urbanNLCD" value="urbanNLCD">Urban<br>');
-        $("#urbanNLCD").click(function() { //remove
+        $("#opacityDialog .maskStuff").remove();
+            $("#opacityDialog").append('<span class="maskStuff"><p class="maskLabel">Layer Masking Options:</p><input type="radio" class="maskLabel" name="maskNLCD" id="forestNLCD" value="forestNLCD">Forest<br><input type="radio" class="maskLabel" name="maskNLCD" id="urbanNLCD" value="urbanNLCD">Urban<br></span>');
+        /*
+        $("#opacityDialog .maskLabel").remove();
+            $("#opacityDialog").append('<p class="maskLabel">Layer Masking Options:</p>');
+            $("#opacityDialog").append('<input type="radio" class="maskLabel" name="maskNLCD" id="forestNLCD" value="forestNLCD">Forest<br>');
+            $("#opacityDialog").append('<input type="radio" class="maskLabel" name="maskNLCD" id="urbanNLCD" value="urbanNLCD">Urban<br>');
+        */
+        $("#urbanNLCD").click(function() { 
+            //remove all layers except base
+            var layersRemovedCount = 0;
+            for (var i = 0; i <= map.layers.length; i++) 
+            {
+                if (!map.layers[i-layersRemovedCount].isBaseLayer)
+                {
+                    map.removeLayer(map.layers[i-layersRemovedCount]);
+                    layersRemovedCount = layersRemovedCount + 1;
+                };
+            }
+            //remove other possible mask to allow toggle
             var urbanMask = new OpenLayers.Layer.WMS(
                 'FallBrownDownUrbanMask09', 
                 'http://rain.nemac.org/~derek/fswms/html/derivatives', 
                 {layers: 'FallBrownDownUrbanMask09', transparent: true},
                 {
-                    isBaseLayer: false            
+                    isBaseLayer: false, 
+                    transitionEffect: 'resize',
+                    //singleTile: true
+                    tileSize: new OpenLayers.Size(200,200),
+                    ratio: 1,            
+                    buffer: 2                    
                 }
             ); 
             map.addLayer(urbanMask);        
+         }); 
+        $("#forestNLCD").click(function() { //remove
+            var layers = 0;
+            var layersRemovedCount = 0;
+            //remove all layers except base
+            for (var j = 0; j <= map.layers.length; j++) 
+            {
+                if (!map.layers[j-layersRemovedCount].isBaseLayer)
+                {
+                    map.removeLayer(map.layers[j-layersRemovedCount])
+                    layersRemovedCount = layersRemovedCount + 1;
+                };
+            }         
+            var forestMask = new OpenLayers.Layer.WMS(
+                'FallBrownDownForestMask09', 
+                'http://rain.nemac.org/~derek/fswms/html/derivatives', 
+                {layers: 'FallBrownDownForestMask09', transparent: true},
+                {
+                    isBaseLayer: false, 
+                    transitionEffect: 'resize',
+                    //singleTile: true             
+                    tileSize: new OpenLayers.Size(200,200),
+                    ratio: 1,            
+                    buffer: 2                    
+                }
+            ); 
+            map.addLayer(forestMask);        
          }); 
         
     }
@@ -827,6 +877,10 @@ function initOpenLayers() {
 		projection: new OpenLayers.Projection("EPSG:900913"),
 		displayProjection: new OpenLayers.Projection("EPSG:4326")
     });    
+    
+    var leftBottom = new OpenLayers.LonLat("-123.486328125", "32.76880048488168").transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
+    var rightTop = new OpenLayers.LonLat("-68.02734375", "45.460130637921004").transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
+    var bounds = new OpenLayers.Bounds(leftBottom.lon,leftBottom.lat,rightTop.lon,rightTop.lat);	    
     
     //Define custom map event listeners
     //Occurs on zoom in/out
@@ -912,11 +966,11 @@ function initOpenLayers() {
         'http://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/export?f=image', 
         {layers: 'show:0'},
         {
-                isBaseLayer: true, 
-                transitionEffect: 'resize',
-                tileSize: new OpenLayers.Size(600,600),
-                ratio: 1,            
-                buffer: 2      
+            isBaseLayer: true, 
+            transitionEffect: 'resize',
+            tileSize: new OpenLayers.Size(600,600),
+            ratio: 1,            
+            buffer: 2      
         }
     );         
     baseMapLayers[4] = new baseMapLayer("Relief",baseMap);    
@@ -986,13 +1040,10 @@ function initOpenLayers() {
     select.val(defaultOption);    
     //End Populate base maps
 
-    var leftBottom = new OpenLayers.LonLat("-123.486328125", "32.76880048488168").transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
-    var rightTop = new OpenLayers.LonLat("-68.02734375", "45.460130637921004").transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
-    var bounds = new OpenLayers.Bounds(leftBottom.lon,leftBottom.lat,rightTop.lon,rightTop.lat);	
-    
-    
     //Loop through the activeWMSLayers and create the cooresponding 
     //OpenLayers layer...
+    //Note get the pink tiles on singleTile option unless increasing the 
+    //MAXSIZE in the .map file see http://trac.osgeo.org/mapserver/ticket/3055
     for (var i = 0; i < activeWMSLayers.length; i++) {
         //console.log(activeWMSLayers[i].lid);
         lid=activeWMSLayers[i].lid;
@@ -1001,23 +1052,48 @@ function initOpenLayers() {
         name=activeWMSLayers[i].name;
         layers=activeWMSLayers[i].layers;
         url=activeWMSLayers[i].url;
-        var mapLayer = new OpenLayers.Layer.WMS(
-            name,
-            url,
-            {
-                projection: new OpenLayers.Projection("EPSG:900913"), 
-                units: "m", 
-                layers: layers, 
-                maxExtent: new OpenLayers.Bounds(bounds),                
-                transparent: true},
-            {
-                isBaseLayer: false, 
-                transitionEffect: 'resize',
-                tileSize: new OpenLayers.Size(600,600),
-                ratio: 1,            
-                buffer: 2
-            }
-        );
+        //We are going to go singleTile on some and not on others
+        //wlayers has wms layers which actually pass through to other map servers
+        //therefore we will not attempt to single tile these
+        if (url.indexOf('wlayers') == -1)
+        {
+            var mapLayer = new OpenLayers.Layer.WMS(
+                name,
+                url,
+                {
+                    projection: new OpenLayers.Projection("EPSG:900913"), 
+                    units: "m", 
+                    layers: layers, 
+                    maxExtent: new OpenLayers.Bounds(bounds),                
+                    transparent: true},
+                {
+                    isBaseLayer: false, 
+                    transitionEffect: 'resize',
+                    singleTile: true, 
+                    ratio: 1
+                }
+            );
+        }
+        else
+        {
+            var mapLayer = new OpenLayers.Layer.WMS(
+                name,
+                url,
+                {
+                    projection: new OpenLayers.Projection("EPSG:900913"), 
+                    units: "m", 
+                    layers: layers, 
+                    maxExtent: new OpenLayers.Bounds(bounds),                
+                    transparent: true},
+                {
+                    isBaseLayer: false, 
+                    transitionEffect: 'resize',
+                    tileSize: new OpenLayers.Size(500,500), 
+                    ratio: 1, 
+                    buffer: 2
+                }
+            );        
+        }
         activeOLWMSLayers[i] = new activeOLWMSLayer(lid, legend, mapLayer);
     }  
 
