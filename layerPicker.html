@@ -1,0 +1,83 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <!-- test change test the order of these does matter -->
+    <title>layerPicker test</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=8" >
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <script type="text/javascript" src="libs/jquery17/jquery-1.7.2.js"></script>
+
+    <link type="text/css" rel="stylesheet" href="libs/jquery18/themes/base/jquery.ui.all.css" />
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.core.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.widget.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.mouse.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.draggable.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.resizable.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.accordion.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.dialog.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.position.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.slider.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.effects.core.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.effects.scale.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.effects.fold.js"></script>
+
+    <script type="text/javascript" src="layerPicker.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="NEMACStyle.css" />
+
+    <style type="text/css">
+.layerPicker {
+  width: 300px;
+  height: 500px;
+}
+
+.layerPicker h2 {
+  font-size: 10pt;
+  font-weight: normal;
+}
+
+.layerPicker div.layer {
+  margin-left: 20px;
+}
+
+    </style>
+    <script type="text/javascript">
+      $('document').ready(function() {
+
+        var s, g;
+
+        $('.layerPicker').layerPicker();
+
+        g = $('.layerPicker').layerPicker('addAccordionGroup', 'Political Boundaries and Roads');
+
+        s = $('.layerPicker').layerPicker('addAccordionGroupSubHeading', g, 'Boundaries');
+        $('.layerPicker').layerPicker('addAccordionGroupSubHeadingLayer', s, "boundary one")
+        $('.layerPicker').layerPicker('addAccordionGroupSubHeadingLayer', s, "boundary two")
+
+        s = $('.layerPicker').layerPicker('addAccordionGroupSubHeading', g, 'Roads');
+        $('.layerPicker').layerPicker('addAccordionGroupSubHeadingLayer', s, "roads one")
+        $('.layerPicker').layerPicker('addAccordionGroupSubHeadingLayer', s, "roads two")
+
+        g = $('.layerPicker').layerPicker('addAccordionGroup', 'Fires');
+        s = $('.layerPicker').layerPicker('addAccordionGroupSubHeading', g, 'Big');
+        $('.layerPicker').layerPicker('addAccordionGroupSubHeadingLayer', s, "big fire one")
+        $('.layerPicker').layerPicker('addAccordionGroupSubHeadingLayer', s, "big fire two")
+        s = $('.layerPicker').layerPicker('addAccordionGroupSubHeading', g, 'Little');
+        $('.layerPicker').layerPicker('addAccordionGroupSubHeadingLayer', s, "little fire one")
+        $('.layerPicker').layerPicker('addAccordionGroupSubHeadingLayer', s, "little fire two")
+
+        console.log($('.layerPicker').data('layerPicker'));
+
+      });
+    </script>
+
+  </head>
+
+  <body>
+
+    <div class="layerPicker">
+    </div>
+
+
+  </body>
+</html>
