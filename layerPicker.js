@@ -31,13 +31,13 @@
             var s = {
                 heading : heading,
                 layers : [],
-                contentElement : $('<div><h2>' + heading + ':</h2></div>')
+                contentElement : $('<div><h4>' + heading + '</h4></div>')
             };
             g.subHeadings.push(s);
             $(g.contentElement).append(s.contentElement);
             return s;
         },
-
+        
         getAccordionGroupTitles : function() {
             var i, titles = [];
             for (i=0; i<$(this).data('layerPicker').accordionGroups.length; ++i) {
