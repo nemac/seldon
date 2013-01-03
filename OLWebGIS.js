@@ -229,10 +229,13 @@ $(document).ready(function(){
     //because this is asynchronous it is only function here
     //note: any ampersands, &, in the xml need to be replaced w/ &amp;
     $.ajax({
-        url: '../config/ews_config.xml', // name of file you want to parse
+        url: './config/ews_config.xml', // name of file you want to parse
         dataType: "xml", // type of file you are trying to read
         success: parseMenu, // name of the function to call upon success
-        error: function(){alert("Error: Something went wrong reading the ews_config file");}
+        error: function(jqXHR, textStatus, errorThrown) {
+            alert(textStatus);
+            console.log(errorThrown);
+        }
     });
     
     $("#btnTglLyrPick").click(function() {
