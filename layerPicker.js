@@ -18,10 +18,14 @@
             return g;
         },
 
-        addAccordionGroupSubHeadingLayer : function (s, name) {
+        addAccordionGroupSubHeadingLayer : function (s, items) {
+            var contents = $('<div class="layer"></div>');
+            $.each(items, function() {
+                contents.append(this);
+            });
             var layer = {
                 name : name,
-                contentElement : $('<div class="layer">' + name + '</div>')
+                contentElement : contents
             };
             s.layers.push(layer);
             s.contentElement.append(layer.contentElement);
