@@ -2,23 +2,34 @@
     "use strict";
 
     var methods = {
-        addAccordionGroup : function(title) {
-            var g = {
+        addSection : function(title) {
+            var sectionObj = {
                 title          : title,
                 titleElement   : $('<h3>' + title + '</h3>'),
                 contentElement : $('<div></div>'),
-                subHeadings    : []
+                sublists    : []
             };
-            $(this).data('layerPicker').accordionGroups.push(g);
+            $(this).data('listAccordion').sections.push(sectionObj);
             $(this) .
-                append(g.titleElement) .
-                append(g.contentElement) .
+                append(sectionObj.titleElement) .
+                append(sectionObj.contentElement) .
                 accordion('destroy') .
                 accordion();
-            return g;
+            return sectionObj;
         },
 
-        addAccordionGroupSubHeadingLayer : function (s, items) {
+        addSublist : function (g, heading) {
+            var sublistObj = {
+                heading : heading,
+                items : [],
+                contentElement : $('<div><h4>' + heading + '</h4></div>')
+            };
+            g.sublists.push(sublistObj);
+            $(g.contentElement).append(sublistObj.contentElement);
+            return sublistObj;
+        },
+        
+        addSublistItem : function (s, items) {
             var contents = $('<div class="layer"></div>');
             $.each(items, function() {
                 contents.append(this);
@@ -27,25 +38,14 @@
                 name : name,
                 contentElement : contents
             };
-            s.layers.push(layer);
+            s.items.push(layer);
             s.contentElement.append(layer.contentElement);
         },
 
-        addAccordionGroupSubHeading : function (g, heading) {
-            var s = {
-                heading : heading,
-                layers : [],
-                contentElement : $('<div><h4>' + heading + '</h4></div>')
-            };
-            g.subHeadings.push(s);
-            $(g.contentElement).append(s.contentElement);
-            return s;
-        },
-        
-        getAccordionGroupTitles : function() {
+        getSectionTitles : function() {
             var i, titles = [];
-            for (i=0; i<$(this).data('layerPicker').accordionGroups.length; ++i) {
-                titles.push($(this).data('layerPicker').accordionGroups[i].title);
+            for (i=0; i<$(this).data('listAccordion').sections.length; ++i) {
+                titles.push($(this).data('listAccordion').sections[i].title);
             }
             return titles;
         },
@@ -53,14 +53,14 @@
         init : function(options) {
             return this.each(function() {
                 var $this = $(this),
-                    data = $this.data('layerPicker'),
+                    data = $this.data('listAccordion'),
                     settings = $.extend({
                         // defaults go here
                     }, options);
                 if ( ! data ) {
 
-                    $this.data('layerPicker', {
-                        accordionGroups : []
+                    $this.data('listAccordion', {
+                        sections : []
                     });
 
                     //$this.accordion();
@@ -71,13 +71,13 @@
         }
     };
 
-    $.fn.layerPicker = function( method ) {
+    $.fn.listAccordion = function( method ) {
         if ( methods[method] ) {
             return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
         } else if ( typeof method === 'object' || ! method ) {
             return methods.init.apply( this, arguments );
         } else {
-            $.error( 'Method ' +  method + ' does not exist on jQuery.layerPicker' );
+            $.error( 'Method ' +  method + ' does not exist on jQuery.listAccordion' );
             return null;
         }    
     };

@@ -494,7 +494,7 @@ function createLayerToggleCheckbox(lid, checked) {
 			map.addLayer(filteredOLWMSLayer[0].OLWMSLayer);
             //begin add legend graphic part
             $("#mapTools_accordion").append('<div id="lgd'+filteredOLWMSLayer[0].lid+'" class="lgd'+filteredOLWMSLayer[0].lid+'"><img src="'+filteredOLWMSLayer[0].legend+'"/></div>');
-            // s = $('#mapTools_accordion').mapTools('addAccordionGroupSubHeading', 
+            // s = $('#mapTools_accordion').mapTools('addSublist', 
                                                      // legendAccordion,
                                                      // '<div id="lgd'+filteredOLWMSLayer[0].lid+'" class="lgd'+filteredOLWMSLayer[0].lid+'"><img src="'+filteredOLWMSLayer[0].legend+'"/></div>');
 			var lidForLegend = filteredOLWMSLayer[0].lid
@@ -549,8 +549,8 @@ function layerPicker(activeMapView, openToAccordGrp){
     //$('#mapTools_accordion').mapTools();
     $("#mapTools_accordion").append('<h3><b><a href="#mapToolsAccordion">Map Tools:</a></b></h3>');
     $("#mapTools_accordion").append('<div class="mapTools-header">Handle here to drag!</div>');
-    // g = $('#mapTools_accordion').mapTools('addAccordionGroup', '<a href="#mapToolsAccordion">Layer Picker:</a>');
-    // s = $('#mapTools_accordion').mapTools('addAccordionGroupSubHeading', g, '<div class="mapTools-header">Handle here to drag!</div>');
+    // g = $('#mapTools_accordion').mapTools('addSection', '<a href="#mapToolsAccordion">Layer Picker:</a>');
+    // s = $('#mapTools_accordion').mapTools('addSublist', g, '<div class="mapTools-header">Handle here to drag!</div>');
 	//Build out the layer picker
     //Loop through the viewGroups accordingly
     //For each viewGroup get the name and then find the matching wmsGroup
@@ -564,18 +564,18 @@ function layerPicker(activeMapView, openToAccordGrp){
     finishAtJ = activeMapView.viewGroups.length;
     // $("#layerPicker_accordion").append('<h3><b><a href="#layersAccordion">Layer Picker:</a></b></h3>');
     // $("#layerPicker_accordion").append('<div class="layers-header">Handle here to drag!</div>');
-    $('#layerPicker_accordion').layerPicker();
-    g = $('#layerPicker_accordion').layerPicker('addAccordionGroup', '<a href="#mapToolsAccordion">Layer Picker:</a>');
-    s = $('#layerPicker_accordion').layerPicker('addAccordionGroupSubHeading', g, '<div class="layers-header">Handle here to drag!</div>');
+    $('#layerPicker_accordion').listAccordion();
+    g = $('#layerPicker_accordion').listAccordion('addSection', '<a href="#mapToolsAccordion">Layer Picker:</a>');
+    s = $('#layerPicker_accordion').listAccordion('addSublist', g, '<div class="layers-header">Handle here to drag!</div>');
 
     //Share map part of mapTools
     $("#mapTools_accordion").append('<h3><a href="#shareMapAccordion">Share this Map</a></h3>');
     $("#mapTools_accordion").append('<div id="test" class="shrMapURLClass"><p>'+shareMapURL+'</p></div>');    
-    // g = $('#mapTools_accordion').mapTools('addAccordionGroup', '<a href="#shareMapAccordion">Share this Map</a>');
-    // s = $('#mapTools_accordion').mapTools('addAccordionGroupSubHeading', g, '<div id="test" class="shrMapURLClass"><p>'+shareMapURL+'</p></div>');
+    // g = $('#mapTools_accordion').mapTools('addSection', '<a href="#shareMapAccordion">Share this Map</a>');
+    // s = $('#mapTools_accordion').mapTools('addSublist', g, '<div id="test" class="shrMapURLClass"><p>'+shareMapURL+'</p></div>');
 
     $("#mapTools_accordion").append('<h3><a href="#legendAccordion">Legends</a></h3>');
-    // var legendAccordion = $('#mapTools_accordion').mapTools('addAccordionGroup', '<a href="#legendAccordion">Legends</a>');
+    // var legendAccordion = $('#mapTools_accordion').mapTools('addSection', '<a href="#legendAccordion">Legends</a>');
 
     $(activeMapViewViewGroups).each(function(index) {
         var accordString="";
@@ -584,7 +584,7 @@ function layerPicker(activeMapView, openToAccordGrp){
 			activeWMSGroup = filterObjectArrayByVal(wmsGroups,"name",viewGroupName);
             //New accordion group
             //$("#layerPicker_accordion").append('<h3><a href=#Accordion'+accordianNum+' gid='+activeWMSGroup[0].gid+'>'+activeWMSGroup[0].label+'</a></h3>');                            
-            g = $('#layerPicker_accordion').layerPicker('addAccordionGroup', '<a href=#Accordion'+accordianNum+' gid='+activeWMSGroup[0].gid+'>'+activeWMSGroup[0].label+'</a>');
+            g = $('#layerPicker_accordion').listAccordion('addSection', '<a href=#Accordion'+accordianNum+' gid='+activeWMSGroup[0].gid+'>'+activeWMSGroup[0].label+'</a>');
             //build the string for the WMS layers of this WMS group
             var wmsSubGroups = activeWMSGroup[0].wmsSubGroups;
             k = 0;
@@ -593,7 +593,7 @@ function layerPicker(activeMapView, openToAccordGrp){
                 if (wmsSubGroups[index].nodeType==1) {
                     wmsSubGroupName = this.attributes[0].nodeValue; 
                     //accordString = accordString + '<p><i>'+wmsSubGroupName+':</i></p>';
-                    s = $('#layerPicker_accordion').layerPicker('addAccordionGroupSubHeading', g, wmsSubGroupName);
+                    s = $('#layerPicker_accordion').listAccordion('addSublist', g, wmsSubGroupName);
                     var wmsLayers = $(this).children();//ahhh .children is how to get just the elements
                     l = 0;
                     finishAtL = wmsLayers.length;                    
@@ -607,14 +607,14 @@ function layerPicker(activeMapView, openToAccordGrp){
                         if (checkForActiveLID(lid))
                         {
                             //accordString = accordString + '<input type="checkbox" id="chk'+lid+'" checked="checked"/><label for="chk'+lid+'">'+name+'</label>&nbsp;<img class="imgDialog" id="'+lid+'" src="icons/settings.png"/><br>'
-                            $('#layerPicker_accordion').layerPicker('addAccordionGroupSubHeadingLayer', s,
+                            $('#layerPicker_accordion').listAccordion('addSublistItem', s,
                                                               [createLayerToggleCheckbox(lid, true),
                                                                $('<label for="chk'+lid+'">'+name+'</label>'),
                                                                $('<img class="layerPropertiesIcon" id="'+lid+'" src="icons/settings.png"/>')]);
                         }
                         else {
                             //accordString = accordString + '<input type="checkbox" id="chk'+lid+'"/><label for="chk'+lid+'">'+name+'</label>&nbsp;<img class="layerPropertiesIcon" id="'+lid+'" src="icons/settings.png"/><br>'
-                            $('#layerPicker_accordion').layerPicker('addAccordionGroupSubHeadingLayer', s, 
+                            $('#layerPicker_accordion').listAccordion('addSublistItem', s, 
                                                               [createLayerToggleCheckbox(lid, false),
                                                                $('<label for="chk'+lid+'">'+name+'</label>'),
                                                                $('<img class="layerPropertiesIcon" id="'+lid+'" src="icons/settings.png"/>')]);
@@ -680,7 +680,7 @@ function layerPicker(activeMapView, openToAccordGrp){
            activeLID = activeMapLayers[k].lid;
            filteredWMSLayer = filterObjectArrayByVal(activeWMSLayers,"lid",activeLID);
            $("#mapTools_accordion").append('<div id="lgd'+activeLID+'" class="lgd'+activeLID+'"><img src="'+filteredWMSLayer[0].legend+'"/></div>');
-           //s = $('#mapTools_accordion').mapTools('addAccordionGroupSubHeading', g, '<div id="lgd'+activeLID+'" class="lgd'+activeLID+'"><img src="'+filteredWMSLayer[0].legend+'"/></div>');
+           //s = $('#mapTools_accordion').mapTools('addSublist', g, '<div id="lgd'+activeLID+'" class="lgd'+activeLID+'"><img src="'+filteredWMSLayer[0].legend+'"/></div>');
            $("#lgd"+activeLID+"").click(function() { //remove by legend click
                $('div').remove('.'+this.id+''); //remove legend graphic
                filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",this.id.replace("lgd",""));
