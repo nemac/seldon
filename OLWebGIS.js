@@ -546,7 +546,7 @@ function layerPicker(activeMapView, openToAccordGrp){
     var accordianNum = 2;
 	//console.log(activeMapView);
     //Start of legend accordion
-    $('#mapTools_accordion').mapTools();
+    //$('#mapTools_accordion').mapTools();
     $("#mapTools_accordion").append('<h3><b><a href="#mapToolsAccordion">Map Tools:</a></b></h3>');
     $("#mapTools_accordion").append('<div class="mapTools-header">Handle here to drag!</div>');
     // g = $('#mapTools_accordion').mapTools('addAccordionGroup', '<a href="#mapToolsAccordion">Layer Picker:</a>');
