@@ -234,17 +234,17 @@ $(document).ready(function(){
         success: parseMenu, // name of the function to call upon success
         error: function(jqXHR, textStatus, errorThrown) {
             alert(textStatus);
-            console.log(errorThrown);
+            //console.log(errorThrown);
         }
     });
     
     $("#btnTglLyrPick").click(function() {
         if (layerBool){
-			$( "#layer_accordion" ).hide("puff");
+			$( "#layerPicker_accordion" ).hide("puff");
             layerBool = false;
         }
         else{
-            $( "#layer_accordion" ).show("puff");
+            $( "#layerPicker_accordion" ).show("puff");
             layerBool = true;
         }
     });
@@ -460,8 +460,8 @@ function themePicker(themeName){    //BEGIN THEME COMBO
           //alert($("#themeCombo").val());
           //call layerPicker passing it the selected view (theme)
           updatedMapView = filterObjectArrayByVal(mapViews,"name",$("#themeCombo").val());
-          $('#layer_accordion').empty();
-          $("#layer_accordion").accordion('destroy').accordion;
+          $('#layerPicker_accordion').empty();
+          $("#layerPicker_accordion").accordion('destroy').accordion;
           $('#mapTools_accordion').empty();
           $("#mapTools_accordion").accordion('destroy').accordion;
           layerPicker(updatedMapView[0], 4);
@@ -482,7 +482,7 @@ function createLayerToggleCheckbox(lid, checked, legendAccordion) {
         checkedattr = 'checked="checked"';
     }
 
-    return $('<input type="checkbox" id="chk'+lid+'" ' + checkedattr + '"/>').click(function(){
+    return $('<input type="checkbox" id="chk'+lid+'" ' + checkedattr + '></input>').click(function(){
         var wmslid,
             filteredOLWMSLayer,
             currentExtent,
@@ -494,7 +494,7 @@ function createLayerToggleCheckbox(lid, checked, legendAccordion) {
 			map.addLayer(filteredOLWMSLayer[0].OLWMSLayer);
             //begin add legend graphic part
             //$("#mapTools_accordion").append('<div id="lgd'+filteredOLWMSLayer[0].lid+'" class="lgd'+filteredOLWMSLayer[0].lid+'"><img src="'+filteredOLWMSLayer[0].legend+'"/></div>');
-            s = $('#mapTools_accordion').layerPicker('addAccordionGroupSubHeading', 
+            s = $('#mapTools_accordion').mapTools('addAccordionGroupSubHeading', 
                                                      legendAccordion,
                                                      '<div id="lgd'+filteredOLWMSLayer[0].lid+'" class="lgd'+filteredOLWMSLayer[0].lid+'"><img src="'+filteredOLWMSLayer[0].legend+'"/></div>');
 			var lidForLegend = filteredOLWMSLayer[0].lid
@@ -548,9 +548,9 @@ function layerPicker(activeMapView, openToAccordGrp){
     //Start of legend accordion
     // $("#mapTools_accordion").append('<h3><b><a href="#mapToolsAccordion">Map Tools:</a></b></h3>');
     // $("#mapTools_accordion").append('<div class="mapTools-header">Handle here to drag!</div>');
-    $('#mapTools_accordion').layerPicker();
-    g = $('#mapTools_accordion').layerPicker('addAccordionGroup', '<a href="#mapToolsAccordion">Layer Picker:</a>');
-    s = $('#mapTools_accordion').layerPicker('addAccordionGroupSubHeading', g, '<div class="layers-header">Handle here to drag!</div>');
+    $('#mapTools_accordion').mapTools();
+    g = $('#mapTools_accordion').mapTools('addAccordionGroup', '<a href="#mapToolsAccordion">Layer Picker:</a>');
+    s = $('#mapTools_accordion').mapTools('addAccordionGroupSubHeading', g, '<div class="mapTools-header">Handle here to drag!</div>');
 	//Build out the layer picker
     //Loop through the viewGroups accordingly
     //For each viewGroup get the name and then find the matching wmsGroup
@@ -562,21 +562,21 @@ function layerPicker(activeMapView, openToAccordGrp){
     j = 0;
     var s, g;
     finishAtJ = activeMapView.viewGroups.length;
-    // $("#layer_accordion").append('<h3><b><a href="#layersAccordion">Layer Picker:</a></b></h3>');
-    // $("#layer_accordion").append('<div class="layers-header">Handle here to drag!</div>');
-    $('#layer_accordion').layerPicker();
-    g = $('#layer_accordion').layerPicker('addAccordionGroup', '<a href="#mapToolsAccordion">Layer Picker:</a>');
-    s = $('#layer_accordion').layerPicker('addAccordionGroupSubHeading', g, '<div class="layers-header">Handle here to drag!</div>');
+    // $("#layerPicker_accordion").append('<h3><b><a href="#layersAccordion">Layer Picker:</a></b></h3>');
+    // $("#layerPicker_accordion").append('<div class="layers-header">Handle here to drag!</div>');
+    $('#layerPicker_accordion').layerPicker();
+    g = $('#layerPicker_accordion').layerPicker('addAccordionGroup', '<a href="#mapToolsAccordion">Layer Picker:</a>');
+    s = $('#layerPicker_accordion').layerPicker('addAccordionGroupSubHeading', g, '<div class="layers-header">Handle here to drag!</div>');
 
     //Share map part of mapTools
     // $("#mapTools_accordion").append('<h3><a href="#shareMapAccordion">Share this Map</a></h3>');
     // //Update the shareMapURL
     // $("#mapTools_accordion").append('<div id="test" class="shrMapURLClass"><p>'+shareMapURL+'</p></div>');    
-    g = $('#mapTools_accordion').layerPicker('addAccordionGroup', '<a href="#shareMapAccordion">Share this Map</a>');
-    s = $('#mapTools_accordion').layerPicker('addAccordionGroupSubHeading', g, '<div id="test" class="shrMapURLClass"><p>'+shareMapURL+'</p></div>');
+    g = $('#mapTools_accordion').mapTools('addAccordionGroup', '<a href="#shareMapAccordion">Share this Map</a>');
+    s = $('#mapTools_accordion').mapTools('addAccordionGroupSubHeading', g, '<div id="test" class="shrMapURLClass"><p>'+shareMapURL+'</p></div>');
 
     //$("#mapTools_accordion").append('<h3><a href="#legendAccordion">Legends</a></h3>');
-    var legendAccordion = $('#mapTools_accordion').layerPicker('addAccordionGroup', '<a href="#legendAccordion">Legends</a>');
+    var legendAccordion = $('#mapTools_accordion').mapTools('addAccordionGroup', '<a href="#legendAccordion">Legends</a>');
 
     $(activeMapViewViewGroups).each(function(index) {
         var accordString="";
@@ -584,8 +584,8 @@ function layerPicker(activeMapView, openToAccordGrp){
             viewGroupName = this.attributes[0].nodeValue; //this is the viewGroupName
 			activeWMSGroup = filterObjectArrayByVal(wmsGroups,"name",viewGroupName);
             //New accordion group
-            //$("#layer_accordion").append('<h3><a href=#Accordion'+accordianNum+' gid='+activeWMSGroup[0].gid+'>'+activeWMSGroup[0].label+'</a></h3>');                            
-            g = $('#layer_accordion').layerPicker('addAccordionGroup', '<a href=#Accordion'+accordianNum+' gid='+activeWMSGroup[0].gid+'>'+activeWMSGroup[0].label+'</a>');
+            //$("#layerPicker_accordion").append('<h3><a href=#Accordion'+accordianNum+' gid='+activeWMSGroup[0].gid+'>'+activeWMSGroup[0].label+'</a></h3>');                            
+            g = $('#layerPicker_accordion').layerPicker('addAccordionGroup', '<a href=#Accordion'+accordianNum+' gid='+activeWMSGroup[0].gid+'>'+activeWMSGroup[0].label+'</a>');
             //build the string for the WMS layers of this WMS group
             var wmsSubGroups = activeWMSGroup[0].wmsSubGroups;
             k = 0;
@@ -594,7 +594,7 @@ function layerPicker(activeMapView, openToAccordGrp){
                 if (wmsSubGroups[index].nodeType==1) {
                     wmsSubGroupName = this.attributes[0].nodeValue; 
                     //accordString = accordString + '<p><i>'+wmsSubGroupName+':</i></p>';
-                    s = $('#layer_accordion').layerPicker('addAccordionGroupSubHeading', g, wmsSubGroupName);
+                    s = $('#layerPicker_accordion').layerPicker('addAccordionGroupSubHeading', g, wmsSubGroupName);
                     var wmsLayers = $(this).children();//ahhh .children is how to get just the elements
                     l = 0;
                     finishAtL = wmsLayers.length;                    
@@ -604,28 +604,18 @@ function layerPicker(activeMapView, openToAccordGrp){
                         layers=$(this).attr("layers"); 
                         url=$(this).attr("url");
                         legend=$(this).attr("legend");
-                        anyMore=$(this).next();
-                        if (anyMore.length>0){
-                            //if ((layers=="states" || layers=="EFETAC-NASA_current" ) && (!sharedMapURL)){ //this is a tacky way to check for default layers
-                            if (checkForActiveLID(lid))
-                            {
-                                //accordString = accordString + '<input type="checkbox" id="chk'+lid+'" checked="checked"/><label for="chk'+lid+'">'+name+'</label>&nbsp;<img class="imgDialog" id="'+lid+'" src="icons/settings.png"/><br>'
-                                $('#layer_accordion').layerPicker('addAccordionGroupSubHeadingLayer', s,
-                                                                  [createLayerToggleCheckbox(lid, true, legendAccordion),
-                                                                   $('<label for="chk'+lid+'">'+name+'</label>'),
-                                                                   $('<img class="layerPropertiesIcon" id="'+lid+'" src="icons/settings.png"/>')]);
-                            }
-                            else {
-                                //accordString = accordString + '<input type="checkbox" id="chk'+lid+'"/><label for="chk'+lid+'">'+name+'</label>&nbsp;<img class="layerPropertiesIcon" id="'+lid+'" src="icons/settings.png"/><br>'
-                                $('#layer_accordion').layerPicker('addAccordionGroupSubHeadingLayer', s, 
-                                                                  [createLayerToggleCheckbox(lid, false, legendAccordion),
-                                                                   $('<label for="chk'+lid+'">'+name+'</label>'),
-                                                                   $('<img class="layerPropertiesIcon" id="'+lid+'" src="icons/settings.png"/>')]);
-                            }
+                        //if ((layers=="states" || layers=="EFETAC-NASA_current" ) && (!sharedMapURL)){ //this is a tacky way to check for default layers
+                        if (checkForActiveLID(lid))
+                        {
+                            //accordString = accordString + '<input type="checkbox" id="chk'+lid+'" checked="checked"/><label for="chk'+lid+'">'+name+'</label>&nbsp;<img class="imgDialog" id="'+lid+'" src="icons/settings.png"/><br>'
+                            $('#layerPicker_accordion').layerPicker('addAccordionGroupSubHeadingLayer', s,
+                                                              [createLayerToggleCheckbox(lid, true, legendAccordion),
+                                                               $('<label for="chk'+lid+'">'+name+'</label>'),
+                                                               $('<img class="layerPropertiesIcon" id="'+lid+'" src="icons/settings.png"/>')]);
                         }
-                        else{
-                            //accordString = accordString + '<input type="checkbox" id="chk'+lid+'"/><label for="chk'+lid+'">'+name+'</label>&nbsp;<img class="layerPropertiesIcon" id="'+lid+'" src="icons/settings.png"/>'
-                            $('#layer_accordion').layerPicker('addAccordionGroupSubHeadingLayer', s,
+                        else {
+                            //accordString = accordString + '<input type="checkbox" id="chk'+lid+'"/><label for="chk'+lid+'">'+name+'</label>&nbsp;<img class="layerPropertiesIcon" id="'+lid+'" src="icons/settings.png"/><br>'
+                            $('#layerPicker_accordion').layerPicker('addAccordionGroupSubHeadingLayer', s, 
                                                               [createLayerToggleCheckbox(lid, false, legendAccordion),
                                                                $('<label for="chk'+lid+'">'+name+'</label>'),
                                                                $('<img class="layerPropertiesIcon" id="'+lid+'" src="icons/settings.png"/>')]);
@@ -645,7 +635,7 @@ function layerPicker(activeMapView, openToAccordGrp){
                     return false;
                 }                
             }); 
-            //$("#layer_accordion").append('<div>'+accordString+'</div>');
+            //$("#layerPicker_accordion").append('<div>'+accordString+'</div>');
             accordianNum = accordianNum + 1;
         }
         j++;
@@ -656,11 +646,11 @@ function layerPicker(activeMapView, openToAccordGrp){
     });  
     // now initiate layer accordion:
     
-    $("#layer_accordion").draggable({handle: '.layers-header'}); 
-    $("#layer_accordion").accordion({ clearStyle: true, autoHeight: false });
-    $('#layer_accordion').accordion('activate', openToAccordGrp);
+    $("#layerPicker_accordion").draggable({handle: '.layers-header'}); 
+    $("#layerPicker_accordion").accordion({ clearStyle: true, autoHeight: false });
+    $('#layerPicker_accordion').accordion('activate', openToAccordGrp);
     shareMapAccordionGrp = "G04";  //hardcoded starting accordion per the previous line
-    $('#layer_accordion').resizable();
+    $('#layerPicker_accordion').resizable();
 
     //Handler from accordion change on the layerPicker
     //specifically used to change up the shareMapURL
@@ -690,7 +680,7 @@ function layerPicker(activeMapView, openToAccordGrp){
         {
            activeLID = activeMapLayers[k].lid;
            filteredWMSLayer = filterObjectArrayByVal(activeWMSLayers,"lid",activeLID);
-           s = $('#mapTools_accordion').layerPicker('addAccordionGroupSubHeading', g, '<div id="lgd'+activeLID+'" class="lgd'+activeLID+'"><img src="'+filteredWMSLayer[0].legend+'"/></div>');
+           s = $('#mapTools_accordion').mapTools('addAccordionGroupSubHeading', g, '<div id="lgd'+activeLID+'" class="lgd'+activeLID+'"><img src="'+filteredWMSLayer[0].legend+'"/></div>');
            $("#lgd"+activeLID+"").click(function() { //remove by legend click
                $('div').remove('.'+this.id+''); //remove legend graphic
                filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",this.id.replace("lgd",""));
@@ -1012,7 +1002,7 @@ function initOpenLayers() {
         {
             isBaseLayer: true, 
             transitionEffect: 'resize',
-            tileSize: new OpenLayers.Size(600,600),
+            tileSize: new OpenLayers.Size(1000,1000),
             ratio: 1,            
             buffer: 2
         }                

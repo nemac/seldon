@@ -82,7 +82,7 @@ body, td, th {
     font-style:italic;
     font-weight:bold;
 }    
-#layer_accordion {
+#layerPicker_accordion {
     float:left;
     background:#FFFFFF;
     width:auto;
@@ -93,12 +93,12 @@ body, td, th {
 	overflow-y:auto;
 	overflow-x:hidden;
 }
-#layer_accordion .baseLbl {
+#layerPicker_accordion .baseLbl {
     background:#cdcdcd;
     font-size:1.3em;
     font-weight:bold;
 }
-#layer_accordion .baseLayersDiv .labelSpan {
+#layerPicker_accordion .baseLayersDiv .labelSpan {
     font-style:italic;
     font-weight:bold;
 }	
