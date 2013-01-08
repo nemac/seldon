@@ -411,7 +411,7 @@ function parseConfig(document){
         wmsGroups[i] = new wmsGroup($(this).attr("gid"),$(this).attr("label"),$(this).attr("name"),this.childNodes);
         i++;
     });  
-	
+
 	//how to query a xml object by property val:
     //var wanted = wmsGroups.filter(function(wmsGroup){return (wmsGroup.gid=="G02");});
     
@@ -602,7 +602,7 @@ function layerPicker(activeMapView, openToAccordGrp){
     $(activeMapViewViewGroups).each(function(index) {
         var accordString="";
         if (activeMapViewViewGroups[index].nodeType==1) {
-            viewGroupName = this.attributes[0].nodeValue; //this is the viewGroupName
+            viewGroupName = $(this).attr('name'); //this is the viewGroupName
 			activeWMSGroup = filterObjectArrayByVal(wmsGroups,"name",viewGroupName);
             //New accordion group
             //$("#layerPickerAccordion").append('<h3><a href=#Accordion'+accordianNum+' gid='+activeWMSGroup[0].gid+'>'+activeWMSGroup[0].label+'</a></h3>');
@@ -613,7 +613,7 @@ function layerPicker(activeMapView, openToAccordGrp){
             finishAtK = wmsSubGroups.length;
             $(wmsSubGroups).each(function(index) {
                 if (wmsSubGroups[index].nodeType==1) {
-                    wmsSubGroupName = this.attributes[0].nodeValue; 
+                    wmsSubGroupName = $(this).attr('label');
                     //accordString = accordString + '<p><i>'+wmsSubGroupName+':</i></p>';
                     s = $('#layerPickerAccordion').listAccordion('addSublist', g, wmsSubGroupName);
                     var wmsLayers = $(this).children();//ahhh .children is how to get just the elements
