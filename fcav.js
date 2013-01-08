@@ -13,7 +13,7 @@
             }
         });
 
-/*
+
         // arrange to open/close layerPicker dialog when layer button (image) is clicked:
         $("#btnTglLyrPick").click(function() {
 		    if ($( "#layerPickerDialog" ).dialog('isOpen')) {
@@ -31,25 +31,18 @@
                                        });
 
         // configure alternate image for hovering over layer image
-console.log($('#btnTglLyrPick'));
         $('#btnTglLyrPick').hover(
             function(){
-console.log('at 1');
                 document.getElementById("tglLyrPickPic").src = 'icons/layers_over.png';
                 $("#btnTglLyrPick").attr('title', 'Show/hide Layer Picker');
             },
             function(){
-console.log('at 2');
                 document.getElementById("tglLyrPickPic").src = 'icons/layers.png';
             }
         ); 	
-console.log('end document ready');
-*/
 
 
-
-
-        /*
+        // arrange to open/close mapTools dialog when mapTools button is clicked
         $("#btnTglMapTools").click(function() {
 		    if ($( "#mapToolsDialog" ).dialog('isOpen')) {
 			    $( "#mapToolsDialog" ).dialog('close');
@@ -58,6 +51,7 @@ console.log('end document ready');
             }
         });
 
+        // turn mapToolsDialog div into a jQuery UI dialog:
         $("#mapToolsDialog").dialog({ zIndex:10050, 
                                       position:"right",
                                       autoOpen: true,
@@ -65,12 +59,23 @@ console.log('end document ready');
                                     });
 
 
+
+
         // initialize maptools accordion
-        //$("#mapToolsAccordion").draggable({handle: '.mapTools-header'});
         $("#mapToolsAccordion").accordion({ clearStyle: true, autoHeight: false });
-        $('#mapToolsAccordion').accordion('activate', 1);
-        //$('#mapToolsAccordion').resizable();  
-        
+
+        // find the 'legend' layer in the mapTools accordion, and make sure it is initially turned on
+        var accordionGroupIndexToOpen = 0;
+        $('#mapToolsAccordion').find('div').each(function(i) {
+            if (this.id === "legend") {
+                accordionGroupIndexToOpen = i;
+                return false;
+            }
+            return true;
+        });
+        $('#mapToolsAccordion').accordion('activate', accordionGroupIndexToOpen);
+
+/*        
         $('#btnTglMapTools').hover(
             function(){
                 document.getElementById("tglLegendPic").src = 'icons/legend_over.png';
