@@ -686,21 +686,7 @@ function layerPicker(activeMapView, openToAccordGrp){
         {
            activeLID = activeMapLayers[k].lid;
            filteredWMSLayer = filterObjectArrayByVal(activeWMSLayers,"lid",activeLID);
-           $("#legend").append('<div id="lgd'+activeLID+'" class="lgd'+activeLID+'"><img src="'+filteredWMSLayer[0].legend+'"/></div>');
-           //s = $('#mapTools_accordion').mapTools('addSublist', g, '<div id="lgd'+activeLID+'" class="lgd'+activeLID+'"><img src="'+filteredWMSLayer[0].legend+'"/></div>');
-           $("#lgd"+activeLID+"").click(function() { //remove by legend click
-               $('div').remove('.'+this.id+''); //remove legend graphic
-               filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",this.id.replace("lgd",""));
-               map.removeLayer(filteredOLWMSLayer[0].OLWMSLayer); //remove map layer
-               $('input:checkbox[id="chk'+filteredOLWMSLayer[0].lid+'"]').attr('checked',false);
-               //remove lid from activeMapLayers, update shareMapURL with legend click
-               for (var i = 0; i < activeMapLayers.length; i++) {
-                   if (activeMapLayers[i].lid==filteredOLWMSLayer[0].lid)
-                   {    
-                       activeMapLayers.splice(i, 1);
-                   }
-               }
-           }); //end add legend graphic part               
+           addLayerToLegend(filteredWMSLayer[0].lid, filteredWMSLayer[0].legend);
         }
     }    
     
