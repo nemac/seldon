@@ -517,10 +517,10 @@ function createLayerToggleCheckbox(lid, checked) {
                     activeMapLayers.splice(i, 1);
                 }
             }
-            //update shareMapURL
-            currentExtent = getCurrentExtent();
-            buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
         }
+        //update shareMapURL
+        currentExtent = getCurrentExtent();
+        buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
     });
 }
 
