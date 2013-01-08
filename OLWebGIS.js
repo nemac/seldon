@@ -509,7 +509,7 @@ function createLayerToggleCheckbox(lid, checked) {
             wmslid = this.id.replace("chk","");
             filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",wmslid);
 			map.removeLayer(filteredOLWMSLayer[0].OLWMSLayer);
-            $('div').remove('.lgd'+filteredOLWMSLayer[0].lid+'');
+            $('#lgd'+filteredOLWMSLayer[0].lid).remove();
             //remove lid from activeMapLayers, update shareMapURL with layerPicker click
             for (var i = 0; i < activeMapLayers.length; i++) {
                 if (activeMapLayers[i].lid==filteredOLWMSLayer[0].lid)
@@ -528,32 +528,32 @@ function addLayerToLegend(lid, imageurl) {
     var filteredOLWMSLayer,
         currentExtent;
 
-    $("#legend").append('<div id="lgd'+lid+'" class="lgd'+lid+'"><img src="'+imageurl+'"/></div>');     
-
     if (!checkForActiveLID(lid))
     {
         activeMapLayers.push(new activeMapLayer(lid, 1));
     }
 
-    $("#lgd"+lid+"").click(function() {
-        //remove legend graphic, layerpicker checkedbox and map layer
-        $('div').remove('.lgd'+lid+''); //remove legend graphic
-        //filteredOLWMSLayer = activeOLWMSLayers.filter(function(WMSLayer){return (WMSLayer.lid==activeOLWMSLayers[1].lid);});
-        filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",lid);
-
-        map.removeLayer(filteredOLWMSLayer[0].OLWMSLayer); //remove map layer
-        $('input:checkbox[id="chk'+filteredOLWMSLayer[0].lid+'"]').attr('checked',false);
-        //remove lid from activeMapLayers, update shareMapURL with legend click
-        for (var i = 0; i < activeMapLayers.length; i++) {
-            if (activeMapLayers[i].lid==filteredOLWMSLayer[0].lid)
-            {    
-                activeMapLayers.splice(i,1);
+    $('<div id="lgd'+lid+'"><img src="'+imageurl+'"/></div>') .
+        appendTo($('#legend')) .
+        click(function() {
+            //remove legend graphic, layerpicker checkedbox and map layer
+            $('#lgd'+lid).remove(); //NOTE: $(this).remove() would also work here
+            //filteredOLWMSLayer = activeOLWMSLayers.filter(function(WMSLayer){return (WMSLayer.lid==activeOLWMSLayers[1].lid);});
+            filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",lid);
+            
+            map.removeLayer(filteredOLWMSLayer[0].OLWMSLayer); //remove map layer
+            $('input:checkbox[id="chk'+filteredOLWMSLayer[0].lid+'"]').attr('checked',false);
+            //remove lid from activeMapLayers, update shareMapURL with legend click
+            for (var i = 0; i < activeMapLayers.length; i++) {
+                if (activeMapLayers[i].lid==filteredOLWMSLayer[0].lid)
+                {    
+                    activeMapLayers.splice(i,1);
+                }
             }
-        }
-        //update shareMapURL
-        currentExtent = getCurrentExtent();
-        buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
-    }); 
+            //update shareMapURL
+            currentExtent = getCurrentExtent();
+            buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
+        }); 
 }
 
 
