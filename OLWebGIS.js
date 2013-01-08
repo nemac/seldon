@@ -4,7 +4,6 @@
 var map, info, mapLayers;
 var currThemeIndex = 0;  //initialize our theme index 
 var layerBool = true;
-var legendBool = true;
 var initShareMapURL = document.URL;
 //check for ?
 var n=initShareMapURL.indexOf("?")
@@ -258,21 +257,25 @@ $(document).ready(function(){
         }
     ); 	
     $("#btnTglLegend").click(function() {
-        if (legendBool){
-			$( "#mapTools_accordion" ).hide("puff");
-            legendBool = false;
-        }
-        else{
-            $( "#mapTools_accordion" ).show("puff");
-            legendBool = true;
+		if ($( "#mapToolsDialog" ).dialog('isOpen')) {
+			$( "#mapToolsDialog" ).dialog('close');
+        } else {
+			$( "#mapToolsDialog" ).dialog('open');
         }
     });
 
-    // initiate maptools accordion
-    $("#mapTools_accordion").draggable({handle: '.mapTools-header'});
-    $("#mapTools_accordion").accordion({ clearStyle: true, autoHeight: false });
-    $('#mapTools_accordion').accordion('activate', 2);
-    $('#mapTools_accordion').resizable();  
+    $("#mapToolsDialog").dialog({ zIndex:10050, 
+        position:"right",
+        autoOpen: true,
+        hide:"explode"
+    });
+
+
+    // initialize maptools accordion
+    //$("#mapToolsAccordion").draggable({handle: '.mapTools-header'});
+    $("#mapToolsAccordion").accordion({ clearStyle: true, autoHeight: false });
+    $('#mapToolsAccordion').accordion('activate', 1);
+    //$('#mapToolsAccordion').resizable();  
     
     $('#btnTglLegend').hover(
         function(){
@@ -561,9 +564,9 @@ function layerPicker(activeMapView, openToAccordGrp){
     var accordianNum = 2;
 	//console.log(activeMapView);
     //Start of legend accordion
-    //$('#mapTools_accordion').mapTools();
-    // g = $('#mapTools_accordion').mapTools('addSection', '<a href="#mapToolsAccordion">Layer Picker:</a>');
-    // s = $('#mapTools_accordion').mapTools('addSublist', g, '<div class="mapTools-header">Handle here to drag!</div>');
+    //$('#mapToolsAccordion').mapTools();
+    // g = $('#mapToolsAccordion').mapTools('addSection', '<a href="#mapToolsAccordion">Layer Picker:</a>');
+    // s = $('#mapToolsAccordion').mapTools('addSublist', g, '<div class="mapTools-header">Handle here to drag!</div>');
 	//Build out the layer picker
     //Loop through the viewGroups accordingly
     //For each viewGroup get the name and then find the matching wmsGroup
@@ -581,8 +584,8 @@ function layerPicker(activeMapView, openToAccordGrp){
     g = $('#layerPicker_accordion').listAccordion('addSection', '<a href="#mapToolsAccordion">Layer Picker:</a>');
     s = $('#layerPicker_accordion').listAccordion('addSublist', g, '<div class="layers-header">Handle here to drag!</div>');
 
-    // g = $('#mapTools_accordion').mapTools('addSection', '<a href="#shareMapAccordion">Share this Map</a>');
-    // s = $('#mapTools_accordion').mapTools('addSublist', g, '<div id="test" class="shrMapURLClass"><p>'+shareMapURL+'</p></div>');
+    // g = $('#mapToolsAccordion').mapTools('addSection', '<a href="#shareMapAccordion">Share this Map</a>');
+    // s = $('#mapToolsAccordion').mapTools('addSublist', g, '<div id="test" class="shrMapURLClass"><p>'+shareMapURL+'</p></div>');
 
     $(activeMapViewViewGroups).each(function(index) {
         var accordString="";

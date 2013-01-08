@@ -63,25 +63,38 @@ body, td, th {
 	box-shadow:3px 1px 5px #333;
 	text-align:center;
 }
-#mapTools_accordion {
-    float:right;
+
+
+#mapToolsDialog {
+   padding: 0px;
+}
+
+#mapToolsAccordion {
+    width:100%;
+    height:100%;
     background:#FFFFFF;
+    font-size:.80em; 
+/*
+    float:right;
     width:auto;
     z-index:10001;
-    font-size:.80em; 
 	box-shadow:0px 0px 10px #333;
 	overflow-y:auto;
 	overflow-x:hidden;
+*/
 } 
-#mapTools_accordion .baseLbl {
+#mapToolsAccordion .baseLbl {
     background:#cdcdcd;
     font-size:1.3em;
     font-weight:bold;
 }
-#mapTools_accordion .baseLayersDiv .labelSpan {
+#mapToolsAccordion .baseLayersDiv .labelSpan {
     font-style:italic;
     font-weight:bold;
 }    
+
+
+
 #layerPicker_accordion {
     float:left;
     background:#FFFFFF;
