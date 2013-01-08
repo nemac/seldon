@@ -267,6 +267,13 @@ $(document).ready(function(){
             legendBool = true;
         }
     });
+
+    // initiate maptools accordion
+    $("#mapTools_accordion").draggable({handle: '.mapTools-header'});
+    $("#mapTools_accordion").accordion({ clearStyle: true, autoHeight: false });
+    $('#mapTools_accordion').accordion('activate', 2);
+    $('#mapTools_accordion').resizable();  
+    
     $('#btnTglLegend').hover(
         function(){
             document.getElementById("tglLegendPic").src = 'icons/legend_over.png';
@@ -457,21 +464,19 @@ function themePicker(themeName){    //BEGIN THEME COMBO
     
     //handler for themeCombo
     $('#themeCombo').change(function() {
-          //alert($("#themeCombo").val());
-          //call layerPicker passing it the selected view (theme)
-          updatedMapView = filterObjectArrayByVal(mapViews,"name",$("#themeCombo").val());
-          $('#layerPicker_accordion').empty();
-
-          $("#layerPicker_accordion").accordion('destroy');
-          $('#mapTools_accordion').empty();
-          $("#mapTools_accordion").accordion('destroy');
-          layerPicker(updatedMapView[0], 4);
-          map.destroy();
-          initOpenLayers();
-          //update shareMapURL
-          shareMapTheme = updatedMapView[0].name;
-          currentExtent = getCurrentExtent();
-          buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
+        //alert($("#themeCombo").val());
+        //call layerPicker passing it the selected view (theme)
+        updatedMapView = filterObjectArrayByVal(mapViews,"name",$("#themeCombo").val());
+        $('#layerPicker_accordion').empty();
+        $("#layerPicker_accordion").accordion('destroy');
+        $('#legend').empty();
+        layerPicker(updatedMapView[0], 4);
+        map.destroy();
+        initOpenLayers();
+        //update shareMapURL
+        shareMapTheme = updatedMapView[0].name;
+        currentExtent = getCurrentExtent();
+        buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
     });    	
     
 }//END THEME COMBO
@@ -523,33 +528,32 @@ function addLayerToLegend(lid, imageurl) {
     var filteredOLWMSLayer,
         currentExtent;
 
-        $("#mapTools_accordion").append('<div id="lgd'+lid+'" class="lgd'+lid+'"><img src="'+imageurl+'"/></div>');     
+    $("#legend").append('<div id="lgd'+lid+'" class="lgd'+lid+'"><img src="'+imageurl+'"/></div>');     
 
-        if (!checkForActiveLID(lid))
-        {
-            activeMapLayers.push(new activeMapLayer(lid, 1));
-        }
+    if (!checkForActiveLID(lid))
+    {
+        activeMapLayers.push(new activeMapLayer(lid, 1));
+    }
 
-        $("#lgd"+lid+"").click(function() {
-            //remove legend graphic, layerpicker checkedbox and map layer
-            $('div').remove('.lgd'+lid+''); //remove legend graphic
-            //filteredOLWMSLayer = activeOLWMSLayers.filter(function(WMSLayer){return (WMSLayer.lid==activeOLWMSLayers[1].lid);});
-            filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",lid);
+    $("#lgd"+lid+"").click(function() {
+        //remove legend graphic, layerpicker checkedbox and map layer
+        $('div').remove('.lgd'+lid+''); //remove legend graphic
+        //filteredOLWMSLayer = activeOLWMSLayers.filter(function(WMSLayer){return (WMSLayer.lid==activeOLWMSLayers[1].lid);});
+        filteredOLWMSLayer = filterObjectArrayByVal(activeOLWMSLayers,"lid",lid);
 
-            map.removeLayer(filteredOLWMSLayer[0].OLWMSLayer); //remove map layer
-            $('input:checkbox[id="chk'+filteredOLWMSLayer[0].lid+'"]').attr('checked',false);
-            //remove lid from activeMapLayers, update shareMapURL with legend click
-            for (var i = 0; i < activeMapLayers.length; i++) {
-                if (activeMapLayers[i].lid==filteredOLWMSLayer[0].lid)
-                {    
-                    activeMapLayers.splice(i,1);
-                }
+        map.removeLayer(filteredOLWMSLayer[0].OLWMSLayer); //remove map layer
+        $('input:checkbox[id="chk'+filteredOLWMSLayer[0].lid+'"]').attr('checked',false);
+        //remove lid from activeMapLayers, update shareMapURL with legend click
+        for (var i = 0; i < activeMapLayers.length; i++) {
+            if (activeMapLayers[i].lid==filteredOLWMSLayer[0].lid)
+            {    
+                activeMapLayers.splice(i,1);
             }
-            //update shareMapURL
-            currentExtent = getCurrentExtent();
-            buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
-        }); 
-
+        }
+        //update shareMapURL
+        currentExtent = getCurrentExtent();
+        buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
+    }); 
 }
 
 
@@ -558,8 +562,6 @@ function layerPicker(activeMapView, openToAccordGrp){
 	//console.log(activeMapView);
     //Start of legend accordion
     //$('#mapTools_accordion').mapTools();
-    $("#mapTools_accordion").append('<h3><b><a href="#mapToolsAccordion">Map Tools:</a></b></h3>');
-    $("#mapTools_accordion").append('<div class="mapTools-header">Handle here to drag!</div>');
     // g = $('#mapTools_accordion').mapTools('addSection', '<a href="#mapToolsAccordion">Layer Picker:</a>');
     // s = $('#mapTools_accordion').mapTools('addSublist', g, '<div class="mapTools-header">Handle here to drag!</div>');
 	//Build out the layer picker
@@ -579,14 +581,8 @@ function layerPicker(activeMapView, openToAccordGrp){
     g = $('#layerPicker_accordion').listAccordion('addSection', '<a href="#mapToolsAccordion">Layer Picker:</a>');
     s = $('#layerPicker_accordion').listAccordion('addSublist', g, '<div class="layers-header">Handle here to drag!</div>');
 
-    //Share map part of mapTools
-    $("#mapTools_accordion").append('<h3><a href="#shareMapAccordion">Share this Map</a></h3>');
-    $("#mapTools_accordion").append('<div id="test" class="shrMapURLClass"><p>'+shareMapURL+'</p></div>');    
     // g = $('#mapTools_accordion').mapTools('addSection', '<a href="#shareMapAccordion">Share this Map</a>');
     // s = $('#mapTools_accordion').mapTools('addSublist', g, '<div id="test" class="shrMapURLClass"><p>'+shareMapURL+'</p></div>');
-
-    $("#mapTools_accordion").append('<h3><a href="#legendAccordion">Legends</a></h3>');
-    // var legendAccordion = $('#mapTools_accordion').mapTools('addSection', '<a href="#legendAccordion">Legends</a>');
 
     $(activeMapViewViewGroups).each(function(index) {
         var accordString="";
@@ -690,7 +686,7 @@ function layerPicker(activeMapView, openToAccordGrp){
         {
            activeLID = activeMapLayers[k].lid;
            filteredWMSLayer = filterObjectArrayByVal(activeWMSLayers,"lid",activeLID);
-           $("#mapTools_accordion").append('<div id="lgd'+activeLID+'" class="lgd'+activeLID+'"><img src="'+filteredWMSLayer[0].legend+'"/></div>');
+           $("#legend").append('<div id="lgd'+activeLID+'" class="lgd'+activeLID+'"><img src="'+filteredWMSLayer[0].legend+'"/></div>');
            //s = $('#mapTools_accordion').mapTools('addSublist', g, '<div id="lgd'+activeLID+'" class="lgd'+activeLID+'"><img src="'+filteredWMSLayer[0].legend+'"/></div>');
            $("#lgd"+activeLID+"").click(function() { //remove by legend click
                $('div').remove('.'+this.id+''); //remove legend graphic
@@ -707,12 +703,6 @@ function layerPicker(activeMapView, openToAccordGrp){
            }); //end add legend graphic part               
         }
     }    
-    
-    // now initiate layer accordion
-    $("#mapTools_accordion").draggable({handle: '.mapTools-header'});
-    $("#mapTools_accordion").accordion({ clearStyle: true, autoHeight: false });
-    $('#mapTools_accordion').accordion('activate', 2);
-    $('#mapTools_accordion').resizable();  
     
     //make header draggable
     $("#header").draggable();
