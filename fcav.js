@@ -192,8 +192,48 @@
 
     });
 
-    function parseConfig(document) {
-        console.log('got a config file!');
+    function parseConfig(configXML) {
+        var $configXML = $(configXML);
+
+        // parse themes
+        $configXML.find("mapviews view").each(function() {
+            var $view = $(this),
+                name  = $view.attr('name'),
+                label = $view.attr('label');
+            console.log('view name=' + name + ' label=' + label);
+            $view.find("viewGroup").each(function() {
+                var $viewGroup = $(this);
+                console.log('    viewGroup name=' + $viewGroup.attr('name'));
+            });
+        });
+
+        // parse layer groups and layers
+        $configXML.find("wmsGroup").each(function() {
+            var $wmsGroup = $(this), // each <wmsGroup> corresponds to a (potential) layerPicker accordion group
+                gid       = $wmsGroup.attr('gid'),
+                name      = $wmsGroup.attr('name'),
+                label     = $wmsGroup.attr('label');
+            console.log('accordion group: gid=' + gid + ' name=' + name + ' label=' + label);
+            $wmsGroup.find("wmsSubgroup").each(function() {
+                var $wmsSubgroup = $(this), // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
+                    label = $wmsGroup.attr('label');
+                console.log('   accordion sublist: label=' + label);
+                $wmsSubgroup.find("wmsLayer").each(function() {
+                    var $wmsLayer = $(this),
+                        lid       = $wmsLayer.attr('lid'),
+                        visible   = $wmsLayer.attr('visible'),
+                        url       = $wmsLayer.attr('url'),
+                        srs       = $wmsLayer.attr('srs'),
+                        layers    = $wmsLayer.attr('layers'),
+                        styles    = $wmsLayer.attr('styles'),
+                        identify  = $wmsLayer.attr('identify'),
+                        name      = $wmsLayer.attr('name'),
+                        legend    = $wmsLayer.attr('legend');
+                    console.log('       layer: lid=' + lid + ' name=' + name);
+                });
+            });
+        });
+
     }
 
 
