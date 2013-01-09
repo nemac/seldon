@@ -5,6 +5,13 @@
           map         : undefined, // the OpenLayers map object
           zoomInTool  : undefined,
           zoomOutTool : undefined,
+          dragPanTool : undefined,
+          maxExtent   : {
+              xmin : -15000000,
+              ymin : 2000000,
+              xmax : -6000000,
+              ymax : 7000000
+          },
           baseLayers  : []
     };
 
@@ -21,25 +28,19 @@
             success: parseConfig, // name of the function to call upon success
             error: function(jqXHR, textStatus, errorThrown) {
                 alert(textStatus);
-                //console.log(errorThrown);
             }
         });
 
         //
         // layerPicker button:
         //
-
-        //    click action:
         $("#btnTglLyrPick").click(function() {
 		    if ($( "#layerPickerDialog" ).dialog('isOpen')) {
 			    $( "#layerPickerDialog" ).dialog('close');
             } else {
 			    $( "#layerPickerDialog" ).dialog('open');
             }
-        });
-
-        //    hover behavior:
-        $('#btnTglLyrPick').hover(
+        }).hover(
             function(){
                 $("#tglLyrPickPic").attr("src", "icons/layers_over.png");
                 $("#btnTglLyrPick").attr('title', 'Show/hide Layer Picker');
@@ -62,18 +63,13 @@
         //
         // mapTools button:
         //
-
-        //    click action:
         $("#btnTglMapTools").click(function() {
 		    if ($( "#mapToolsDialog" ).dialog('isOpen')) {
 			    $( "#mapToolsDialog" ).dialog('close');
             } else {
 			    $( "#mapToolsDialog" ).dialog('open');
             }
-        });
-
-        //    hover behavior:
-        $('#btnTglMapTools').hover(
+        }).hover(
             function(){
                 $('#tglLegendPic').attr('src', 'icons/legend_over.png');
                 $("#btnTglMapTools").attr('title', 'Show/hide Legend');
@@ -110,52 +106,85 @@
         });
         $('#mapToolsAccordion').accordion('activate', accordionGroupIndexToOpen);
 
-
+        //
         // base layer combo change handler
+        //
         $('#baseCombo').change(function() {
-
             var i = parseInt($("#baseCombo").val(), 10);
             setArcGISCacheBaseLayer(fcav.baseLayers[i].url);
-
-/*
-            //alert($("#baseCombo").val());
-            //layer is always at index zero so swap that one out accordingly
-            map.removeLayer(map.layers[0]);
-            
-            i=0
-            if ($("#baseCombo").val()=="Basic"){
-                i=1;
-                shareMapBaseMap = "Basic";
-                buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
-            }
-            else if ($("#baseCombo").val()=="Imagery"){
-                i=2;
-                shareMapBaseMap = "Imagery";
-                buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
-            }
-            else if ($("#baseCombo").val()=="Topo_Map"){
-                i=3;
-                shareMapBaseMap = "Topo_Map";
-                buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
-            }
-            else if ($("#baseCombo").val()=="Relief"){
-                i=4;
-                shareMapBaseMap = "Relief";
-                buildShareMapURL(shareMapTheme, activeMapLayers, shareMapAccordionGrp, shareMapBaseMap, currentExtent);
-            }         
-            
-            map.addLayers([baseMapLayers[i].OLBaseMapLayer]);
-            //put the new base back in the 0 spot
-            var baseLyr = map.getLayersByName(baseMapLayers[i].OLBaseMapLayer.name)[0];
-            map.setLayerIndex(baseLyr, 0);
-*/
-
+            // ... rebuild share url here ...
         });
+
+        // 
+        // pan button
+        // 
+        $("#btnPan").click(function() {
+            deactivateActiveOpenLayersControls();
+            fcav.dragPanTool.activate();
+        }).hover(
+            function(){
+                $('#panPic').attr('src',   'icons/pan_over.png');
+                $("#btnPan").attr('title', 'Pan tool');
+            },
+            function(){
+                $('#panPic').attr('src',   'icons/pan.png');
+            }
+        ); 
+
+        // 
+        // zoom in button
+        // 
+        $("#btnZoomIn").click(function() {
+            deactivateActiveOpenLayersControls();
+            fcav.zoomInTool.activate();
+        }).hover(
+            function(){
+                $("#zoomInPic").attr('src',   'icons/zoom-in_over.png');
+                $("#btnZoomIn").attr('title', 'Zoom in tool');
+            },
+            function(){
+                $("#zoomInPic").attr('src',   'icons/zoom-in.png');
+            }
+        );
+
+        // 
+        // zoom out button
+        // 
+        $("#btnZoomOut").click(function() {
+            deactivateActiveOpenLayersControls();
+            fcav.zoomOutTool.activate();
+        }).hover(
+            function() {
+                $("#zoomOutPic").attr('src',   'icons/zoom-out_over.png');
+                $("#btnZoomOut").attr('title', 'Zoom out tool');
+            },
+            function() {
+                $("#zoomOutPic").attr('src',   'icons/zoom-out.png');
+            }
+        ); 
+
+        // 
+        // zoom to full extent button
+        // 
+        $("#btnZoomExtent").click(function() {
+            fcav.map.zoomToExtent(new OpenLayers.Bounds(fcav.maxExtent.xmin, fcav.maxExtent.ymin, fcav.maxExtent.xmax, fcav.maxExtent.ymax), false);
+        });
+        $('#btnZoomExtent').hover(
+            function(){
+                document.getElementById("zoomExtentPic").src = 'icons/zoom-extent_over.png';
+                $("#btnZoomExtent").attr('title', 'Full Extent tool');
+            },
+            function(){
+                document.getElementById("zoomExtentPic").src = 'icons/zoom-extent.png';
+            }
+        ); 
 
 
 
 /*        
-        
+        // 
+        // identify button
+        // 
         $("#btnID").click(function() {
             //alert("Handler for IDcalled.");
             identify();
@@ -169,41 +198,15 @@
                 document.getElementById("idPic").src = 'icons/map-info.png';
             }
         ); 
-        $("#btnPan").click(function() {
-            deactivateActiveUserControls();
-            dragPanTool.activate();
-        });
-        $('#btnPan').hover(
-            function(){
-                document.getElementById("panPic").src = 'icons/pan_over.png';
-                $("#btnPan").attr('title', 'Pan tool');
-            },
-            function(){
-                document.getElementById("panPic").src = 'icons/pan.png';
-            }
-        ); 
-        $("#btnZoomExtent").click(function() {
-            //zoomToExtent: function(bounds,closest)
-            //array should consist of four values (left, bottom, right, top)
-            var leftBottom = new OpenLayers.LonLat("-123.486328125", "32.76880048488168").transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
-            var rightTop = new OpenLayers.LonLat("-68.02734375", "45.460130637921004").transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
-            var bounds = new OpenLayers.Bounds(leftBottom.lon,leftBottom.lat,rightTop.lon,rightTop.lat);	
-            map.zoomToExtent(bounds,false);
-        });
-        $('#btnZoomExtent').hover(
-            function(){
-                document.getElementById("zoomExtentPic").src = 'icons/zoom-extent_over.png';
-                $("#btnZoomExtent").attr('title', 'Full Extent tool');
-            },
-            function(){
-                document.getElementById("zoomExtentPic").src = 'icons/zoom-extent.png';
-            }
-        ); 
+
+        // 
+        // multigraph button
+        // 
         $("#btnMultiGraph").click(function() {
             //http://openlayers.org/dev/examples/click.html
             //http://dev.openlayers.org/releases/OpenLayers-2.12/doc/apidocs/files/OpenLayers/Handler/Click-js.html
             //http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,-11915561.548108513,4714792.352997124
-            deactivateActiveUserControls();
+            deactivateActiveOpenLayersControls();
             map.addControl(clickTool);
             clickTool.activate();        
         });
@@ -216,32 +219,10 @@
                 document.getElementById("multiGraphPic").src = 'icons/multigraph.png';
             }
         ); 
-        $("#btnZoomIn").click(function() {
-            deactivateActiveUserControls();
-            zoomInTool.activate();
-        });
-        $('#btnZoomIn').hover(
-            function(){
-                document.getElementById("zoomInPic").src = 'icons/zoom-in_over.png';
-                $("#btnZoomIn").attr('title', 'Zoom in tool');
-            },
-            function(){
-                document.getElementById("zoomInPic").src = 'icons/zoom-in.png';
-            }
-        ); 
-        $("#btnZoomOut").click(function() {
-            deactivateActiveUserControls();
-            zoomOutTool.activate();
-        });
-        $('#btnZoomOut').hover(
-            function(){
-                document.getElementById("zoomOutPic").src = 'icons/zoom-out_over.png';
-                $("#btnZoomOut").attr('title', 'Zoom out tool');
-            },
-            function(){
-                document.getElementById("zoomOutPic").src = 'icons/zoom-out.png';
-            }
-        ); 
+
+        // 
+        // help button
+        // 
         $("#btnHelp").click(function() {
             //alert("Handler for help called.");
             //getCurrentExtent();
@@ -258,13 +239,35 @@
         ); 
          */
 
-
-
     });
+
+    function deactivateActiveOpenLayersControls() {
+        for (var i = 0; i < fcav.map.controls.length; i++) {
+		    if ((fcav.map.controls[i].active==true) && (fcav.map.controls[i].displayClass=="olControlZoomBox")){
+                fcav.map.controls[i].deactivate();
+            }
+		    if ((fcav.map.controls[i].active==true) && (fcav.map.controls[i].displayClass=="olControlWMSGetFeatureInfo")){
+                fcav.map.controls[i].deactivate();
+            }        
+        }
+    }
+
 
     function parseConfig(configXML) {
         var $configXML = $(configXML);
 
+        // parse and store max map extent from config file
+        var $extent = $configXML.find("extent");
+        if ($extent && $extent.length > 0) {
+            fcav.maxExtent = {
+                xmin : parseFloat($extent.attr('xmin')),
+                ymin : parseFloat($extent.attr('ymin')),
+                xmax : parseFloat($extent.attr('xmax')),
+                ymax : parseFloat($extent.attr('ymax'))
+            };
+        }
+
+        // initialize the OpenLayers map object
         initOpenLayers();
 
         // parse base layers and populate combo box
@@ -296,11 +299,9 @@
                 name      = $wmsGroup.attr('name'),
                 label     = $wmsGroup.attr('label');
             accordionGroups[name] = label;
-            //console.log('accordion group: gid=' + gid + ' name=' + name + ' label=' + label);
             $wmsGroup.find("wmsSubgroup").each(function() {
                 var $wmsSubgroup = $(this), // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
                     label = $wmsGroup.attr('label');
-                //console.log('   accordion sublist: label=' + label);
                 $wmsSubgroup.find("wmsLayer").each(function() {
                     var $wmsLayer = $(this),
                         lid       = $wmsLayer.attr('lid'),
@@ -312,7 +313,6 @@
                         identify  = $wmsLayer.attr('identify'),
                         name      = $wmsLayer.attr('name'),
                         legend    = $wmsLayer.attr('legend');
-                    //console.log('       layer: lid=' + lid + ' name=' + name);
                 });
             });
         });
@@ -323,11 +323,9 @@
                 name  = $view.attr('name'),
                 label = $view.attr('label');
             $('#themeCombo').append($('<option value="'+name+'">'+label+'</option>'));
-            //console.log('view name=' + name + ' label=' + label);
             $view.find("viewGroup").each(function() {
                 var $viewGroup = $(this),
                     name       = $viewGroup.attr('name');
-                //console.log('    viewGroup name=' + name);
                 if (accordionGroups[name] === undefined) {
                     displayError('Unknown accordion group name: ' + name);
                 }
@@ -341,6 +339,7 @@
 
         fcav.zoomInTool  = new OpenLayers.Control.ZoomBox();
         fcav.zoomOutTool = new OpenLayers.Control.ZoomBox({out:true});
+        fcav.dragPanTool = new OpenLayers.Control.DragPan();
 
         fcav.map = new OpenLayers.Map('map', {
 	        controls: [
@@ -383,18 +382,7 @@
 	        zoom: 1,
 		    units: 'm',
 		    projection: new OpenLayers.Projection("EPSG:900913")
-		    //displayProjection: new OpenLayers.Projection("EPSG:4326")
         });    
-
-
-        //setArcGISCacheBaseLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer");
-        //setArcGISCacheBaseLayer("http://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer");
-        //setArcGISCacheBaseLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer");
-        //setArcGISCacheBaseLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer");
-//   setArcGISCacheBaseLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer");
-        //setArcGISCacheBaseLayer("http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer");
-        //setArcGISCacheBaseLayer("http://server.arcgisonline.com/ArcGIS/rest/services/USA_Topo_Maps/MapServer");
-        //setArcGISCacheBaseLayer("http://arcgisserver7.nemac.org/ArcGIS/rest/services/US/US_Jurisdictions_filled2/MapServer/");
 
     }
 
@@ -406,18 +394,16 @@
                 var baseLayer = new OpenLayers.Layer.ArcGISCache("AGSCache", url, {
                     layerInfo: layerInfo
                 });
-                var hadBaseLayer = (fcav.map.baseLayer !== null);
+                //NOTE: "x = !!y" sets x to a Boolean, true if and only if y is truthy
+                //      (not null and not undefined, in this case)
+                var hadBaseLayer = !!fcav.map.baseLayer;
                 if (hadBaseLayer) {
                     fcav.map.removeLayer(fcav.map.layers[0]);
                 }
                 fcav.map.addLayers([baseLayer]);
                 fcav.map.setLayerIndex(baseLayer, 0);
                 if (! hadBaseLayer) {
-                    var lat=39.095962936305476,
-                        lon=-96.0859375,
-                        zoom=5,
-                        lonLat = new OpenLayers.LonLat(lon, lat).transform(new OpenLayers.Projection("EPSG:4326"), fcav.map.getProjectionObject());
-                    fcav.map.setCenter(lonLat, zoom);
+                    fcav.map.zoomToExtent(new OpenLayers.Bounds(fcav.maxExtent.xmin, fcav.maxExtent.ymin, fcav.maxExtent.xmax, fcav.maxExtent.ymax), false);
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
