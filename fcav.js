@@ -195,24 +195,14 @@
     function parseConfig(configXML) {
         var $configXML = $(configXML);
 
-        // parse themes
-        $configXML.find("mapviews view").each(function() {
-            var $view = $(this),
-                name  = $view.attr('name'),
-                label = $view.attr('label');
-            console.log('view name=' + name + ' label=' + label);
-            $view.find("viewGroup").each(function() {
-                var $viewGroup = $(this);
-                console.log('    viewGroup name=' + $viewGroup.attr('name'));
-            });
-        });
-
         // parse layer groups and layers
+        var accordionGroups = {};
         $configXML.find("wmsGroup").each(function() {
             var $wmsGroup = $(this), // each <wmsGroup> corresponds to a (potential) layerPicker accordion group
                 gid       = $wmsGroup.attr('gid'),
                 name      = $wmsGroup.attr('name'),
                 label     = $wmsGroup.attr('label');
+            accordionGroups[name] = label;
             console.log('accordion group: gid=' + gid + ' name=' + name + ' label=' + label);
             $wmsGroup.find("wmsSubgroup").each(function() {
                 var $wmsSubgroup = $(this), // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
@@ -233,6 +223,26 @@
                 });
             });
         });
+
+
+
+        // parse themes
+        $configXML.find("mapviews view").each(function() {
+            var $view = $(this),
+                name  = $view.attr('name'),
+                label = $view.attr('label');
+            console.log('view name=' + name + ' label=' + label);
+            $view.find("viewGroup").each(function() {
+                var $viewGroup = $(this),
+                    name       = $viewGroup.attr('name');
+                console.log('    viewGroup name=' + name);
+                if (accordionGroups[name] === undefined) {
+                    console.log(">>>>>>>> !! UNKNOWN GROUP !! <<<<<<<<<<");
+                }
+
+            });
+        });
+
 
     }
 
