@@ -379,6 +379,7 @@
                           1.19432856685505,
                           0.597164283559817,
                           0.298582141647617],
+
 	        zoom: 1,
 		    units: 'm',
 		    projection: new OpenLayers.Projection("EPSG:900913")
@@ -405,6 +406,7 @@
                 if (! hadBaseLayer) {
                     fcav.map.zoomToExtent(new OpenLayers.Bounds(fcav.maxExtent.xmin, fcav.maxExtent.ymin, fcav.maxExtent.xmax, fcav.maxExtent.ymax), false);
                 }
+                fcav.map.resolutions = layerInfo.resolutions;
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert(textStatus);
