@@ -33,11 +33,11 @@
         // configure alternate image for hovering over layer image
         $('#btnTglLyrPick').hover(
             function(){
-                document.getElementById("tglLyrPickPic").src = 'icons/layers_over.png';
+                $("#tglLyrPickPic").attr("src", "icons/layers_over.png");
                 $("#btnTglLyrPick").attr('title', 'Show/hide Layer Picker');
             },
             function(){
-                document.getElementById("tglLyrPickPic").src = 'icons/layers.png';
+                $("#tglLyrPickPic").attr("src", "icons/layers.png");
             }
         ); 	
 
