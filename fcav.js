@@ -37,16 +37,64 @@
     }
     function Layer(settings) {
         if (!settings) { return; }
-        this.lid		= settings.lid;
-        this.visible	= settings.visible;
-        this.url		= settings.url;
-        this.srs		= settings.srs;
-        this.layers		= settings.layers;
-        this.styles		= settings.styles;
-        this.identify	= settings.identify;
-        this.name		= settings.name;
-        this.legend		= settings.legend;
+        this.lid		        = settings.lid;
+        this.visible	        = settings.visible;
+        this.url		        = settings.url;
+        this.srs		        = settings.srs;
+        this.layers		        = settings.layers;
+        this.styles		        = settings.styles;
+        this.identify	        = settings.identify;
+        this.name		        = settings.name;
+        this.legend		        = settings.legend;
+        this.$checkbox          = undefined;
+        this.openLayersLayer    = undefined;
+        this.createOpenLayersLayer = function() {
+            if (this.openLayersLayer !== undefined) {
+                return this.openLayersLayer;
+            }
+            var options = {
+                isBaseLayer      : false, 
+                transitionEffect : 'resize'
+            };
+
+            if (this.url.indexOf('wlayers') == -1) {
+                options.singleTile = true;
+                options.ratio      = 1;
+            } else {
+                options.tileSize = new OpenLayers.Size(500,500);
+                options.ratio    = 1;
+                options.buffer   = 2;
+            }
+            this.openLayersLayer =
+                new OpenLayers.Layer.WMS(this.name,
+                                         this.url,
+                                         {
+                                             projection  : new OpenLayers.Projection("EPSG:900913"), 
+                                             units       : "m", 
+                                             layers      : this.layers, 
+                                             maxExtent   : new OpenLayers.Bounds(fcav.maxExtent),
+                                             transparent : true
+                                         },
+                                         options
+                                        );
+            return this.openLayersLayer;
+        };
+        this.addToMap = function(suppressCheckboxUpdate) {
+            fcav.map.addLayer(this.createOpenLayersLayer());
+            if (this.$checkbox && !suppressCheckboxUpdate) {
+                this.$checkbox.attr('checked', true);
+            }
+        };
+        this.removeFromMap = function(suppressCheckboxUpdate) {
+            if (this.openLayersLayer) {
+                fcav.map.removeLayer(this.openLayersLayer);
+                if (this.$checkbox && !suppressCheckboxUpdate) {
+                    this.$checkbox.attr('checked', false);
+                }
+            }
+        };
     }
+
     function Theme(settings) {
         this.accordionGroups = [];
         if (!settings) { return; }
@@ -497,7 +545,7 @@
                 var s = $('#layerPickerAccordion').listAccordion('addSublist', g, sublist.label);
                 $.each(sublist.layers, function (k, layer) {
                     $('#layerPickerAccordion').listAccordion('addSublistItem', s,
-                                                             [createLayerToggleCheckbox(layer.lid, false),
+                                                             [createLayerToggleCheckbox(layer, false),
                                                               $('<label for="chk'+layer.lid+'">'+layer.name+'</label>'),
                                                               $('<img class="layerPropertiesIcon" id="'+layer.lid+'" src="icons/settings.png"/>')]);
                 });
@@ -507,20 +555,22 @@
 
     }
 
-    function createLayerToggleCheckbox(lid, checked) {
+    function createLayerToggleCheckbox(layer, checked) {
         var checkedattr = "";
 
         if (checked) {
             checkedattr = 'checked="checked"';
         }
 
-        return $('<input type="checkbox" id="chk'+lid+'" ' + checkedattr + '></input>').click(function() {
+        layer.$checkbox = $('<input type="checkbox" id="chk'+layer.lid+'" ' + checkedattr + '></input>').click(function() {
             if ($(this).is(':checked')) {
-                console.log('layer ' + lid + ' turned on');
+                layer.addToMap(true);
             } else {
-                console.log('layer ' + lid + ' turned off');
+                layer.removeFromMap(true);
             }
         });
+
+        return layer.$checkbox;
     }
 
 
