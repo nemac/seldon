@@ -15,7 +15,6 @@
                 append(sectionObj.contentElement) .
                 accordion('destroy') .
                 accordion($(this).data('listAccordion').accordionOptions);
-            console.log($(this).data('listAccordion').accordionOptions);
             return sectionObj;
         },
 

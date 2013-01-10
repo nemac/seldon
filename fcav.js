@@ -84,6 +84,7 @@
             if (this.$checkbox && !suppressCheckboxUpdate) {
                 this.$checkbox.attr('checked', true);
             }
+            this.addToLegend();
         };
         this.removeFromMap = function(suppressCheckboxUpdate) {
             if (this.openLayersLayer) {
@@ -91,8 +92,23 @@
                 if (this.$checkbox && !suppressCheckboxUpdate) {
                     this.$checkbox.attr('checked', false);
                 }
+                this.removeFromLegend();
             }
         };
+        this.addToLegend = function() {
+            var that = this;
+            this.$legendItem = $('<div id="lgd'+this.lid+'"><img src="'+this.legend+'"/></div>') .
+                appendTo($('#legend')) .
+                click(function() {
+                    that.removeFromMap();
+                });
+        };
+        this.removeFromLegend = function() {
+            if (this.$legendItem) {
+                this.$legendItem.remove();
+            }
+        };
+
     }
 
     function Theme(settings) {
@@ -181,8 +197,7 @@
         //
 
         //    initialize
-        //$("#mapToolsAccordion").accordion({ clearStyle: true, autoHeight: false });
-        $("#mapToolsAccordion").accordion({ heightStyle: 'content' });
+        $("#mapToolsAccordion").accordion({ clearStyle: true, autoHeight: false });
 
         //    find the 'legend' layer in the mapTools accordion, and make sure it is initially turned on
         var accordionGroupIndexToOpen = 0;
