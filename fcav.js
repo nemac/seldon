@@ -95,7 +95,7 @@
         //
         $("#layerPickerDialog").dialog({ zIndex:10050, 
                                          position:"left",
-                                         autoOpen: false,
+                                         autoOpen: true,
                                          hide:"explode"
                                        });
 
@@ -133,7 +133,8 @@
         //
 
         //    initialize
-        $("#mapToolsAccordion").accordion({ clearStyle: true, autoHeight: false });
+        //$("#mapToolsAccordion").accordion({ clearStyle: true, autoHeight: false });
+        $("#mapToolsAccordion").accordion({ heightStyle: 'content' });
 
         //    find the 'legend' layer in the mapTools accordion, and make sure it is initially turned on
         var accordionGroupIndexToOpen = 0;
@@ -343,7 +344,7 @@
             $wmsGroup.find("wmsSubgroup").each(function() {
                 var $wmsSubgroup = $(this), // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
                     sublist      = new AccordionGroupSublist({
-                        label : $wmsGroup.attr('label')
+                        label : $wmsSubgroup.attr('label')
                     });
                 accordionGroup.sublists.push(sublist);
                 $wmsSubgroup.find("wmsLayer").each(function() {
@@ -477,8 +478,7 @@
 
         $('#layerPickerAccordion').empty();
         $("#layerPickerAccordion").accordion('destroy');
-        $('#layerPickerAccordion').listAccordion();
-        $("#layerPickerAccordion").accordion({ clearStyle: true, autoHeight: false });
+        $('#layerPickerAccordion').listAccordion({ clearStyle: true, autoHeight: true });
 
         $('#legend').empty();
 
