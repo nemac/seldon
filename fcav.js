@@ -156,6 +156,15 @@
             // ... rebuild share url here ...
         });
 
+        //
+        // theme layer combo change handler
+        //
+        $('#themeCombo').change(function() {
+            var i = parseInt($("#themeCombo").val(), 10);
+            setTheme(fcav.themes[i]);
+            // ... rebuild share url here ...
+        });
+
         // 
         // pan button
         // 
@@ -483,12 +492,12 @@
         $('#legend').empty();
 
         $.each(theme.accordionGroups, function (i, accordionGroup) {
-            var g = $('#layerPickerAccordion').listAccordion('addSection', '<a href=#Accordion'+i+' gid='+accordionGroup.gid+'>'+accordionGroup.label+'</a>');
+            var g = $('#layerPickerAccordion').listAccordion('addSection', '<a>'+accordionGroup.label+'</a>');
             $.each(accordionGroup.sublists, function (j, sublist) {
                 var s = $('#layerPickerAccordion').listAccordion('addSublist', g, sublist.label);
                 $.each(sublist.layers, function (k, layer) {
                     $('#layerPickerAccordion').listAccordion('addSublistItem', s,
-                                                             [createLayerToggleCheckbox(layer.lid, true),
+                                                             [createLayerToggleCheckbox(layer.lid, false),
                                                               $('<label for="chk'+layer.lid+'">'+layer.name+'</label>'),
                                                               $('<img class="layerPropertiesIcon" id="'+layer.lid+'" src="icons/settings.png"/>')]);
                 });
