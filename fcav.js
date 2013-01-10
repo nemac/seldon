@@ -151,7 +151,7 @@
         //
         $('#baseCombo').change(function() {
             var i = parseInt($("#baseCombo").val(), 10);
-            setArcGISCacheBaseLayer(fcav.baseLayers[i].url);
+            setArcGISCacheBaseLayer(fcav.baseLayers[i]);
             // ... rebuild share url here ...
         });
 
@@ -326,7 +326,7 @@
                 selectedBaseLayerIndex = i;
             }
         });
-        setArcGISCacheBaseLayer(fcav.baseLayers[selectedBaseLayerIndex].url);
+        setArcGISCacheBaseLayer(fcav.baseLayers[selectedBaseLayerIndex]);
         $('#baseCombo').val(selectedBaseLayerIndex);
 
         // parse layer groups and layers
@@ -339,7 +339,7 @@
                     label : $wmsGroup.attr('label')
                 });
             fcav.accordionGroups.push(accordionGroup);
-            accordionGroupsByName[name] = accordionGroup;
+            accordionGroupsByName[accordionGroup.name] = accordionGroup;
             $wmsGroup.find("wmsSubgroup").each(function() {
                 var $wmsSubgroup = $(this), // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
                     sublist      = new AccordionGroupSublist({
@@ -381,14 +381,14 @@
                 if (accordionGroup) {
                     theme.accordionGroups.push(accordionGroup);
                 } else {
-                    displayError("Unknown accordion group name '" + name + " found in theme '" + theme.name + "'");
+                    displayError("Unknown accordion group name '" + name + "' found in theme '" + theme.name + "'");
                 }
             });
             if (selected) {
                 selectedThemeIndex = i;
             }
         });
-        //setTheme(fcav.themes[selectedThemeIndex]);
+        setTheme(fcav.themes[selectedThemeIndex]);
         $('#themeCombo').val(selectedThemeIndex);
 
 
@@ -446,12 +446,12 @@
 
     }
 
-    function setArcGISCacheBaseLayer(url) {
+    function setArcGISCacheBaseLayer(baseLayer) {
         $.ajax({
-            url: url + '?f=json&pretty=true',
+            url: baseLayer.url + '?f=json&pretty=true',
             dataType: "jsonp",
             success:  function (layerInfo) {
-                var baseLayer = new OpenLayers.Layer.ArcGISCache("AGSCache", url, {
+                var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
                     layerInfo: layerInfo
                 });
                 //NOTE: "x = !!y" sets x to a Boolean, true if and only if y is truthy
@@ -460,8 +460,8 @@
                 if (hadBaseLayer) {
                     fcav.map.removeLayer(fcav.map.layers[0]);
                 }
-                fcav.map.addLayers([baseLayer]);
-                fcav.map.setLayerIndex(baseLayer, 0);
+                fcav.map.addLayers([layer]);
+                fcav.map.setLayerIndex(layer, 0);
                 if (! hadBaseLayer) {
                     fcav.map.zoomToExtent(new OpenLayers.Bounds(fcav.maxExtent.xmin, fcav.maxExtent.ymin, fcav.maxExtent.xmax, fcav.maxExtent.ymax), false);
                 }
@@ -469,6 +469,47 @@
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert(textStatus);
+            }
+        });
+    }
+
+    function setTheme(theme) {
+
+        $('#layerPickerAccordion').empty();
+        $("#layerPickerAccordion").accordion('destroy');
+        $('#layerPickerAccordion').listAccordion();
+        $("#layerPickerAccordion").accordion({ clearStyle: true, autoHeight: false });
+
+        $('#legend').empty();
+
+        $.each(theme.accordionGroups, function (i, accordionGroup) {
+            var g = $('#layerPickerAccordion').listAccordion('addSection', '<a href=#Accordion'+i+' gid='+accordionGroup.gid+'>'+accordionGroup.label+'</a>');
+            $.each(accordionGroup.sublists, function (j, sublist) {
+                var s = $('#layerPickerAccordion').listAccordion('addSublist', g, sublist.label);
+                $.each(sublist.layers, function (k, layer) {
+                    $('#layerPickerAccordion').listAccordion('addSublistItem', s,
+                                                             [createLayerToggleCheckbox(layer.lid, true),
+                                                              $('<label for="chk'+layer.lid+'">'+layer.name+'</label>'),
+                                                              $('<img class="layerPropertiesIcon" id="'+layer.lid+'" src="icons/settings.png"/>')]);
+                });
+            });
+        });
+        $('#layerPickerAccordion').accordion('activate', 1);
+
+    }
+
+    function createLayerToggleCheckbox(lid, checked) {
+        var checkedattr = "";
+
+        if (checked) {
+            checkedattr = 'checked="checked"';
+        }
+
+        return $('<input type="checkbox" id="chk'+lid+'" ' + checkedattr + '></input>').click(function() {
+            if ($(this).is(':checked')) {
+                console.log('layer ' + lid + ' turned on');
+            } else {
+                console.log('layer ' + lid + ' turned off');
             }
         });
     }
