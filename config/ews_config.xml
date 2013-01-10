@@ -23,7 +23,7 @@
     <legendGroup name="RSAC-FHTET 2010" />
   </legend>
   <mapviews>
-    <view name="CONUS_Vegetation_Monitoring_Tools" label="CONUS Vegetation Monitoring Tools">
+    <view name="CONUS_Vegetation_Monitoring_Tools" label="CONUS Vegetation Monitoring Tools" selected="true">
       <viewGroup name="US_Jurisdictions" />
       <viewGroup name="US_Fire" />
       <viewGroup name="US_FHM_ADS" />

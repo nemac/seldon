@@ -2,18 +2,58 @@
     "use strict";
 
     var fcav = {
-          map         : undefined, // the OpenLayers map object
-          zoomInTool  : undefined,
-          zoomOutTool : undefined,
-          dragPanTool : undefined,
-          maxExtent   : {
-              xmin : -15000000,
-              ymin : 2000000,
-              xmax : -6000000,
-              ymax : 7000000
-          },
-          baseLayers  : []
+        map         : undefined, // OpenLayers map object
+        zoomInTool  : undefined, // OpenLayers zoom in tool
+        zoomOutTool : undefined, // OpenLayers zoom out tool
+        dragPanTool : undefined, // OpenLayers dragpan tool
+        maxExtent   : {
+            xmin : -15000000,  //NOTE: These values get replaced by settings from the config file.
+            ymin : 2000000,    //      Don't worry about keeping these in sync if the config fil 
+            xmax : -6000000,   //      changes; these are just here to prevent a crash if we ever
+            ymax : 7000000     //      read a config file that is missing the <extent> element.
+        },
+        baseLayers      : [], // list of BaseLayer instances holding info about base layers from config file
+        accordionGroups : [], // list of AccordionGroup instances holding info about accordion groups from config file
+        themes          : []  // list of Theme instances holding info about themes from config file
     };
+
+    function BaseLayer(settings) {
+        if (!settings) { return; }
+        this.name  = settings.name;
+        this.label = settings.label;
+        this.url   = settings.url;
+    }
+    function AccordionGroup(settings) {
+        this.sublists = [];
+        if (!settings) { return; }
+        this.gid      = settings.gid;
+        this.name     = settings.name;
+        this.label    = settings.label;
+    }
+    function AccordionGroupSublist(settings) {
+        this.layers = [];
+        if (!settings) { return; }
+        this.label  = settings.label;
+    }
+    function Layer(settings) {
+        if (!settings) { return; }
+        this.lid		= settings.lid;
+        this.visible	= settings.visible;
+        this.url		= settings.url;
+        this.srs		= settings.srs;
+        this.layers		= settings.layers;
+        this.styles		= settings.styles;
+        this.identify	= settings.identify;
+        this.name		= settings.name;
+        this.legend		= settings.legend;
+    }
+    function Theme(settings) {
+        this.accordionGroups = [];
+        if (!settings) { return; }
+        this.name  = settings.name;
+        this.label = settings.label;
+    }
+
 
     function displayError(message) {
         console.log(message);
@@ -273,17 +313,15 @@
         // parse base layers and populate combo box
         var selectedBaseLayerIndex = 0;
         $configXML.find("images image").each(function(i) {
-            var $image   = $(this),
-                name     = $image.attr('name'),
-                label    = $image.attr('label'),
-                url      = $image.attr('url'),
-                selected = $image.attr('selected');
-            fcav.baseLayers.push({
-                name     : name,
-                label    : label,
-                url      : url
-            });
-            $('#baseCombo').append($('<option value="'+i+'">'+label+'</option>'));
+            var $image    = $(this),
+                selected  = $image.attr('selected'),
+                baseLayer = new BaseLayer({
+                    name     : $image.attr('name'),
+                    label    : $image.attr('label'),
+                    url      : $image.attr('url')
+                });
+            fcav.baseLayers.push(baseLayer);
+            $('#baseCombo').append($('<option value="'+i+'">'+baseLayer.label+'</option>'));
             if (selected) {
                 selectedBaseLayerIndex = i;
             }
@@ -292,46 +330,67 @@
         $('#baseCombo').val(selectedBaseLayerIndex);
 
         // parse layer groups and layers
-        var accordionGroups = {};
+        var accordionGroupsByName = {};
         $configXML.find("wmsGroup").each(function() {
-            var $wmsGroup = $(this), // each <wmsGroup> corresponds to a (potential) layerPicker accordion group
-                gid       = $wmsGroup.attr('gid'),
-                name      = $wmsGroup.attr('name'),
-                label     = $wmsGroup.attr('label');
-            accordionGroups[name] = label;
+            var $wmsGroup      = $(this), // each <wmsGroup> corresponds to a (potential) layerPicker accordion group
+                accordionGroup = new AccordionGroup({
+                    gid   : $wmsGroup.attr('gid'),
+                    name  : $wmsGroup.attr('name'),
+                    label : $wmsGroup.attr('label')
+                });
+            fcav.accordionGroups.push(accordionGroup);
+            accordionGroupsByName[name] = accordionGroup;
             $wmsGroup.find("wmsSubgroup").each(function() {
                 var $wmsSubgroup = $(this), // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
-                    label = $wmsGroup.attr('label');
+                    sublist      = new AccordionGroupSublist({
+                        label : $wmsGroup.attr('label')
+                    });
+                accordionGroup.sublists.push(sublist);
                 $wmsSubgroup.find("wmsLayer").each(function() {
-                    var $wmsLayer = $(this),
-                        lid       = $wmsLayer.attr('lid'),
-                        visible   = $wmsLayer.attr('visible'),
-                        url       = $wmsLayer.attr('url'),
-                        srs       = $wmsLayer.attr('srs'),
-                        layers    = $wmsLayer.attr('layers'),
-                        styles    = $wmsLayer.attr('styles'),
-                        identify  = $wmsLayer.attr('identify'),
-                        name      = $wmsLayer.attr('name'),
-                        legend    = $wmsLayer.attr('legend');
+                    var $wmsLayer = $(this);
+                    sublist.layers.push(new Layer({
+                        lid       : $wmsLayer.attr('lid'),
+                        visible   : $wmsLayer.attr('visible'),
+                        url       : $wmsLayer.attr('url'),
+                        srs       : $wmsLayer.attr('srs'),
+                        layers    : $wmsLayer.attr('layers'),
+                        styles    : $wmsLayer.attr('styles'),
+                        identify  : $wmsLayer.attr('identify'),
+                        name      : $wmsLayer.attr('name'),
+                        legend    : $wmsLayer.attr('legend')
+                    }));
                 });
             });
         });
 
         // parse themes
-        $configXML.find("mapviews view").each(function() {
+        var selectedThemeIndex = 0;
+        $configXML.find("mapviews view").each(function(i) {
             var $view = $(this),
-                name  = $view.attr('name'),
-                label = $view.attr('label');
-            $('#themeCombo').append($('<option value="'+name+'">'+label+'</option>'));
+                selected  = $view.attr('selected'),
+                theme = new Theme({
+                    name  : $view.attr('name'),
+                    label : $view.attr('label')
+                });
+            fcav.themes.push(theme);
+            $('#themeCombo').append($('<option value="'+i+'">'+theme.label+'</option>'));
             $view.find("viewGroup").each(function() {
-                var $viewGroup = $(this),
-                    name       = $viewGroup.attr('name');
-                if (accordionGroups[name] === undefined) {
-                    displayError('Unknown accordion group name: ' + name);
+                var $viewGroup     = $(this),
+                    name           = $viewGroup.attr('name'),
+                    accordionGroup = accordionGroupsByName[name];
+                if (accordionGroup) {
+                    theme.accordionGroups.push(accordionGroup);
+                } else {
+                    displayError("Unknown accordion group name '" + name + " found in theme '" + theme.name + "'");
                 }
-
             });
+            if (selected) {
+                selectedThemeIndex = i;
+            }
         });
+        //setTheme(fcav.themes[selectedThemeIndex]);
+        $('#themeCombo').val(selectedThemeIndex);
+
 
     }
 
