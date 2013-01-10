@@ -14,7 +14,8 @@
                 append(sectionObj.titleElement) .
                 append(sectionObj.contentElement) .
                 accordion('destroy') .
-                accordion();
+                accordion($(this).data('listAccordion').accordionOptions);
+            console.log($(this).data('listAccordion').accordionOptions);
             return sectionObj;
         },
 
@@ -53,14 +54,12 @@
         init : function(options) {
             return this.each(function() {
                 var $this = $(this),
-                    data = $this.data('listAccordion'),
-                    settings = $.extend({
-                        // defaults go here
-                    }, options);
+                    data = $this.data('listAccordion');
                 if ( ! data ) {
 
                     $this.data('listAccordion', {
-                        sections : []
+                        accordionOptions : options,
+                        sections         : []
                     });
 
                     //$this.accordion();
