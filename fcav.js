@@ -134,7 +134,6 @@
         console.log(message);
     }
 
-
     $('document').ready(function() {
 
         $.ajax({
@@ -302,59 +301,27 @@
                 document.getElementById("zoomExtentPic").src = 'icons/zoom-extent.png';
             }
         ); 
-
-        //
-        // layer properties dialog
-        //
-        function setLayerOpacity(opacity) {
-            if (fcav.propertiesLayer) {
-                fcav.propertiesLayer.setOpacity(opacity);
-            }
-        }
-        $("#opacitySlider" ).slider({
-            min   : 0,
-            max   : 100,
-            step  : 1,
-		    slide : function(event, ui) { 
-                $("#layerPropertiesDialog input.opacity-text").val(ui.value);
-                setLayerOpacity(ui.value);
-            }
-        });
-        $("#layerPropertiesDialog input.opacity-text").change(function() {
-            var newValueFloat = parseFloat($(this).val());
-            if (isNaN(newValueFloat) || newValueFloat < 0 || newValueFloat > 100) {
-                $(this).val($("#opacitySlider" ).slider("value"));
-                return;
-            }
-            $("#opacitySlider" ).slider("value", $(this).val());
-            setLayerOpacity($(this).val());
-        });
-        $("#layerPropertiesDialog").dialog({
-            zIndex    : 10050, 
-            position  : "left",
-            autoOpen  : false,
-            hide      : "explode"
-        });
         
-        
-/*        
         // 
         // identify button
         // 
+        
         $("#btnID").click(function() {
             //alert("Handler for IDcalled.");
-            identify();
+            activateIdentifyTool();
         });
+        
         $('#btnID').hover(
             function(){
-                document.getElementById("idPic").src = 'icons/map-info_over.png';
+                $("#idPic").attr('src',  'icons/map-info_over.png');
                 $("#btnID").attr('title', 'Identify tool');
             },
             function(){
-                document.getElementById("idPic").src = 'icons/map-info.png';
+                $("#idPic").attr('src',  'icons/map-info.png');
             }
         ); 
-
+            
+/*        
         // 
         // multigraph button
         // 
@@ -407,7 +374,6 @@
             }        
         }
     }
-
 
     function parseConfig(configXML) {
         var $configXML = $(configXML);
@@ -533,7 +499,8 @@
                 "zoomend": mapEvent
             },               
 		    maxExtent: new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34),
-
+//numZoomLevels
+//tileSize
             resolutions: [156543.033928,
                           78271.5169639999,
                           39135.7584820001,
@@ -624,23 +591,116 @@
         return layer.$checkbox;
     }
 
-
     function createLayerPropertiesIcon(layer) {
         layer.$propertiesIcon = $('<img class="layerPropertiesIcon" id="'+layer.lid+'" src="icons/settings.png"/>').click(function() {
-            fcav.propertiesLayer = layer;
-            $('#layerPropertiesDialog').dialog('option', 'title', layer.name);
-            //$('.properties-dialog-layer-name').text(layer.name);
-            $('#layerPropertiesDialog').dialog('open');
-            $('#layerPropertiesDialog input.opacity-text').val(layer.opacity);
-            $("#opacitySlider" ).slider("value", layer.opacity);
+            new LayerPropertiesDialog(layer);
         });
         return layer.$propertiesIcon;
+    }
+
+
+    function LayerPropertiesDialog(layer) {
+        var $html = $(''
+                      + '<div class="layer-properties-dialog" style="width:auto;">'
+                      +   '<table>'
+                      +     '<tr>'
+                      +       '<td>Opacity:</td>'
+                      +        '<td>'
+                      +          '<div class="opacity-slider"></div>'
+                      +        '</td>'
+                      +       '<td>'
+                      +         '<input class="opacity-text" style="border-color:transparent;" type="text" size="2"/>%'
+                      +       '</td>'
+                      +     '</tr>'
+                      +   '</table>'
+                      + '</div>'
+                     );
+            
+
+        $html.find('input.opacity-text').val(layer.opacity);
+        $html.find('.opacity-slider').slider({
+            min   : 0,
+            max   : 100,
+            step  : 1,
+            value : layer.opacity,
+		    slide : function(event, ui) {
+                $html.find('input.opacity-text').val(ui.value);
+                layer.setOpacity(ui.value);
+            }
+        });
+        $html.find('input.opacity-text').change(function() {
+            var newValueFloat = parseFloat($(this).val());
+            if (isNaN(newValueFloat) || newValueFloat < 0 || newValueFloat > 100) {
+                $(this).val($html.find('.opacity-slider').slider('value'));
+                return;
+            }
+            $html.find('.opacity-slider').slider("value", $(this).val());
+            layer.setOpacity($(this).val());
+        });
+
+        $html.dialog({
+            zIndex    : 10050, 
+            position  : "left",
+            autoOpen  : true,
+            hide      : "explode",
+            title     : layer.name,
+            close     : function() {
+                $(this).dialog('destroy');
+                $html.remove();
+            }
+        });
     }
 
 
     function mapEvent(event) {
         // ... update shareMapURL ...
     }    
+
+
+    function activateIdentifyTool()
+    {
+        deactivateActiveOpenLayersControls();
+        //get feature info-----------------------------------------------------
+        //reference: http://openlayers.org/dev/examples/getfeatureinfo-popup.html
+        //           http://stackoverflow.com/questions/7456205/how-to-add-a-popup-box-to-a-vector-in-openlayers
+        var layers4Identify = [];
+        $.each(fcav.map.layers, function (i) {
+            if (i>0) {
+                layers4Identify.push(fcav.map.layers[i]);
+            }
+        });
+
+        var info = new OpenLayers.Control.WMSGetFeatureInfo({
+            drillDown    : true, 
+            title        : 'Identify features by clicking',
+            layers       : layers4Identify,
+            queryVisible : true
+        });
+        
+        info.events.register("getfeatureinfo", this, pickInfo);
+        info.infoFormat = 'application/vnd.ogc.gml';
+        fcav.map.addControl(info);
+        info.activate();
+    }
+
+    function pickInfo(e)
+    {
+        console.log('hey there!');
+        /*
+        var strInfo;
+        strInfo = e.text;
+        var gmlData = processGML(strInfo);
+         */
+        fcav.map.addPopup(new OpenLayers.Popup.FramedCloud(
+			"Feature Info:", 
+			fcav.map.getLonLatFromPixel(e.xy),
+			null,
+			e.text, //gmlData,
+			null,
+			true
+		));
+    }
+
 
 
 

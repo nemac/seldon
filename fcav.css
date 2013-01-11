@@ -150,7 +150,7 @@ body, td, th {
    margin-left: 5px;
 }
 
-#opacitySlider {
+.opacity-slider {
    width: 120px;
    margin-left: 8px;
    margin-right: 5px;
