@@ -10,7 +10,7 @@
     <service name="vegdri" folder="EWS" label="USGS VegDRI Drought Assessment Products"/>
   </services>
   <images>
-    <image name="Streets"   label="Streets"  url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer" selected="true" />
+    <image name="Streets"   label="Streets"  url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"  selected="true" />
     <image name="Basic"     label="Basic"    url="http://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer" />
     <image name="Relief"    label="Relief"   url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer" />
     <image name="Terrain"   label="Terrain"  url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer" />

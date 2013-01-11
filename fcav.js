@@ -14,7 +14,9 @@
         },
         baseLayers      : [], // list of BaseLayer instances holding info about base layers from config file
         accordionGroups : [], // list of AccordionGroup instances holding info about accordion groups from config file
-        themes          : []  // list of Theme instances holding info about themes from config file
+        themes          : [], // list of Theme instances holding info about themes from config file
+        propertiesLayer : undefined // reference to Layer() instance of the layer that should receive changes
+                                    // made in layerProperties dialog (opacity, etc)
     };
 
     function BaseLayer(settings) {
@@ -46,7 +48,9 @@
         this.identify	        = settings.identify;
         this.name		        = settings.name;
         this.legend		        = settings.legend;
+        this.opacity            = 100;
         this.$checkbox          = undefined;
+        this.$propertiesIcon    = undefined;
         this.openLayersLayer    = undefined;
         this.createOpenLayersLayer = function() {
             if (this.openLayersLayer !== undefined) {
@@ -107,6 +111,13 @@
             if (this.$legendItem) {
                 this.$legendItem.remove();
             }
+        };
+        this.setOpacity = function(opacity) {
+            console.log('opacity of layer ' + this.name + ' set to ' + opacity);
+            if (this.openLayersLayer) {
+                this.openLayersLayer.setOpacity(parseFloat(opacity)/100.0);
+            }
+            this.opacity = opacity;
         };
 
     }
@@ -188,7 +199,7 @@
         //
         $("#mapToolsDialog").dialog({ zIndex:10050, 
                                       position:"right",
-                                      autoOpen: false,
+                                      autoOpen: true,
                                       hide:"explode"
                                     });
 
@@ -292,8 +303,40 @@
             }
         ); 
 
-
-
+        //
+        // layer properties dialog
+        //
+        function setLayerOpacity(opacity) {
+            if (fcav.propertiesLayer) {
+                fcav.propertiesLayer.setOpacity(opacity);
+            }
+        }
+        $("#opacitySlider" ).slider({
+            min   : 0,
+            max   : 100,
+            step  : 1,
+		    slide : function(event, ui) { 
+                $("#layerPropertiesDialog input.opacity-text").val(ui.value);
+                setLayerOpacity(ui.value);
+            }
+        });
+        $("#layerPropertiesDialog input.opacity-text").change(function() {
+            var newValueFloat = parseFloat($(this).val());
+            if (isNaN(newValueFloat) || newValueFloat < 0 || newValueFloat > 100) {
+                $(this).val($("#opacitySlider" ).slider("value"));
+                return;
+            }
+            $("#opacitySlider" ).slider("value", $(this).val());
+            setLayerOpacity($(this).val());
+        });
+        $("#layerPropertiesDialog").dialog({
+            zIndex    : 10050, 
+            position  : "left",
+            autoOpen  : false,
+            hide      : "explode"
+        });
+        
+        
 /*        
         // 
         // identify button
@@ -550,7 +593,7 @@
 
         $('#layerPickerAccordion').empty();
         $("#layerPickerAccordion").accordion('destroy');
-        $('#layerPickerAccordion').listAccordion({ clearStyle: true, autoHeight: true });
+        $('#layerPickerAccordion').listAccordion({ clearStyle: true, autoHeight: false });
 
         $('#legend').empty();
 
@@ -560,32 +603,38 @@
                 var s = $('#layerPickerAccordion').listAccordion('addSublist', g, sublist.label);
                 $.each(sublist.layers, function (k, layer) {
                     $('#layerPickerAccordion').listAccordion('addSublistItem', s,
-                                                             [createLayerToggleCheckbox(layer, false),
+                                                             [createLayerToggleCheckbox(layer),
                                                               $('<label for="chk'+layer.lid+'">'+layer.name+'</label>'),
-                                                              $('<img class="layerPropertiesIcon" id="'+layer.lid+'" src="icons/settings.png"/>')]);
+                                                              createLayerPropertiesIcon(layer)]);
                 });
             });
         });
-        $('#layerPickerAccordion').accordion('activate', 1);
+        $('#layerPickerAccordion').accordion('activate', 0);
 
     }
 
-    function createLayerToggleCheckbox(layer, checked) {
-        var checkedattr = "";
-
-        if (checked) {
-            checkedattr = 'checked="checked"';
-        }
-
-        layer.$checkbox = $('<input type="checkbox" id="chk'+layer.lid+'" ' + checkedattr + '></input>').click(function() {
+    function createLayerToggleCheckbox(layer) {
+        layer.$checkbox = $('<input type="checkbox" id="chk'+layer.lid+'"></input>').click(function() {
             if ($(this).is(':checked')) {
                 layer.addToMap(true);
             } else {
                 layer.removeFromMap(true);
             }
         });
-
         return layer.$checkbox;
+    }
+
+
+    function createLayerPropertiesIcon(layer) {
+        layer.$propertiesIcon = $('<img class="layerPropertiesIcon" id="'+layer.lid+'" src="icons/settings.png"/>').click(function() {
+            fcav.propertiesLayer = layer;
+            $('#layerPropertiesDialog').dialog('option', 'title', layer.name);
+            //$('.properties-dialog-layer-name').text(layer.name);
+            $('#layerPropertiesDialog').dialog('open');
+            $('#layerPropertiesDialog input.opacity-text').val(layer.opacity);
+            $("#opacitySlider" ).slider("value", layer.opacity);
+        });
+        return layer.$propertiesIcon;
     }
 
 
