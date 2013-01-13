@@ -156,3 +156,10 @@ body, td, th {
    margin-right: 5px;
 }
 
+#identify_results td.layer-results {
+   width: 200px;
+}
+#identify_results td.layer-label {
+   font-weight: bold;
+   text-align: right;
+}

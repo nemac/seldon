@@ -61,7 +61,7 @@
                 transitionEffect : 'resize'
             };
 
-            if (this.url.indexOf('wlayers') == -1) {
+            if (this.url.indexOf('wlayers') === -1) {
                 options.singleTile = true;
                 options.ratio      = 1;
             } else {
@@ -81,6 +81,7 @@
                                          },
                                          options
                                         );
+            this.openLayersLayer.fcavLayer = this;
             return this.openLayersLayer;
         };
         this.addToMap = function(suppressCheckboxUpdate) {
@@ -366,12 +367,15 @@
 
     function deactivateActiveOpenLayersControls() {
         for (var i = 0; i < fcav.map.controls.length; i++) {
-		    if ((fcav.map.controls[i].active==true) && (fcav.map.controls[i].displayClass=="olControlZoomBox")){
+		    if ((fcav.map.controls[i].active==true)
+                &&
+                ((fcav.map.controls[i].displayClass=="olControlZoomBox")
+                 ||
+                 (fcav.map.controls[i].displayClass=="olControlWMSGetFeatureInfo")
+                 ||
+                 (fcav.map.controls[i].displayClass=="ClickTool"))) {
                 fcav.map.controls[i].deactivate();
             }
-		    if ((fcav.map.controls[i].active==true) && (fcav.map.controls[i].displayClass=="olControlWMSGetFeatureInfo")){
-                fcav.map.controls[i].deactivate();
-            }        
         }
     }
 
@@ -478,9 +482,10 @@
 
     function initOpenLayers() {
 
-        fcav.zoomInTool  = new OpenLayers.Control.ZoomBox();
-        fcav.zoomOutTool = new OpenLayers.Control.ZoomBox({out:true});
-        fcav.dragPanTool = new OpenLayers.Control.DragPan();
+        fcav.zoomInTool   = new OpenLayers.Control.ZoomBox();
+        fcav.zoomOutTool  = new OpenLayers.Control.ZoomBox({out:true});
+        fcav.dragPanTool  = new OpenLayers.Control.DragPan();
+        fcav.identifyTool = createIdentifyTool();
 
         fcav.map = new OpenLayers.Map('map', {
 	        controls: [
@@ -491,7 +496,8 @@
 			    }),
 		        new OpenLayers.Control.Attribution(),
                 fcav.zoomInTool,
-                fcav.zoomOutTool
+                fcav.zoomOutTool,
+                fcav.identifyTool
 		    ],
             eventListeners: 
             {
@@ -660,48 +666,216 @@
     function activateIdentifyTool()
     {
         deactivateActiveOpenLayersControls();
-        //get feature info-----------------------------------------------------
-        //reference: http://openlayers.org/dev/examples/getfeatureinfo-popup.html
-        //           http://stackoverflow.com/questions/7456205/how-to-add-a-popup-box-to-a-vector-in-openlayers
-        var layers4Identify = [];
-        $.each(fcav.map.layers, function (i) {
-            if (i>0) {
-                layers4Identify.push(fcav.map.layers[i]);
+        fcav.identifyTool.activate();
+    }
+
+
+//    function pickInfo(e)
+//    {
+//        console.log('hey there!');
+//        /*
+//        var strInfo;
+//        strInfo = e.text;
+//        var gmlData = processGML(strInfo);
+//         */
+//        fcav.map.addPopup(new OpenLayers.Popup.FramedCloud(
+//			"Feature Info:", 
+//			fcav.map.getLonLatFromPixel(e.xy),
+//			null,
+//			e.text, //gmlData,
+//			null,
+//			true
+//		));
+//    }
+
+
+    // The following creates a new OpenLayers tool class called ClickTool
+    // which calls a function whenever the user clicks in the map.  Each
+    // instance of ClickTool corresponds to a specific callback function.
+    // To create an instance of ClickTool:
+    // 
+    //   tool = new ClickTool(function (e) {
+    //       // this is the click callback function
+    //   });
+    // 
+    var ClickTool = OpenLayers.Class(OpenLayers.Control, {
+        defaultHandlerOptions: {
+            'single'          : true,
+            'double'          : false,
+            'pixelTolerance'  : 0,
+            'stopSingle'      : false,
+            'stopDouble'      : false
+        },
+
+        initialize: function(clickHandler) {
+            this.handlerOptions = OpenLayers.Util.extend(
+                {}, this.defaultHandlerOptions
+            );
+            OpenLayers.Control.prototype.initialize.apply(
+                this, arguments
+            ); 
+            this.displayClass = 'ClickTool';
+            this.handler = new OpenLayers.Handler.Click(
+                this, {
+                    'click': clickHandler
+                }, this.handlerOptions
+            );
+        }
+
+    });
+
+    // Return a string representing a GetFeatureInfo request URL for the current map,
+    // based on the passed parameters:
+    //
+    //   serviceUrl: the URL of the WMS service
+    //   layers: list of layers to query
+    //   srs: the SRS of the layers
+    //   (x,y): (pixel) coordinates of query point
+    //
+    function createWMSGetFeatureInfoRequestURL(serviceUrl, layers, srs, x, y) {
+        var extent = fcav.map.getExtent();
+        return Mustache.render(
+            (''
+             + serviceUrl
+             + '{{{c}}}LAYERS={{layers}}'
+             + '&QUERY_LAYERS={{layers}}'
+             + '&STYLES=,'
+             + '&SERVICE=WMS'
+             + '&VERSION=1.1.1'
+             + '&REQUEST=GetFeatureInfo'
+             + '&BBOX={{left}},{{bottom}},{{right}},{{top}}'
+             + '&FEATURE_COUNT=100'
+             + '&HEIGHT={{height}}'
+             + '&WIDTH={{width}}'
+             + '&FORMAT=image/png'
+             + '&INFO_FORMAT=application/vnd.ogc.gml'
+             + '&SRS={{srs}}'
+             + '&X={{x}}'
+             + '&Y={{y}}'
+            ),
+            {
+                c      : (serviceUrl.indexOf('?') === -1) ? '?' : '&',
+                layers : layers.join(','),
+                height : fcav.map.size.h,
+                width  : fcav.map.size.w,
+                left   : extent.left,
+                bottom : extent.bottom,
+                right  : extent.right,
+                top    : extent.top,
+                srs    : srs,
+                x      : x,
+                y      : y
             }
-        });
-
-        var info = new OpenLayers.Control.WMSGetFeatureInfo({
-            drillDown    : true, 
-            title        : 'Identify features by clicking',
-            layers       : layers4Identify,
-            queryVisible : true
-        });
-        
-        info.events.register("getfeatureinfo", this, pickInfo);
-        info.infoFormat = 'application/vnd.ogc.gml';
-        fcav.map.addControl(info);
-        info.activate();
+        );
     }
 
-    function pickInfo(e)
-    {
-        console.log('hey there!');
-        /*
-        var strInfo;
-        strInfo = e.text;
-        var gmlData = processGML(strInfo);
-         */
-        fcav.map.addPopup(new OpenLayers.Popup.FramedCloud(
-			"Feature Info:", 
-			fcav.map.getLonLatFromPixel(e.xy),
-			null,
-			e.text, //gmlData,
-			null,
-			true
-		));
+    
+    function createIdentifyTool() {
+        return new ClickTool(
+            function (e) {
+                // This function gets called when the user clicks a point in the map while the
+                // identify tool is active.  The argument `e` is the click event; the coordinates
+                // of the clicked point are (e.x, e.y).
+                
+                var services = {},
+                    service, urlsrs;
+                
+                // First we loop over all the current (non-base) layers in the map to
+                // construct the GetFeatureInfo requests. There will be one request for each
+                // unique WMS layer service URL and SRS combination. (Typically, and in all
+                // cases I know of that we are using at the momenet, all layers from the same
+                // WMS service use the same SRS, so this amounts to one request per WMS
+                // service, but coding it to depend on the SRS as well makes it more flexible
+                // for the future, in case ever have multiple layers from the same WMS using
+                // different SRSes).  This loop populates the `services` object with one
+                // entry per url/srs combination; each entry records a url, srs, and list of
+                // layers, corresponding to one GetFeatureInfo request that will need to be
+                // made.  We also builds up the html that will display the results in the
+                // popup window here.
+                var html = '<table id="identify_results">';
+                $.each(fcav.map.layers, function () {
+                    var srs, url, name, urlsrs;
+                    if (! this.isBaseLayer) {
+                        srs    = this.projection.projCode;
+                        url    = this.url;
+                        name   = this.params.LAYERS;
+                        urlsrs = url + ',' + srs;
+                        if (services[urlsrs] === undefined) {
+                            services[urlsrs] = { url : url, srs : srs, layers : [] };
+                        }
+                        services[urlsrs].layers.push(name);
+                        html = html + Mustache.render(
+                            (''
+                             + '<tr id="identify_results_for_{{name}}">'
+                             +   '<td class="layer-label">{{label}}:</td>'
+                             +   '<td class="layer-results"><img src="icons/ajax-loader.gif"</td>'
+                             + '</tr>'
+                            ),
+                            {
+                                name  : name,
+                                label : this.fcavLayer.name
+                            }
+                        );
+                    }
+                });
+                html = html + "</table>";
+                
+                // Display the popup window; we'll populate the results later, asynchronously,
+                // as they arrive.
+                fcav.map.addPopup(new OpenLayers.Popup.FramedCloud(
+			        "Feature Info:",                    // id
+			        fcav.map.getLonLatFromPixel(e.xy),  // lonlat
+			        null,                               // contentSize
+			        html,                               // contentHTML
+			        null,                               // anchor
+			        true,                               // closeBox
+                    null                                // closeBoxCallback
+			    ));
+                
+                // Now loop over each item in the `services` object, generating the GetFeatureInfo request for it
+                for (urlsrs in services) {
+                    (function () {
+                        var service = services[urlsrs],
+                            requestUrl = createWMSGetFeatureInfoRequestURL(service.url, service.layers, service.srs, e.x, e.y);
+                        $.ajax({
+                            url: requestUrl,
+                            dataType: "xml",
+                            success: function(response) {
+                                var $gml = $(response);
+                                // For each layer that this request was for, parse the GML for the results
+                                // for that layer, and populate the corresponding result in the popup
+                                // created above.
+                                $.each(service.layers, function () {
+                                    var result = getLayerResultsFromGML($gml, this);
+                                    $('#identify_results_for_'+this+' td.layer-results').text(result);
+                                });
+                            },
+                            error: function(jqXHR, textStatus, errorThrown) {
+                                console.log('got error');
+                                alert(textStatus);
+                            }
+                        });
+                    }());
+                }
+            }
+        );
     }
 
+    function getLayerResultsFromGML($gml, layerName) {
+        var i,
+            children = $gml.find(layerName + '_feature').first().children();
+        // Scan the children of the first <layerName_feature> element, looking for the first
+        // child which is an element whose name is something other than `gml:boundedBy`; take
+        // the text content of that child as the result for this layer.
+        for (i=0; i<children.length; ++i) {
+            if (children[i].nodeName !== 'gml:boundedBy') {
+                return children[i].textContent;
+            }
+        }
+        return undefined;
+    }
+            
 
-
-
+    
 }(jQuery));
+
