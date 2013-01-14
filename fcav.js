@@ -14,9 +14,7 @@
         },
         baseLayers      : [], // list of BaseLayer instances holding info about base layers from config file
         accordionGroups : [], // list of AccordionGroup instances holding info about accordion groups from config file
-        themes          : [], // list of Theme instances holding info about themes from config file
-        propertiesLayer : undefined // reference to Layer() instance of the layer that should receive changes
-                                    // made in layerProperties dialog (opacity, etc)
+        themes          : []  // list of Theme instances holding info about themes from config file
     };
 
     function BaseLayer(settings) {
@@ -48,7 +46,7 @@
         this.identify           = settings.identify;
         this.name               = settings.name;
         this.legend             = settings.legend;
-        this.opacity            = 100;
+        this.transparency       = 0;
         this.$checkbox          = undefined;
         this.$propertiesIcon    = undefined;
         this.openLayersLayer    = undefined;
@@ -113,12 +111,12 @@
                 this.$legendItem.remove();
             }
         };
-        this.setOpacity = function(opacity) {
-            console.log('opacity of layer ' + this.name + ' set to ' + opacity);
+        this.setTransparency = function(transparency) {
+            console.log('transparency of layer ' + this.name + ' set to ' + transparency);
             if (this.openLayersLayer) {
-                this.openLayersLayer.setOpacity(parseFloat(opacity)/100.0);
+                this.openLayersLayer.setOpacity(1-parseFloat(transparency)/100.0);
             }
-            this.opacity = opacity;
+            this.transparency = transparency;
         };
 
     }
@@ -505,8 +503,8 @@
                 "zoomend": mapEvent
             },               
             maxExtent: new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34),
-//numZoomLevels
-//tileSize
+            //numZoomLevels ??
+            //tileSize ??
             resolutions: [156543.033928,
                           78271.5169639999,
                           39135.7584820001,
@@ -552,7 +550,8 @@
                 fcav.map.addLayers([layer]);
                 fcav.map.setLayerIndex(layer, 0);
                 if (! hadBaseLayer) {
-                    fcav.map.zoomToExtent(new OpenLayers.Bounds(fcav.maxExtent.xmin, fcav.maxExtent.ymin, fcav.maxExtent.xmax, fcav.maxExtent.ymax), false);
+                    fcav.map.zoomToExtent(new OpenLayers.Bounds(fcav.maxExtent.xmin, fcav.maxExtent.ymin,
+                                                                fcav.maxExtent.xmax, fcav.maxExtent.ymax), false);
                 }
                 fcav.map.resolutions = layerInfo.resolutions;
             },
@@ -607,15 +606,15 @@
 
     function LayerPropertiesDialog(layer) {
         var $html = $(''
-                      + '<div class="layer-properties-dialog" style="width:auto;">'
+                      + '<div class="layer-properties-dialog">'
                       +   '<table>'
                       +     '<tr>'
-                      +       '<td>Opacity:</td>'
-                      +        '<td>'
-                      +          '<div class="opacity-slider"></div>'
-                      +        '</td>'
+                      +       '<td>Transparency:</td>'
                       +       '<td>'
-                      +         '<input class="opacity-text" style="border-color:transparent;" type="text" size="2"/>%'
+                      +         '<div class="transparency-slider"></div>'
+                      +       '</td>'
+                      +       '<td>'
+                      +        '<input class="transparency-text" type="text" size="2"/>%'
                       +       '</td>'
                       +     '</tr>'
                       +   '</table>'
@@ -623,25 +622,25 @@
                      );
             
 
-        $html.find('input.opacity-text').val(layer.opacity);
-        $html.find('.opacity-slider').slider({
+        $html.find('input.transparency-text').val(layer.transparency);
+        $html.find('.transparency-slider').slider({
             min   : 0,
             max   : 100,
             step  : 1,
-            value : layer.opacity,
+            value : layer.transparency,
             slide : function(event, ui) {
-                $html.find('input.opacity-text').val(ui.value);
-                layer.setOpacity(ui.value);
+                $html.find('input.transparency-text').val(ui.value);
+                layer.setTransparency(ui.value);
             }
         });
-        $html.find('input.opacity-text').change(function() {
+        $html.find('input.transparency-text').change(function() {
             var newValueFloat = parseFloat($(this).val());
             if (isNaN(newValueFloat) || newValueFloat < 0 || newValueFloat > 100) {
-                $(this).val($html.find('.opacity-slider').slider('value'));
+                $(this).val($html.find('.transparency-slider').slider('value'));
                 return;
             }
-            $html.find('.opacity-slider').slider("value", $(this).val());
-            layer.setOpacity($(this).val());
+            $html.find('.transparency-slider').slider("value", $(this).val());
+            layer.setTransparency($(this).val());
         });
 
         $html.dialog({
@@ -650,6 +649,7 @@
             autoOpen  : true,
             hide      : "explode",
             title     : layer.name,
+            width     : 'auto',
             close     : function() {
                 $(this).dialog('destroy');
                 $html.remove();

@@ -146,15 +146,6 @@ body, td, th {
 */
 }
 
-.layerPropertiesIcon {
-   margin-left: 5px;
-}
-
-.opacity-slider {
-   width: 120px;
-   margin-left: 8px;
-   margin-right: 5px;
-}
 
 #identify_results td.layer-results {
    width: 200px;
@@ -162,4 +153,27 @@ body, td, th {
 #identify_results td.layer-label {
    font-weight: bold;
    text-align: right;
+}
+
+
+.layerPropertiesIcon {
+   margin-left: 5px;
+}
+
+.layer-properties-dialog {
+/*   width:auto; */
+}
+
+.layer-properties-dialog td {
+  white-space: nowrap;
+}
+
+.layer-properties-dialog .transparency-text {
+   border-color:transparent;
+}
+
+.layer-properties-dialog .transparency-slider {
+   width: 120px;
+   margin-left: 8px;
+   margin-right: 5px;
 }
