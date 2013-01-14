@@ -39,15 +39,15 @@
     }
     function Layer(settings) {
         if (!settings) { return; }
-        this.lid		        = settings.lid;
-        this.visible	        = settings.visible;
-        this.url		        = settings.url;
-        this.srs		        = settings.srs;
-        this.layers		        = settings.layers;
-        this.styles		        = settings.styles;
-        this.identify	        = settings.identify;
-        this.name		        = settings.name;
-        this.legend		        = settings.legend;
+        this.lid                = settings.lid;
+        this.visible            = settings.visible;
+        this.url                = settings.url;
+        this.srs                = settings.srs;
+        this.layers             = settings.layers;
+        this.styles             = settings.styles;
+        this.identify           = settings.identify;
+        this.name               = settings.name;
+        this.legend             = settings.legend;
         this.opacity            = 100;
         this.$checkbox          = undefined;
         this.$propertiesIcon    = undefined;
@@ -150,10 +150,10 @@
         // layerPicker button:
         //
         $("#btnTglLyrPick").click(function() {
-		    if ($( "#layerPickerDialog" ).dialog('isOpen')) {
-			    $( "#layerPickerDialog" ).dialog('close');
+            if ($( "#layerPickerDialog" ).dialog('isOpen')) {
+                $( "#layerPickerDialog" ).dialog('close');
             } else {
-			    $( "#layerPickerDialog" ).dialog('open');
+                $( "#layerPickerDialog" ).dialog('open');
             }
         }).hover(
             function(){
@@ -163,7 +163,7 @@
             function(){
                 $("#tglLyrPickPic").attr("src", "icons/layers.png");
             }
-        ); 	
+        );  
 
         //
         // turn layerPickerDialog div into a jQuery UI dialog:
@@ -179,10 +179,10 @@
         // mapTools button:
         //
         $("#btnTglMapTools").click(function() {
-		    if ($( "#mapToolsDialog" ).dialog('isOpen')) {
-			    $( "#mapToolsDialog" ).dialog('close');
+            if ($( "#mapToolsDialog" ).dialog('isOpen')) {
+                $( "#mapToolsDialog" ).dialog('close');
             } else {
-			    $( "#mapToolsDialog" ).dialog('open');
+                $( "#mapToolsDialog" ).dialog('open');
             }
         }).hover(
             function(){
@@ -192,7 +192,7 @@
             function(){
                 $('#tglLegendPic').attr('src', 'icons/legend.png');
             }
-        ); 	    
+        );      
 
         //
         // turn mapToolsDialog div into a jQuery UI dialog:
@@ -367,7 +367,7 @@
 
     function deactivateActiveOpenLayersControls() {
         for (var i = 0; i < fcav.map.controls.length; i++) {
-		    if ((fcav.map.controls[i].active==true)
+            if ((fcav.map.controls[i].active==true)
                 &&
                 ((fcav.map.controls[i].displayClass=="olControlZoomBox")
                  ||
@@ -488,23 +488,23 @@
         fcav.identifyTool = createIdentifyTool();
 
         fcav.map = new OpenLayers.Map('map', {
-	        controls: [
-		        new OpenLayers.Control.Navigation({
-			        dragPanOptions: {
-				        enableKinetic: true
-			        }
-			    }),
-		        new OpenLayers.Control.Attribution(),
+            controls: [
+                new OpenLayers.Control.Navigation({
+                    dragPanOptions: {
+                        enableKinetic: true
+                    }
+                }),
+                new OpenLayers.Control.Attribution(),
                 fcav.zoomInTool,
                 fcav.zoomOutTool,
                 fcav.identifyTool
-		    ],
+            ],
             eventListeners: 
             {
                 "moveend": mapEvent,
                 "zoomend": mapEvent
             },               
-		    maxExtent: new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34),
+            maxExtent: new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34),
 //numZoomLevels
 //tileSize
             resolutions: [156543.033928,
@@ -528,9 +528,9 @@
                           0.597164283559817,
                           0.298582141647617],
 
-	        zoom: 1,
-		    units: 'm',
-		    projection: new OpenLayers.Projection("EPSG:900913")
+            zoom: 1,
+            units: 'm',
+            projection: new OpenLayers.Projection("EPSG:900913")
         });    
 
     }
@@ -629,7 +629,7 @@
             max   : 100,
             step  : 1,
             value : layer.opacity,
-		    slide : function(event, ui) {
+            slide : function(event, ui) {
                 $html.find('input.opacity-text').val(ui.value);
                 layer.setOpacity(ui.value);
             }
@@ -679,13 +679,13 @@
 //        var gmlData = processGML(strInfo);
 //         */
 //        fcav.map.addPopup(new OpenLayers.Popup.FramedCloud(
-//			"Feature Info:", 
-//			fcav.map.getLonLatFromPixel(e.xy),
-//			null,
-//			e.text, //gmlData,
-//			null,
-//			true
-//		));
+//          "Feature Info:", 
+//          fcav.map.getLonLatFromPixel(e.xy),
+//          null,
+//          e.text, //gmlData,
+//          null,
+//          true
+//      ));
 //    }
 
 
@@ -776,22 +776,24 @@
                 // This function gets called when the user clicks a point in the map while the
                 // identify tool is active.  The argument `e` is the click event; the coordinates
                 // of the clicked point are (e.x, e.y).
-                
+
                 var services = {},
                     service, urlsrs;
+
+                // First remove any exiting popup window left over from a previous identify
+                $('#identify_popup').remove();
                 
-                // First we loop over all the current (non-base) layers in the map to
-                // construct the GetFeatureInfo requests. There will be one request for each
-                // unique WMS layer service URL and SRS combination. (Typically, and in all
-                // cases I know of that we are using at the momenet, all layers from the same
-                // WMS service use the same SRS, so this amounts to one request per WMS
-                // service, but coding it to depend on the SRS as well makes it more flexible
-                // for the future, in case ever have multiple layers from the same WMS using
-                // different SRSes).  This loop populates the `services` object with one
-                // entry per url/srs combination; each entry records a url, srs, and list of
-                // layers, corresponding to one GetFeatureInfo request that will need to be
-                // made.  We also builds up the html that will display the results in the
-                // popup window here.
+                // Then loop over all the current (non-base) layers in the map to construct the
+                // GetFeatureInfo requests. There will be one request for each unique WMS layer
+                // service URL and SRS combination. (Typically, and in all cases I know of that
+                // we are using at the momenet, all layers from the same WMS service use the
+                // same SRS, so this amounts to one request per WMS service, but coding it to
+                // depend on the SRS as well makes it more flexible for the future, in case ever
+                // have multiple layers from the same WMS using different SRSes).  This loop
+                // populates the `services` object with one entry per url/srs combination; each
+                // entry records a url, srs, and list of layers, corresponding to one
+                // GetFeatureInfo request that will need to be made.  We also builds up the html
+                // that will display the results in the popup window here.
                 var html = '<table id="identify_results">';
                 $.each(fcav.map.layers, function () {
                     var srs, url, name, urlsrs;
@@ -823,20 +825,22 @@
                 // Display the popup window; we'll populate the results later, asynchronously,
                 // as they arrive.
                 fcav.map.addPopup(new OpenLayers.Popup.FramedCloud(
-			        "Feature Info:",                    // id
-			        fcav.map.getLonLatFromPixel(e.xy),  // lonlat
-			        null,                               // contentSize
-			        html,                               // contentHTML
-			        null,                               // anchor
-			        true,                               // closeBox
+                    "identify_popup",                   // id
+                    fcav.map.getLonLatFromPixel(e.xy),  // lonlat
+                    null,                               // contentSize
+                    html,                               // contentHTML
+                    null,                               // anchor
+                    true,                               // closeBox
                     null                                // closeBoxCallback
-			    ));
+                ));
                 
                 // Now loop over each item in the `services` object, generating the GetFeatureInfo request for it
                 for (urlsrs in services) {
                     (function () {
                         var service = services[urlsrs],
-                            requestUrl = createWMSGetFeatureInfoRequestURL(service.url, service.layers, service.srs, e.x, e.y);
+                            //NOTE: the correct coords to use in the request are (e.xy.y,e.xy.y), which are NOT the same as (e.x,e.y).
+                            //      I'm not sure what the difference is, but (e.xy.y,e.xy.y) seems to be what GetFeatureInfo needs.
+                            requestUrl = createWMSGetFeatureInfoRequestURL(service.url, service.layers, service.srs, e.xy.x, e.xy.y);
                         $.ajax({
                             url: requestUrl,
                             dataType: "xml",
