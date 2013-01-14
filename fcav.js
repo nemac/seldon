@@ -14,7 +14,8 @@
         },
         baseLayers      : [], // list of BaseLayer instances holding info about base layers from config file
         accordionGroups : [], // list of AccordionGroup instances holding info about accordion groups from config file
-        themes          : []  // list of Theme instances holding info about themes from config file
+        themes          : [], // list of Theme instances holding info about themes from config file
+        propertiesDialog$Html : {}
     };
 
     function BaseLayer(settings) {
@@ -598,13 +599,19 @@
 
     function createLayerPropertiesIcon(layer) {
         layer.$propertiesIcon = $('<img class="layerPropertiesIcon" id="'+layer.lid+'" src="icons/settings.png"/>').click(function() {
-            new LayerPropertiesDialog(layer);
+            createLayerPropertiesDialog(layer);
         });
         return layer.$propertiesIcon;
     }
 
 
-    function LayerPropertiesDialog(layer) {
+    function createLayerPropertiesDialog(layer) {
+
+        if (fcav.propertiesDialog$Html[layer.lid]) {
+            fcav.propertiesDialog$Html[layer.lid].dialog('destroy');
+            fcav.propertiesDialog$Html[layer.lid].remove();
+        }
+
         var $html = $(''
                       + '<div class="layer-properties-dialog">'
                       +   '<table>'
@@ -620,8 +627,6 @@
                       +   '</table>'
                       + '</div>'
                      );
-            
-
         $html.find('input.transparency-text').val(layer.transparency);
         $html.find('.transparency-slider').slider({
             min   : 0,
@@ -653,8 +658,10 @@
             close     : function() {
                 $(this).dialog('destroy');
                 $html.remove();
+                fcav.propertiesDialog$Html[layer.lid] = undefined;
             }
         });
+        fcav.propertiesDialog$Html[layer.lid] = $html;
     }
 
 
