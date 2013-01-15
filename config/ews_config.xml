@@ -125,6 +125,7 @@
 	 name="Cities"
 	 legend="http://rain.nemac.org/~derek/fswms/html/vlayers?SERVICE=WMS&amp;REQUEST=GetLegendGraphic&amp;layer=cities&amp;VERSION=1.1.1&amp;FORMAT=image/png"/>
       <wmsLayer
+     selected="true"
 	 lid="AAB"
 	 visible="true"
 	 url="http://rain.nemac.org/~derek/fswms/html/vlayers?TRANSPARENT=true"
@@ -471,6 +472,7 @@
           <wmsSubgroup label="   Change from All-Year Baseline">
 
         <wmsLayer
+          selected="true"
           lid="AA"
           visible="true"
           url="http://rain.nemac.org/~derek/fswms/html/ews?TRANSPARENT=true"

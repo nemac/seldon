@@ -12,10 +12,49 @@
             xmax : -6000000,   //      changes; these are just here to prevent a crash if we ever
             ymax : 7000000     //      read a config file that is missing the <extent> element.
         },
-        baseLayers      : [], // list of BaseLayer instances holding info about base layers from config file
-        accordionGroups : [], // list of AccordionGroup instances holding info about accordion groups from config file
-        themes          : [], // list of Theme instances holding info about themes from config file
-        propertiesDialog$Html : {}
+        baseLayers       : [], // list of BaseLayer instances holding info about base layers from config file
+        baseLayersByName : {}, // hash of pointers to BaseLayer instances from `baseLayers` list, keyed by layer name
+        accordionGroups  : [], // list of AccordionGroup instances holding info about accordion groups from config file
+        themes           : [], // list of Theme instances holding info about themes from config file
+        themesByName     : {}, // hash of pointers to Theme instances from `themes` list, keyed by theme name
+        layersByLid      : {}, // hash of pointers to Layer instances, keyed by lid
+        propertiesDialog$Html : {},
+        currentBaseLayer : undefined,
+        currentTheme     : undefined,
+        state            : function() {
+            var state               = new FcavState();
+            state.baseLayerName     = this.currentBaseLayer.name;
+            state.themeName         = this.currentTheme.name;
+            var accordionGroupIndex = $("#layerPickerAccordion").accordion('option', 'active');
+            state.accordionGroupGid = this.currentTheme.accordionGroups[accordionGroupIndex].gid;
+            var extent              = this.map.getExtent();
+            state.extent            = extent.left + ',' + extent.bottom + ',' + extent.right + ',' + extent.top;
+            $.each(this.map.layers, function () {
+                if (! this.isBaseLayer) {
+                    var op;
+                    if (this.opacity === 1) {
+                        op = "1";
+                    } else if (this.opacity === 0) {
+                        op = "0";
+                    } else {
+                        op = sprintf("%.2f", this.opacity);
+                    }
+                    state.layerLids.push(this.fcavLayer.lid);
+                    state.layerAlphas.push(op);
+                }
+            });
+            return state;
+        },
+        shareUrl         : function() {
+            var state = this.state();
+            var url   = window.location.toString();
+            url = url.replace(/\?.*$/, '');
+            url = url.replace(/\/$/, '');
+            return url + '?' + state.urlArgs();
+        },
+        updateShareMapUrl : function() {
+            $('#mapToolsDialog textarea.shareMapUrl').val(this.shareUrl());
+        }
     };
 
     function BaseLayer(settings) {
@@ -23,13 +62,16 @@
         this.name  = settings.name;
         this.label = settings.label;
         this.url   = settings.url;
+        this.index = settings.index;
+        fcav.baseLayersByName[this.name] = this;
     }
     function AccordionGroup(settings) {
         this.sublists = [];
         if (!settings) { return; }
-        this.gid      = settings.gid;
-        this.name     = settings.name;
-        this.label    = settings.label;
+        this.gid              = settings.gid;
+        this.name             = settings.name;
+        this.label            = settings.label;
+        this.selectedInConfig = settings.selectedInConfig;
     }
     function AccordionGroupSublist(settings) {
         this.layers = [];
@@ -48,6 +90,7 @@
         this.name               = settings.name;
         this.legend             = settings.legend;
         this.transparency       = 0;
+        this.selectedInConfig   = settings.selectedInConfig;
         this.$checkbox          = undefined;
         this.$propertiesIcon    = undefined;
         this.openLayersLayer    = undefined;
@@ -60,13 +103,13 @@
                 transitionEffect : 'resize'
             };
 
-            if (this.url.indexOf('wlayers') === -1) {
-                options.singleTile = true;
-                options.ratio      = 1;
-            } else {
+            if (stringContainsChar(this.url, 'wlayers')) {
                 options.tileSize = new OpenLayers.Size(500,500);
                 options.ratio    = 1;
                 options.buffer   = 2;
+            } else {
+                options.singleTile = true;
+                options.ratio      = 1;
             }
             this.openLayersLayer =
                 new OpenLayers.Layer.WMS(this.name,
@@ -113,13 +156,12 @@
             }
         };
         this.setTransparency = function(transparency) {
-            console.log('transparency of layer ' + this.name + ' set to ' + transparency);
             if (this.openLayersLayer) {
                 this.openLayersLayer.setOpacity(1-parseFloat(transparency)/100.0);
             }
             this.transparency = transparency;
         };
-
+        fcav.layersByLid[this.lid] = this;
     }
 
     function Theme(settings) {
@@ -127,6 +169,8 @@
         if (!settings) { return; }
         this.name  = settings.name;
         this.label = settings.label;
+        this.index = settings.index;
+        fcav.themesByName[this.name] = this;
     }
 
 
@@ -134,7 +178,7 @@
         console.log(message);
     }
 
-    $('document').ready(function() {
+    function init() {
 
         $.ajax({
             url: './config/ews_config.xml', // name of file you want to parse
@@ -294,11 +338,11 @@
         });
         $('#btnZoomExtent').hover(
             function(){
-                document.getElementById("zoomExtentPic").src = 'icons/zoom-extent_over.png';
+                $("#btnZoomExtentPic").attr('src',  'icons/zoom-extent_over.png');
                 $("#btnZoomExtent").attr('title', 'Full Extent tool');
             },
             function(){
-                document.getElementById("zoomExtentPic").src = 'icons/zoom-extent.png';
+                $("#btnZoomExtentPic").attr('src',  'icons/zoom-extent.png');
             }
         ); 
         
@@ -321,6 +365,25 @@
             }
         ); 
             
+        // 
+        // help button
+        // 
+        $("#btnHelp").click(function() {
+            console.log(fcav.shareUrl());
+            //alert("Handler for help called.");
+            //getCurrentExtent();
+        });
+        $('#btnHelp').hover(
+            function(){
+                $("#btnPic").attr('src', 'icons/help_over.png');
+                $("#btnHelp").attr('title', 'Get help');
+            },
+            function(){
+                $("#btnPic").attr('src', 'icons/help.png');
+            }
+        ); 
+
+
 /*        
         // 
         // multigraph button
@@ -343,26 +406,8 @@
             }
         ); 
 
-        // 
-        // help button
-        // 
-        $("#btnHelp").click(function() {
-            //alert("Handler for help called.");
-            //getCurrentExtent();
-        });
-        $('#btnHelp').hover(
-            function(){
-                document.getElementById("helpPic").src = 'icons/help_over.png';
-                $("#btnHelp").attr('title', 'Get help');
-            },
-            function(){
-                //$('#btnHelp')[0].firstElementChild.src = 'icons/help.png';
-                document.getElementById("helpPic").src = 'icons/help.png';
-            }
-        ); 
          */
-
-    });
+    }
 
     function deactivateActiveOpenLayersControls() {
         for (var i = 0; i < fcav.map.controls.length; i++) {
@@ -392,9 +437,6 @@
             };
         }
 
-        // initialize the OpenLayers map object
-        initOpenLayers();
-
         // parse base layers and populate combo box
         var selectedBaseLayerIndex = 0;
         $configXML.find("images image").each(function(i) {
@@ -403,25 +445,26 @@
                 baseLayer = new BaseLayer({
                     name     : $image.attr('name'),
                     label    : $image.attr('label'),
-                    url      : $image.attr('url')
+                    url      : $image.attr('url'),
+                    index    : i
                 });
             fcav.baseLayers.push(baseLayer);
+            fcav.baseLayersByName[baseLayer.name] = baseLayer;
             $('#baseCombo').append($('<option value="'+i+'">'+baseLayer.label+'</option>'));
             if (selected) {
                 selectedBaseLayerIndex = i;
             }
         });
-        setArcGISCacheBaseLayer(fcav.baseLayers[selectedBaseLayerIndex]);
-        $('#baseCombo').val(selectedBaseLayerIndex);
 
         // parse layer groups and layers
         var accordionGroupsByName = {};
         $configXML.find("wmsGroup").each(function() {
             var $wmsGroup      = $(this), // each <wmsGroup> corresponds to a (potential) layerPicker accordion group
                 accordionGroup = new AccordionGroup({
-                    gid   : $wmsGroup.attr('gid'),
-                    name  : $wmsGroup.attr('name'),
-                    label : $wmsGroup.attr('label')
+                    gid              : $wmsGroup.attr('gid'),
+                    name             : $wmsGroup.attr('name'),
+                    label            : $wmsGroup.attr('label'),
+                    selectedInConfig : ($wmsGroup.attr('selected') === "true")
                 });
             fcav.accordionGroups.push(accordionGroup);
             accordionGroupsByName[accordionGroup.name] = accordionGroup;
@@ -434,15 +477,16 @@
                 $wmsSubgroup.find("wmsLayer").each(function() {
                     var $wmsLayer = $(this);
                     sublist.layers.push(new Layer({
-                        lid       : $wmsLayer.attr('lid'),
-                        visible   : $wmsLayer.attr('visible'),
-                        url       : $wmsLayer.attr('url'),
-                        srs       : $wmsLayer.attr('srs'),
-                        layers    : $wmsLayer.attr('layers'),
-                        styles    : $wmsLayer.attr('styles'),
-                        identify  : $wmsLayer.attr('identify'),
-                        name      : $wmsLayer.attr('name'),
-                        legend    : $wmsLayer.attr('legend')
+                        lid              : $wmsLayer.attr('lid'),
+                        visible          : $wmsLayer.attr('visible'),
+                        url              : $wmsLayer.attr('url'),
+                        srs              : $wmsLayer.attr('srs'),
+                        layers           : $wmsLayer.attr('layers'),
+                        styles           : $wmsLayer.attr('styles'),
+                        identify         : $wmsLayer.attr('identify'),
+                        name             : $wmsLayer.attr('name'),
+                        legend           : $wmsLayer.attr('legend'),
+                        selectedInConfig : ($wmsLayer.attr('selected') === "true")
                     }));
                 });
             });
@@ -455,7 +499,8 @@
                 selected  = $view.attr('selected'),
                 theme = new Theme({
                     name  : $view.attr('name'),
-                    label : $view.attr('label')
+                    label : $view.attr('label'),
+                    index : i
                 });
             fcav.themes.push(theme);
             $('#themeCombo').append($('<option value="'+i+'">'+theme.label+'</option>'));
@@ -473,64 +518,178 @@
                 selectedThemeIndex = i;
             }
         });
-        setTheme(fcav.themes[selectedThemeIndex]);
-        $('#themeCombo').val(selectedThemeIndex);
+
+        // initialize the OpenLayers map object
+        initOpenLayers(selectedBaseLayerIndex, selectedThemeIndex);
+        //setArcGISCacheBaseLayer(fcav.baseLayers[selectedBaseLayerIndex]);
+
+        //setTheme(fcav.themes[selectedThemeIndex]);
+        //$('#themeCombo').val(selectedThemeIndex);
+
 
 
     }
 
-    function initOpenLayers() {
+    function initializeFromState(state) {
+        var theme     = fcav.themesByName[state.themeName];
+        var baseLayer = fcav.baseLayersByName[state.baseLayerName];
+
+        var layers = {};
+        $.each(state.layerLids, function (i,lid) {
+            fcav.layersByLid[lid].transparency = state.layerAlphas[i];
+            layers[lid] = true;
+        });
+
+        setArcGISCacheBaseLayer(baseLayer);
+        $('#baseCombo').val(baseLayer.index);
+
+        setTheme(theme, {
+            openAccordionGroupGid : state.accordionGroupGid,
+            layers                : layers
+        });
+        $('#themeCombo').val(theme.index);
+        console.log(state.extent);
+        fcav.map.zoomToExtent(parseExtent(state.extent), false);
+    }
+
+    function FcavState () {
+        this.themeName         = undefined;
+        this.accordionGroupGid = undefined;
+        this.baseLayerName     = undefined;
+        this.extent            = undefined;
+        this.layerLids         = [];
+        this.layerAlphas       = [];
+        this.urlArgs           = function() {
+            return Mustache.render(
+                (''
+                 + 'theme={{{theme}}}'
+                 + '&layers={{{layers}}}'
+                 + '&alphas={{{alphas}}}'
+                 + '&accgp={{{accgp}}}'
+                 + '&basemap={{{basemap}}}'
+                 + '&extent={{{extent}}}'
+                ),
+                {
+                    theme   : this.themeName,
+                    layers  : this.layerLids.join(','),
+                    alphas  : this.layerAlphas.join(','),
+                    accgp   : this.accordionGroupGid,
+                    basemap : this.baseLayerName,
+                    extent  : this.extent
+                });
+        };
+    }
+
+    FcavState.createFromURL = function (url) {
+        var state = new FcavState(),
+            vars  = [],
+            hash,
+            q;
+
+        if (url === undefined) {
+            return state;
+        }
+
+        // Remove everything up to and including the first '?' char.
+        url = url.replace(/^[^\?]*\?/, '');
+
+        $.each(url.split('&'), function () {
+            var i = this.indexOf('='),
+                name, value;
+            if (i >= 0) {
+                name  = this.substring(0,i);
+                value = this.substring(i+1);
+            } else {
+                name  = this;
+                value = undefined;
+            }
+            vars[name] = value;
+        });
+
+        state.themeName         = vars.theme;
+        state.accordionGroupGid = vars.accgp;
+        state.baseLayerName     = vars.basemap;
+        state.extent            = vars.extent;
+        if (vars.layers) {
+            $.each(vars.layers.split(','), function () {
+                state.layerLids.push(this);
+            });
+        }
+        if (vars.alphas) {
+            $.each(vars.alphas.split(','), function () {
+                state.layerAlphas.push(this);
+            });
+        }
+
+        return state;
+    };
+
+    function initOpenLayers(baseLayerIndex, themeIndex) {
+
+        var baseLayer = fcav.baseLayers[baseLayerIndex];
+        $('#baseCombo').val(baseLayerIndex);
 
         fcav.zoomInTool   = new OpenLayers.Control.ZoomBox();
         fcav.zoomOutTool  = new OpenLayers.Control.ZoomBox({out:true});
         fcav.dragPanTool  = new OpenLayers.Control.DragPan();
         fcav.identifyTool = createIdentifyTool();
 
-        fcav.map = new OpenLayers.Map('map', {
-            controls: [
-                new OpenLayers.Control.Navigation({
-                    dragPanOptions: {
-                        enableKinetic: true
-                    }
-                }),
-                new OpenLayers.Control.Attribution(),
-                fcav.zoomInTool,
-                fcav.zoomOutTool,
-                fcav.identifyTool
-            ],
-            eventListeners: 
-            {
-                "moveend": mapEvent,
-                "zoomend": mapEvent
-            },               
-            maxExtent: new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34),
-            //numZoomLevels ??
-            //tileSize ??
-            resolutions: [156543.033928,
-                          78271.5169639999,
-                          39135.7584820001,
-                          19567.8792409999,
-                          9783.93962049996,
-                          4891.96981024998,
-                          2445.98490512499,
-                          1222.99245256249,
-                          611.49622628138,
-                          305.748113140558,
-                          152.874056570411,
-                          76.4370282850732,
-                          38.2185141425366,
-                          19.1092570712683,
-                          9.55462853563415,
-                          4.77731426794937,
-                          2.38865713397468,
-                          1.19432856685505,
-                          0.597164283559817,
-                          0.298582141647617],
+        $.ajax({
+            url: baseLayer.url + '?f=json&pretty=true',
+            dataType: "jsonp",
+            success:  function (layerInfo) {
+                var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
+                    layerInfo: layerInfo
+                });
+                var maxExtentBounds = new OpenLayers.Bounds(fcav.maxExtent.xmin, fcav.maxExtent.ymin,
+                                                   fcav.maxExtent.xmax, fcav.maxExtent.ymax);
+                fcav.map = new OpenLayers.Map('map', {
+                    maxExtent:         maxExtentBounds,
+                    units:             'm',
+                    resolutions:       layer.resolutions,
+                    numZoomLevels:     layer.numZoomLevels,
+                    tileSize:          layer.tileSize,
+                    controls: [
+                        new OpenLayers.Control.Navigation({
+                            dragPanOptions: {
+                                enableKinetic: true
+                            }
+                        }),
+                        new OpenLayers.Control.Attribution(),
+                        fcav.zoomInTool,
+                        fcav.zoomOutTool,
+                        fcav.identifyTool
+                    ],
+                    eventListeners: 
+                    {
+                        "moveend": mapEvent,
+                        "zoomend": mapEvent
+                    },               
+                    zoom: 1,
+                    projection: new OpenLayers.Projection("EPSG:900913")
+                });    
+                
+                fcav.currentBaseLayer = baseLayer;
+                fcav.map.addLayers([layer]);
+                fcav.map.setLayerIndex(layer, 0);
+                setTheme(fcav.themes[themeIndex]);
+                $('#themeCombo').val(themeIndex);
+                fcav.map.zoomToExtent(maxExtentBounds, false);
 
-            zoom: 1,
-            units: 'm',
-            projection: new OpenLayers.Projection("EPSG:900913")
-        });    
+                // process shared url, if any
+                var shareState = FcavState.createFromURL(window.location.toString());
+                if (shareState.extent) {
+                    // Only act on the url parameters if they includes an extent parameter.  This
+                    // is simply a quick & dirty way to insure that the parameters are valid.
+                    // We proabably ought to strengthen this to do a better validity check.
+                    initializeFromState(shareState);
+                }
+
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert(textStatus);
+            }
+        });
 
     }
 
@@ -542,19 +701,10 @@
                 var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
                     layerInfo: layerInfo
                 });
-                //NOTE: "x = !!y" sets x to a Boolean, true if and only if y is truthy
-                //      (not null and not undefined, in this case)
-                var hadBaseLayer = !!fcav.map.baseLayer;
-                if (hadBaseLayer) {
-                    fcav.map.removeLayer(fcav.map.layers[0]);
-                }
+                fcav.map.removeLayer(fcav.map.layers[0]);
+                fcav.currentBaseLayer = baseLayer;
                 fcav.map.addLayers([layer]);
                 fcav.map.setLayerIndex(layer, 0);
-                if (! hadBaseLayer) {
-                    fcav.map.zoomToExtent(new OpenLayers.Bounds(fcav.maxExtent.xmin, fcav.maxExtent.ymin,
-                                                                fcav.maxExtent.xmax, fcav.maxExtent.ymax), false);
-                }
-                fcav.map.resolutions = layerInfo.resolutions;
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert(textStatus);
@@ -562,15 +712,27 @@
         });
     }
 
-    function setTheme(theme) {
-
+    function setTheme(theme, options) {
         $('#layerPickerAccordion').empty();
         $("#layerPickerAccordion").accordion('destroy');
         $('#layerPickerAccordion').listAccordion({ clearStyle: true, autoHeight: false });
-
         $('#legend').empty();
+        var openAccordionGroupIndex = 0;
+
+        if (options === undefined) {
+            options = {};
+        }
 
         $.each(theme.accordionGroups, function (i, accordionGroup) {
+            if (options.openAccordionGroupGid) {
+                if (accordionGroup.gid === options.openAccordionGroupGid ) {
+                    openAccordionGroupIndex = i;
+                }
+            } else {
+                if (accordionGroup.selectedInConfig) {
+                    openAccordionGroupIndex = i;
+                }
+            }
             var g = $('#layerPickerAccordion').listAccordion('addSection', '<a>'+accordionGroup.label+'</a>');
             $.each(accordionGroup.sublists, function (j, sublist) {
                 var s = $('#layerPickerAccordion').listAccordion('addSublist', g, sublist.label);
@@ -579,11 +741,20 @@
                                                              [createLayerToggleCheckbox(layer),
                                                               $('<label for="chk'+layer.lid+'">'+layer.name+'</label>'),
                                                               createLayerPropertiesIcon(layer)]);
+                    if (options.layers) {
+                        if (options.layers[layer.id]) {
+                            layer.addToMap();
+                        }
+                    } else {
+                        if (layer.selectedInConfig) {
+                            layer.addToMap();
+                        }
+                    }
                 });
             });
         });
-        $('#layerPickerAccordion').accordion('activate', 0);
-
+        $('#layerPickerAccordion').accordion('activate', openAccordionGroupIndex);
+        fcav.currentTheme = theme;
     }
 
     function createLayerToggleCheckbox(layer) {
@@ -666,6 +837,7 @@
 
 
     function mapEvent(event) {
+        fcav.updateShareMapUrl();
         // ... update shareMapURL ...
     }    
 
@@ -761,7 +933,7 @@
              + '&Y={{y}}'
             ),
             {
-                c      : (serviceUrl.indexOf('?') === -1) ? '?' : '&',
+                c      : stringContainsChar(serviceUrl, '?') ? '&' : '?',
                 layers : layers.join(','),
                 height : fcav.map.size.h,
                 width  : fcav.map.size.w,
@@ -885,8 +1057,41 @@
         }
         return undefined;
     }
-            
 
+
+    function stringContainsChar(string, c) {
+        return (string.indexOf(c) >= 0);
+    }
+
+
+    // Accepts an array of strings, and returns a JavaScript object containing a property corresponding
+    // to each element in the array; the value of each property is 'true'.
+    function arrayToBooleanHash(a) {
+        var h = {}, i;
+        for (i=0; i<a.length; ++i) {
+            h[a[i]] = true;
+        }
+        return h;
+    }
+
+    function parseExtent(extent) {
+        var vals = extent.split(',');
+        var bounds = new OpenLayers.Bounds(parseFloat(vals[0]), parseFloat(vals[1]), parseFloat(vals[2]), parseFloat(vals[3]));
+        return bounds;
+    }
+
+    //
+    // exports, for testing:
+    //
+    fcav.BaseLayer                         = BaseLayer;
+    fcav.AccordionGroup                    = AccordionGroup;
+    fcav.AccordionGroupSublist             = AccordionGroupSublist;
+    fcav.Layer                             = Layer;
+    fcav.Theme                             = Theme;
+    fcav.createWMSGetFeatureInfoRequestURL = createWMSGetFeatureInfoRequestURL;
+    fcav.stringContainsChar                = stringContainsChar;
+    fcav.FcavState                         = FcavState ;
+    fcav.init                              = init ;
+    window.fcav                            = fcav;
     
 }(jQuery));
-
