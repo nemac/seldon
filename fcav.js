@@ -1,27 +1,31 @@
 (function ($) {
     "use strict";
 
-    var fcav = {
-        map         : undefined, // OpenLayers map object
-        zoomInTool  : undefined, // OpenLayers zoom in tool
-        zoomOutTool : undefined, // OpenLayers zoom out tool
-        dragPanTool : undefined, // OpenLayers dragpan tool
-        maxExtent   : {
+    var EventEmitter = window.EventEmitter,
+        fcav = {},
+        app;
+
+    fcav.App = function () {
+        EventEmitter.call(this);
+        this.map         = undefined; // OpenLayers map object
+        this.zoomInTool  = undefined; // OpenLayers zoom in tool
+        this.zoomOutTool = undefined; // OpenLayers zoom out tool
+        this.dragPanTool = undefined; // OpenLayers dragpan tool
+        this.maxExtent   = {
             xmin : -15000000,  //NOTE: These values get replaced by settings from the config file.
             ymin : 2000000,    //      Don't worry about keeping these in sync if the config fil 
             xmax : -6000000,   //      changes; these are just here to prevent a crash if we ever
             ymax : 7000000     //      read a config file that is missing the <extent> element.
-        },
-        baseLayers       : [], // list of BaseLayer instances holding info about base layers from config file
-        baseLayersByName : {}, // hash of pointers to BaseLayer instances from `baseLayers` list, keyed by layer name
-        accordionGroups  : [], // list of AccordionGroup instances holding info about accordion groups from config file
-        themes           : [], // list of Theme instances holding info about themes from config file
-        themesByName     : {}, // hash of pointers to Theme instances from `themes` list, keyed by theme name
-        layersByLid      : {}, // hash of pointers to Layer instances, keyed by lid
-        propertiesDialog$Html : {},
-        currentBaseLayer : undefined,
-        currentTheme     : undefined,
-        state            : function() {
+        };
+        this.baseLayers       = []; // list of BaseLayer instances holding info about base layers from config file
+        this.baseLayersByName = {}; // hash of pointers to BaseLayer instances from `baseLayers` list, keyed by layer name
+        this.accordionGroups  = []; // list of AccordionGroup instances holding info about accordion groups from config file
+        this.themes           = []; // list of Theme instances holding info about themes from config file
+        this.themesByName     = {}; // hash of pointers to Theme instances from `themes` list, keyed by theme name
+        this.layersByLid      = {}; // hash of pointers to Layer instances, keyed by lid
+        this.currentBaseLayer = undefined;
+        this.currentTheme     = undefined;
+        this.state            = function() {
             var state               = new FcavState();
             state.baseLayerName     = this.currentBaseLayer.name;
             state.themeName         = this.currentTheme.name;
@@ -44,18 +48,21 @@
                 }
             });
             return state;
-        },
-        shareUrl         : function() {
+        };
+        this.shareUrl         = function() {
             var state = this.state();
             var url   = window.location.toString();
             url = url.replace(/\?.*$/, '');
             url = url.replace(/\/$/, '');
             return url + '?' + state.urlArgs();
-        },
-        updateShareMapUrl : function() {
-            $('#mapToolsDialog textarea.shareMapUrl').val(this.shareUrl());
-        }
+        };
+        this.updateShareMapUrl = function() {
+            if (this.currentTheme) {
+                $('#mapToolsDialog textarea.shareMapUrl').val(this.shareUrl());
+            }
+        };
     };
+    EventEmitter.declare(fcav.App);
 
     function BaseLayer(settings) {
         if (!settings) { return; }
@@ -63,7 +70,7 @@
         this.label = settings.label;
         this.url   = settings.url;
         this.index = settings.index;
-        fcav.baseLayersByName[this.name] = this;
+        app.baseLayersByName[this.name] = this;
     }
     function AccordionGroup(settings) {
         this.sublists = [];
@@ -79,6 +86,7 @@
         this.label  = settings.label;
     }
     function Layer(settings) {
+        EventEmitter.call(this);
         if (!settings) { return; }
         this.lid                = settings.lid;
         this.visible            = settings.visible;
@@ -91,8 +99,6 @@
         this.legend             = settings.legend;
         this.transparency       = 0;
         this.selectedInConfig   = settings.selectedInConfig;
-        this.$checkbox          = undefined;
-        this.$propertiesIcon    = undefined;
         this.openLayersLayer    = undefined;
         this.createOpenLayersLayer = function() {
             if (this.openLayersLayer !== undefined) {
@@ -118,7 +124,7 @@
                                              projection  : new OpenLayers.Projection("EPSG:900913"), 
                                              units       : "m", 
                                              layers      : this.layers, 
-                                             maxExtent   : new OpenLayers.Bounds(fcav.maxExtent),
+                                             maxExtent   : new OpenLayers.Bounds(app.maxExtent),
                                              transparent : true
                                          },
                                          options
@@ -126,28 +132,24 @@
             this.openLayersLayer.fcavLayer = this;
             return this.openLayersLayer;
         };
-        this.addToMap = function(suppressCheckboxUpdate) {
-            fcav.map.addLayer(this.createOpenLayersLayer());
-            if (this.$checkbox && !suppressCheckboxUpdate) {
-                this.$checkbox.attr('checked', true);
-            }
+        this.activate = function(suppressCheckboxUpdate) {
+            app.map.addLayer(this.createOpenLayersLayer());
             this.addToLegend();
+            this.emit("activate");
         };
-        this.removeFromMap = function(suppressCheckboxUpdate) {
+        this.deactivate = function(suppressCheckboxUpdate) {
             if (this.openLayersLayer) {
-                fcav.map.removeLayer(this.openLayersLayer);
-                if (this.$checkbox && !suppressCheckboxUpdate) {
-                    this.$checkbox.attr('checked', false);
-                }
+                app.map.removeLayer(this.openLayersLayer);
                 this.removeFromLegend();
             }
+            this.emit("deactivate");
         };
         this.addToLegend = function() {
             var that = this;
             this.$legendItem = $('<div id="lgd'+this.lid+'"><img src="'+this.legend+'"/></div>') .
                 appendTo($('#legend')) .
                 click(function() {
-                    that.removeFromMap();
+                    that.deactivate();
                 });
         };
         this.removeFromLegend = function() {
@@ -160,9 +162,11 @@
                 this.openLayersLayer.setOpacity(1-parseFloat(transparency)/100.0);
             }
             this.transparency = transparency;
+            this.emit({type : 'transparency', value : this.transparency});
         };
-        fcav.layersByLid[this.lid] = this;
+        app.layersByLid[this.lid] = this;
     }
+    EventEmitter.declare(Layer);
 
     function Theme(settings) {
         this.accordionGroups = [];
@@ -170,7 +174,7 @@
         this.name  = settings.name;
         this.label = settings.label;
         this.index = settings.index;
-        fcav.themesByName[this.name] = this;
+        app.themesByName[this.name] = this;
     }
 
 
@@ -178,7 +182,9 @@
         console.log(message);
     }
 
-    function init() {
+    fcav.init = function() {
+
+        app = new fcav.App();
 
         $.ajax({
             url: './config/ews_config.xml', // name of file you want to parse
@@ -269,7 +275,7 @@
         //
         $('#baseCombo').change(function() {
             var i = parseInt($("#baseCombo").val(), 10);
-            setArcGISCacheBaseLayer(fcav.baseLayers[i]);
+            setArcGISCacheBaseLayer(app.baseLayers[i]);
             // ... rebuild share url here ...
         });
 
@@ -278,7 +284,7 @@
         //
         $('#themeCombo').change(function() {
             var i = parseInt($("#themeCombo").val(), 10);
-            setTheme(fcav.themes[i]);
+            setTheme(app.themes[i]);
             // ... rebuild share url here ...
         });
 
@@ -287,7 +293,7 @@
         // 
         $("#btnPan").click(function() {
             deactivateActiveOpenLayersControls();
-            fcav.dragPanTool.activate();
+            app.dragPanTool.activate();
         }).hover(
             function(){
                 $('#panPic').attr('src',   'icons/pan_over.png');
@@ -303,7 +309,7 @@
         // 
         $("#btnZoomIn").click(function() {
             deactivateActiveOpenLayersControls();
-            fcav.zoomInTool.activate();
+            app.zoomInTool.activate();
         }).hover(
             function(){
                 $("#zoomInPic").attr('src',   'icons/zoom-in_over.png');
@@ -319,7 +325,7 @@
         // 
         $("#btnZoomOut").click(function() {
             deactivateActiveOpenLayersControls();
-            fcav.zoomOutTool.activate();
+            app.zoomOutTool.activate();
         }).hover(
             function() {
                 $("#zoomOutPic").attr('src',   'icons/zoom-out_over.png');
@@ -334,7 +340,7 @@
         // zoom to full extent button
         // 
         $("#btnZoomExtent").click(function() {
-            fcav.map.zoomToExtent(new OpenLayers.Bounds(fcav.maxExtent.xmin, fcav.maxExtent.ymin, fcav.maxExtent.xmax, fcav.maxExtent.ymax), false);
+            app.map.zoomToExtent(new OpenLayers.Bounds(app.maxExtent.xmin, app.maxExtent.ymin, app.maxExtent.xmax, app.maxExtent.ymax), false);
         });
         $('#btnZoomExtent').hover(
             function(){
@@ -369,7 +375,7 @@
         // help button
         // 
         $("#btnHelp").click(function() {
-            console.log(fcav.shareUrl());
+            console.log(app.shareUrl());
             //alert("Handler for help called.");
             //getCurrentExtent();
         });
@@ -407,18 +413,18 @@
         ); 
 
          */
-    }
+    };
 
     function deactivateActiveOpenLayersControls() {
-        for (var i = 0; i < fcav.map.controls.length; i++) {
-            if ((fcav.map.controls[i].active==true)
+        for (var i = 0; i < app.map.controls.length; i++) {
+            if ((app.map.controls[i].active==true)
                 &&
-                ((fcav.map.controls[i].displayClass=="olControlZoomBox")
+                ((app.map.controls[i].displayClass=="olControlZoomBox")
                  ||
-                 (fcav.map.controls[i].displayClass=="olControlWMSGetFeatureInfo")
+                 (app.map.controls[i].displayClass=="olControlWMSGetFeatureInfo")
                  ||
-                 (fcav.map.controls[i].displayClass=="ClickTool"))) {
-                fcav.map.controls[i].deactivate();
+                 (app.map.controls[i].displayClass=="ClickTool"))) {
+                app.map.controls[i].deactivate();
             }
         }
     }
@@ -429,7 +435,7 @@
         // parse and store max map extent from config file
         var $extent = $configXML.find("extent");
         if ($extent && $extent.length > 0) {
-            fcav.maxExtent = {
+            app.maxExtent = {
                 xmin : parseFloat($extent.attr('xmin')),
                 ymin : parseFloat($extent.attr('ymin')),
                 xmax : parseFloat($extent.attr('xmax')),
@@ -448,8 +454,8 @@
                     url      : $image.attr('url'),
                     index    : i
                 });
-            fcav.baseLayers.push(baseLayer);
-            fcav.baseLayersByName[baseLayer.name] = baseLayer;
+            app.baseLayers.push(baseLayer);
+            app.baseLayersByName[baseLayer.name] = baseLayer;
             $('#baseCombo').append($('<option value="'+i+'">'+baseLayer.label+'</option>'));
             if (selected) {
                 selectedBaseLayerIndex = i;
@@ -466,7 +472,7 @@
                     label            : $wmsGroup.attr('label'),
                     selectedInConfig : ($wmsGroup.attr('selected') === "true")
                 });
-            fcav.accordionGroups.push(accordionGroup);
+            app.accordionGroups.push(accordionGroup);
             accordionGroupsByName[accordionGroup.name] = accordionGroup;
             $wmsGroup.find("wmsSubgroup").each(function() {
                 var $wmsSubgroup = $(this), // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
@@ -502,7 +508,7 @@
                     label : $view.attr('label'),
                     index : i
                 });
-            fcav.themes.push(theme);
+            app.themes.push(theme);
             $('#themeCombo').append($('<option value="'+i+'">'+theme.label+'</option>'));
             $view.find("viewGroup").each(function() {
                 var $viewGroup     = $(this),
@@ -521,9 +527,9 @@
 
         // initialize the OpenLayers map object
         initOpenLayers(selectedBaseLayerIndex, selectedThemeIndex);
-        //setArcGISCacheBaseLayer(fcav.baseLayers[selectedBaseLayerIndex]);
+        //setArcGISCacheBaseLayer(app.baseLayers[selectedBaseLayerIndex]);
 
-        //setTheme(fcav.themes[selectedThemeIndex]);
+        //setTheme(app.themes[selectedThemeIndex]);
         //$('#themeCombo').val(selectedThemeIndex);
 
 
@@ -531,12 +537,12 @@
     }
 
     function initializeFromState(state) {
-        var theme     = fcav.themesByName[state.themeName];
-        var baseLayer = fcav.baseLayersByName[state.baseLayerName];
+        var theme     = app.themesByName[state.themeName];
+        var baseLayer = app.baseLayersByName[state.baseLayerName];
 
         var layers = {};
         $.each(state.layerLids, function (i,lid) {
-            fcav.layersByLid[lid].transparency = state.layerAlphas[i];
+            app.layersByLid[lid].transparency = state.layerAlphas[i];
             layers[lid] = true;
         });
 
@@ -549,7 +555,7 @@
         });
         $('#themeCombo').val(theme.index);
         console.log(state.extent);
-        fcav.map.zoomToExtent(parseExtent(state.extent), false);
+        app.map.zoomToExtent(parseExtent(state.extent), false);
     }
 
     function FcavState () {
@@ -626,13 +632,13 @@
 
     function initOpenLayers(baseLayerIndex, themeIndex) {
 
-        var baseLayer = fcav.baseLayers[baseLayerIndex];
+        var baseLayer = app.baseLayers[baseLayerIndex];
         $('#baseCombo').val(baseLayerIndex);
 
-        fcav.zoomInTool   = new OpenLayers.Control.ZoomBox();
-        fcav.zoomOutTool  = new OpenLayers.Control.ZoomBox({out:true});
-        fcav.dragPanTool  = new OpenLayers.Control.DragPan();
-        fcav.identifyTool = createIdentifyTool();
+        app.zoomInTool   = new OpenLayers.Control.ZoomBox();
+        app.zoomOutTool  = new OpenLayers.Control.ZoomBox({out:true});
+        app.dragPanTool  = new OpenLayers.Control.DragPan();
+        app.identifyTool = createIdentifyTool();
 
         $.ajax({
             url: baseLayer.url + '?f=json&pretty=true',
@@ -641,9 +647,9 @@
                 var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
                     layerInfo: layerInfo
                 });
-                var maxExtentBounds = new OpenLayers.Bounds(fcav.maxExtent.xmin, fcav.maxExtent.ymin,
-                                                   fcav.maxExtent.xmax, fcav.maxExtent.ymax);
-                fcav.map = new OpenLayers.Map('map', {
+                var maxExtentBounds = new OpenLayers.Bounds(app.maxExtent.xmin, app.maxExtent.ymin,
+                                                   app.maxExtent.xmax, app.maxExtent.ymax);
+                app.map = new OpenLayers.Map('map', {
                     maxExtent:         maxExtentBounds,
                     units:             'm',
                     resolutions:       layer.resolutions,
@@ -656,9 +662,9 @@
                             }
                         }),
                         new OpenLayers.Control.Attribution(),
-                        fcav.zoomInTool,
-                        fcav.zoomOutTool,
-                        fcav.identifyTool
+                        app.zoomInTool,
+                        app.zoomOutTool,
+                        app.identifyTool
                     ],
                     eventListeners: 
                     {
@@ -669,12 +675,12 @@
                     projection: new OpenLayers.Projection("EPSG:900913")
                 });    
                 
-                fcav.currentBaseLayer = baseLayer;
-                fcav.map.addLayers([layer]);
-                fcav.map.setLayerIndex(layer, 0);
-                setTheme(fcav.themes[themeIndex]);
+                app.currentBaseLayer = baseLayer;
+                app.map.addLayers([layer]);
+                app.map.setLayerIndex(layer, 0);
+                setTheme(app.themes[themeIndex]);
                 $('#themeCombo').val(themeIndex);
-                fcav.map.zoomToExtent(maxExtentBounds, false);
+                app.map.zoomToExtent(maxExtentBounds, false);
 
                 // process shared url, if any
                 var shareState = FcavState.createFromURL(window.location.toString());
@@ -701,10 +707,10 @@
                 var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
                     layerInfo: layerInfo
                 });
-                fcav.map.removeLayer(fcav.map.layers[0]);
-                fcav.currentBaseLayer = baseLayer;
-                fcav.map.addLayers([layer]);
-                fcav.map.setLayerIndex(layer, 0);
+                app.map.removeLayer(app.map.layers[0]);
+                app.currentBaseLayer = baseLayer;
+                app.map.addLayers([layer]);
+                app.map.setLayerIndex(layer, 0);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert(textStatus);
@@ -715,7 +721,14 @@
     function setTheme(theme, options) {
         $('#layerPickerAccordion').empty();
         $("#layerPickerAccordion").accordion('destroy');
-        $('#layerPickerAccordion').listAccordion({ clearStyle: true, autoHeight: false });
+        $('#layerPickerAccordion').listAccordion({
+            clearStyle : true,
+            autoHeight : false,
+            change     : function(event, ui) {
+                app.updateShareMapUrl();
+            }
+        });
+
         $('#legend').empty();
         var openAccordionGroupIndex = 0;
 
@@ -737,50 +750,77 @@
             $.each(accordionGroup.sublists, function (j, sublist) {
                 var s = $('#layerPickerAccordion').listAccordion('addSublist', g, sublist.label);
                 $.each(sublist.layers, function (k, layer) {
+                    // remove any previously defined listeners for this layer, in case this isn't the first
+                    // time we've been here
+                    layer.removeAllListeners("activate");
+                    layer.removeAllListeners("deactivate");
+                    layer.removeAllListeners("transparency");
+
+                    // listen for changes to this layer, and update share url accordingly
+                    layer.addListener("activate", function () {
+                        app.updateShareMapUrl();
+                    });
+                    layer.addListener("deactivate", function () {
+                        app.updateShareMapUrl();
+                    });
+                    layer.addListener("transparency", function () {
+                        app.updateShareMapUrl();
+                    });
+
+                    // add the layer to the accordion group
                     $('#layerPickerAccordion').listAccordion('addSublistItem', s,
                                                              [createLayerToggleCheckbox(layer),
                                                               $('<label for="chk'+layer.lid+'">'+layer.name+'</label>'),
                                                               createLayerPropertiesIcon(layer)]);
+                    // decide whether to activate the layer
                     if (options.layers) {
                         if (options.layers[layer.id]) {
-                            layer.addToMap();
+                            layer.activate();
                         }
                     } else {
                         if (layer.selectedInConfig) {
-                            layer.addToMap();
+                            layer.activate();
                         }
                     }
                 });
             });
         });
         $('#layerPickerAccordion').accordion('activate', openAccordionGroupIndex);
-        fcav.currentTheme = theme;
+        app.currentTheme = theme;
     }
 
     function createLayerToggleCheckbox(layer) {
-        layer.$checkbox = $('<input type="checkbox" id="chk'+layer.lid+'"></input>').click(function() {
+        // create the checkbox
+        var $checkbox = $('<input type="checkbox" id="chk'+layer.lid+'"></input>').click(function() {
             if ($(this).is(':checked')) {
-                layer.addToMap(true);
+                layer.activate(true);
             } else {
-                layer.removeFromMap(true);
+                layer.deactivate(true);
             }
         });
-        return layer.$checkbox;
+        // listen for activate/deactivate events from the layer, and update the checkbox accordingly
+        layer.addListener("activate", function () {
+            $checkbox.attr('checked', true);
+        });
+        layer.addListener("deactivate", function () {
+            $checkbox.attr('checked', false);
+        });
+        // return the new checkbox jQuery object
+        return $checkbox;
     }
 
     function createLayerPropertiesIcon(layer) {
-        layer.$propertiesIcon = $('<img class="layerPropertiesIcon" id="'+layer.lid+'" src="icons/settings.png"/>').click(function() {
+        return $('<img class="layerPropertiesIcon" id="'+layer.lid+'" src="icons/settings.png"/>').click(function() {
             createLayerPropertiesDialog(layer);
         });
-        return layer.$propertiesIcon;
     }
 
 
     function createLayerPropertiesDialog(layer) {
 
-        if (fcav.propertiesDialog$Html[layer.lid]) {
-            fcav.propertiesDialog$Html[layer.lid].dialog('destroy');
-            fcav.propertiesDialog$Html[layer.lid].remove();
+        if (createLayerPropertiesDialog.$html[layer.lid]) {
+            createLayerPropertiesDialog.$html[layer.lid].dialog('destroy');
+            createLayerPropertiesDialog.$html[layer.lid].remove();
         }
 
         var $html = $(''
@@ -805,18 +845,22 @@
             step  : 1,
             value : layer.transparency,
             slide : function(event, ui) {
-                $html.find('input.transparency-text').val(ui.value);
                 layer.setTransparency(ui.value);
             }
+        });
+        layer.addListener("transparency", function (e) {
+            $html.find('.transparency-slider').slider("value", e.value);
         });
         $html.find('input.transparency-text').change(function() {
             var newValueFloat = parseFloat($(this).val());
             if (isNaN(newValueFloat) || newValueFloat < 0 || newValueFloat > 100) {
-                $(this).val($html.find('.transparency-slider').slider('value'));
+                $(this).val(layer.transparency);
                 return;
             }
-            $html.find('.transparency-slider').slider("value", $(this).val());
             layer.setTransparency($(this).val());
+        });
+        layer.addListener("transparency", function (e) {
+            $html.find('input.transparency-text').val(e.value);
         });
 
         $html.dialog({
@@ -829,15 +873,18 @@
             close     : function() {
                 $(this).dialog('destroy');
                 $html.remove();
-                fcav.propertiesDialog$Html[layer.lid] = undefined;
+                createLayerPropertiesDialog.$html[layer.lid] = undefined;
             }
         });
-        fcav.propertiesDialog$Html[layer.lid] = $html;
+        createLayerPropertiesDialog.$html[layer.lid] = $html;
     }
+    // Object to be used as hash for tracking the $html objects created by createLayerPropertiesDialog;
+    // keys are layer lids:
+    createLayerPropertiesDialog.$html = {};
 
 
     function mapEvent(event) {
-        fcav.updateShareMapUrl();
+        app.updateShareMapUrl();
         // ... update shareMapURL ...
     }    
 
@@ -845,28 +892,8 @@
     function activateIdentifyTool()
     {
         deactivateActiveOpenLayersControls();
-        fcav.identifyTool.activate();
+        app.identifyTool.activate();
     }
-
-
-//    function pickInfo(e)
-//    {
-//        console.log('hey there!');
-//        /*
-//        var strInfo;
-//        strInfo = e.text;
-//        var gmlData = processGML(strInfo);
-//         */
-//        fcav.map.addPopup(new OpenLayers.Popup.FramedCloud(
-//          "Feature Info:", 
-//          fcav.map.getLonLatFromPixel(e.xy),
-//          null,
-//          e.text, //gmlData,
-//          null,
-//          true
-//      ));
-//    }
-
 
     // The following creates a new OpenLayers tool class called ClickTool
     // which calls a function whenever the user clicks in the map.  Each
@@ -912,7 +939,7 @@
     //   (x,y): (pixel) coordinates of query point
     //
     function createWMSGetFeatureInfoRequestURL(serviceUrl, layers, srs, x, y) {
-        var extent = fcav.map.getExtent();
+        var extent = app.map.getExtent();
         return Mustache.render(
             (''
              + serviceUrl
@@ -935,8 +962,8 @@
             {
                 c      : stringContainsChar(serviceUrl, '?') ? '&' : '?',
                 layers : layers.join(','),
-                height : fcav.map.size.h,
-                width  : fcav.map.size.w,
+                height : app.map.size.h,
+                width  : app.map.size.w,
                 left   : extent.left,
                 bottom : extent.bottom,
                 right  : extent.right,
@@ -974,7 +1001,7 @@
                 // GetFeatureInfo request that will need to be made.  We also builds up the html
                 // that will display the results in the popup window here.
                 var html = '<table id="identify_results">';
-                $.each(fcav.map.layers, function () {
+                $.each(app.map.layers, function () {
                     var srs, url, name, urlsrs;
                     if (! this.isBaseLayer) {
                         srs    = this.projection.projCode;
@@ -1003,9 +1030,9 @@
                 
                 // Display the popup window; we'll populate the results later, asynchronously,
                 // as they arrive.
-                fcav.map.addPopup(new OpenLayers.Popup.FramedCloud(
+                app.map.addPopup(new OpenLayers.Popup.FramedCloud(
                     "identify_popup",                   // id
-                    fcav.map.getLonLatFromPixel(e.xy),  // lonlat
+                    app.map.getLonLatFromPixel(e.xy),  // lonlat
                     null,                               // contentSize
                     html,                               // contentHTML
                     null,                               // anchor
@@ -1091,7 +1118,6 @@
     fcav.createWMSGetFeatureInfoRequestURL = createWMSGetFeatureInfoRequestURL;
     fcav.stringContainsChar                = stringContainsChar;
     fcav.FcavState                         = FcavState ;
-    fcav.init                              = init ;
     window.fcav                            = fcav;
     
 }(jQuery));
