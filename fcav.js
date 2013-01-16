@@ -18,24 +18,25 @@
             ymax : 7000000     //      read a config file that is missing the <extent> element.
         };
         this.baseLayers       = []; // list of BaseLayer instances holding info about base layers from config file
-        this.baseLayersByName = {}; // hash of pointers to BaseLayer instances from `baseLayers` list, keyed by layer name
         this.accordionGroups  = []; // list of AccordionGroup instances holding info about accordion groups from config file
         this.themes           = []; // list of Theme instances holding info about themes from config file
-        this.themesByName     = {}; // hash of pointers to Theme instances from `themes` list, keyed by theme name
-        this.layersByLid      = {}; // hash of pointers to Layer instances, keyed by lid
         this.currentBaseLayer = undefined;
         this.currentTheme     = undefined;
-        this.state            = function() {
-            var state               = new FcavState();
-            state.baseLayerName     = this.currentBaseLayer.name;
-            state.themeName         = this.currentTheme.name;
-            var accordionGroupIndex = $("#layerPickerAccordion").accordion('option', 'active');
-            state.accordionGroupGid = this.currentTheme.accordionGroups[accordionGroupIndex].gid;
-            var extent              = this.map.getExtent();
-            state.extent            = extent.left + ',' + extent.bottom + ',' + extent.right + ',' + extent.top;
+        this.shareUrl = function() {
+            if (!this.currentTheme) { return undefined; }
+            if (!this.currentAccordionGroup) { return undefined; }
+            if (!this.currentBaseLayer) { return undefined; }
+
+            var extent      = this.map.getExtent(),
+                layerLids   = [],
+                layerAlphas = [],
+                url;
+
+            if (!extent) { return undefined; }
+
             $.each(this.map.layers, function () {
+                var op;
                 if (! this.isBaseLayer) {
-                    var op;
                     if (this.opacity === 1) {
                         op = "1";
                     } else if (this.opacity === 0) {
@@ -43,22 +44,45 @@
                     } else {
                         op = sprintf("%.2f", this.opacity);
                     }
-                    state.layerLids.push(this.fcavLayer.lid);
-                    state.layerAlphas.push(op);
+                    layerLids.push(this.fcavLayer.lid);
+                    layerAlphas.push(op);
                 }
             });
-            return state;
-        };
-        this.shareUrl         = function() {
-            var state = this.state();
-            var url   = window.location.toString();
+
+            url   = window.location.toString();
             url = url.replace(/\?.*$/, '');
             url = url.replace(/\/$/, '');
-            return url + '?' + state.urlArgs();
+
+            return Mustache.render(
+                (''
+                 + '{{{url}}}'
+                 + '?theme={{{theme}}}'
+                 + '&layers={{{layers}}}'
+                 + '&alphas={{{alphas}}}'
+                 + '&accgp={{{accgp}}}'
+                 + '&basemap={{{basemap}}}'
+                 + '&extent={{{left}}},{{{bottom}}},{{{right}}},{{{top}}}'
+                ),
+                {
+                    url     : url,
+                    theme   : this.currentTheme.name,
+                    layers  : layerLids.join(','),
+                    alphas  : layerAlphas.join(','),
+                    accgp   : this.currentAccordionGroup.gid,
+                    basemap : this.currentBaseLayer.name,
+                    left    : extent.left,
+                    bottom  : extent.bottom,
+                    right   : extent.right,
+                    top     : extent.top
+                });
+
         };
         this.updateShareMapUrl = function() {
             if (this.currentTheme) {
-                $('#mapToolsDialog textarea.shareMapUrl').val(this.shareUrl());
+                var url = this.shareUrl();
+                if (url) {
+                    $('#mapToolsDialog textarea.shareMapUrl').val(url);
+                }
             }
         };
     };
@@ -70,7 +94,7 @@
         this.label = settings.label;
         this.url   = settings.url;
         this.index = settings.index;
-        app.baseLayersByName[this.name] = this;
+        //app.baseLayersByName[this.name] = this;
     }
     function AccordionGroup(settings) {
         this.sublists = [];
@@ -79,6 +103,7 @@
         this.name             = settings.name;
         this.label            = settings.label;
         this.selectedInConfig = settings.selectedInConfig;
+        this.index            = settings.index;
     }
     function AccordionGroupSublist(settings) {
         this.layers = [];
@@ -164,7 +189,7 @@
             this.transparency = transparency;
             this.emit({type : 'transparency', value : this.transparency});
         };
-        app.layersByLid[this.lid] = this;
+        //app.layersByLid[this.lid] = this;
     }
     EventEmitter.declare(Layer);
 
@@ -174,7 +199,7 @@
         this.name  = settings.name;
         this.label = settings.label;
         this.index = settings.index;
-        app.themesByName[this.name] = this;
+        //app.themesByName[this.name] = this;
     }
 
 
@@ -252,6 +277,16 @@
                                       hide:"explode"
                                     });
 
+        app.addListener("themechange", function () {
+            app.updateShareMapUrl();
+        });
+        app.addListener("baselayerchange", function () {
+            app.updateShareMapUrl();
+        });
+        app.addListener("accordiongroupchange", function () {
+            app.updateShareMapUrl();
+        });
+
         //
         // mapTools accordion
         //
@@ -275,8 +310,10 @@
         //
         $('#baseCombo').change(function() {
             var i = parseInt($("#baseCombo").val(), 10);
-            setArcGISCacheBaseLayer(app.baseLayers[i]);
-            // ... rebuild share url here ...
+            setBaseLayer(app.baseLayers[i]);
+        });
+        app.addListener("baselayerchange", function() {
+            $('#baseCombo').val(app.currentBaseLayer.index);
         });
 
         //
@@ -285,8 +322,11 @@
         $('#themeCombo').change(function() {
             var i = parseInt($("#themeCombo").val(), 10);
             setTheme(app.themes[i]);
-            // ... rebuild share url here ...
         });
+        app.addListener("themechange", function() {
+            $('#themeCombo').val(app.currentTheme.index);
+        });
+
 
         // 
         // pan button
@@ -455,7 +495,7 @@
                     index    : i
                 });
             app.baseLayers.push(baseLayer);
-            app.baseLayersByName[baseLayer.name] = baseLayer;
+            //app.baseLayersByName[baseLayer.name] = baseLayer;
             $('#baseCombo').append($('<option value="'+i+'">'+baseLayer.label+'</option>'));
             if (selected) {
                 selectedBaseLayerIndex = i;
@@ -464,13 +504,14 @@
 
         // parse layer groups and layers
         var accordionGroupsByName = {};
-        $configXML.find("wmsGroup").each(function() {
+        $configXML.find("wmsGroup").each(function(i) {
             var $wmsGroup      = $(this), // each <wmsGroup> corresponds to a (potential) layerPicker accordion group
                 accordionGroup = new AccordionGroup({
                     gid              : $wmsGroup.attr('gid'),
                     name             : $wmsGroup.attr('name'),
                     label            : $wmsGroup.attr('label'),
-                    selectedInConfig : ($wmsGroup.attr('selected') === "true")
+                    selectedInConfig : ($wmsGroup.attr('selected') === "true"),
+                    index            : i
                 });
             app.accordionGroups.push(accordionGroup);
             accordionGroupsByName[accordionGroup.name] = accordionGroup;
@@ -525,17 +566,27 @@
             }
         });
 
-        // initialize the OpenLayers map object
-        initOpenLayers(selectedBaseLayerIndex, selectedThemeIndex);
-        //setArcGISCacheBaseLayer(app.baseLayers[selectedBaseLayerIndex]);
+        var baseLayer = app.baseLayers[selectedBaseLayerIndex];
 
-        //setTheme(app.themes[selectedThemeIndex]);
-        //$('#themeCombo').val(selectedThemeIndex);
+        app.zoomInTool   = new OpenLayers.Control.ZoomBox();
+        app.zoomOutTool  = new OpenLayers.Control.ZoomBox({out:true});
+        app.dragPanTool  = new OpenLayers.Control.DragPan();
+        app.identifyTool = createIdentifyTool();
 
-
+        $.ajax({
+            url: baseLayer.url + '?f=json&pretty=true',
+            dataType: "jsonp",
+            success:  function (baseLayerInfo) {
+                initOpenLayers(baseLayerInfo, baseLayer, selectedBaseLayerIndex, selectedThemeIndex);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert(textStatus);
+            }
+        });
 
     }
 
+/*
     function initializeFromState(state) {
         var theme     = app.themesByName[state.themeName];
         var baseLayer = app.baseLayersByName[state.baseLayerName];
@@ -546,7 +597,7 @@
             layers[lid] = true;
         });
 
-        setArcGISCacheBaseLayer(baseLayer);
+        setBaseLayer(baseLayer);
         $('#baseCombo').val(baseLayer.index);
 
         setTheme(theme, {
@@ -557,149 +608,69 @@
         console.log(state.extent);
         app.map.zoomToExtent(parseExtent(state.extent), false);
     }
+*/
 
-    function FcavState () {
-        this.themeName         = undefined;
-        this.accordionGroupGid = undefined;
-        this.baseLayerName     = undefined;
-        this.extent            = undefined;
-        this.layerLids         = [];
-        this.layerAlphas       = [];
-        this.urlArgs           = function() {
-            return Mustache.render(
-                (''
-                 + 'theme={{{theme}}}'
-                 + '&layers={{{layers}}}'
-                 + '&alphas={{{alphas}}}'
-                 + '&accgp={{{accgp}}}'
-                 + '&basemap={{{basemap}}}'
-                 + '&extent={{{extent}}}'
-                ),
-                {
-                    theme   : this.themeName,
-                    layers  : this.layerLids.join(','),
-                    alphas  : this.layerAlphas.join(','),
-                    accgp   : this.accordionGroupGid,
-                    basemap : this.baseLayerName,
-                    extent  : this.extent
-                });
-        };
-    }
-
-    FcavState.createFromURL = function (url) {
-        var state = new FcavState(),
-            vars  = [],
-            hash,
-            q;
-
-        if (url === undefined) {
-            return state;
-        }
-
-        // Remove everything up to and including the first '?' char.
-        url = url.replace(/^[^\?]*\?/, '');
-
-        $.each(url.split('&'), function () {
-            var i = this.indexOf('='),
-                name, value;
-            if (i >= 0) {
-                name  = this.substring(0,i);
-                value = this.substring(i+1);
-            } else {
-                name  = this;
-                value = undefined;
-            }
-            vars[name] = value;
+    function initOpenLayers(baseLayerInfo, baseLayer, baseLayerIndex, themeIndex) {
+        var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
+            layerInfo: baseLayerInfo
         });
+        var maxExtentBounds = new OpenLayers.Bounds(app.maxExtent.xmin, app.maxExtent.ymin,
+                                                    app.maxExtent.xmax, app.maxExtent.ymax);
+        app.map = new OpenLayers.Map('map', {
+            maxExtent:         maxExtentBounds,
+            units:             'm',
+            resolutions:       layer.resolutions,
+            numZoomLevels:     layer.numZoomLevels,
+            tileSize:          layer.tileSize,
+            controls: [
+                new OpenLayers.Control.Navigation({
+                    dragPanOptions: {
+                        enableKinetic: true
+                    }
+                }),
+                new OpenLayers.Control.Attribution(),
+                app.zoomInTool,
+                app.zoomOutTool,
+                app.identifyTool
+            ],
+            eventListeners: 
+            {
+                "moveend": mapEvent,
+                "zoomend": mapEvent
+            },               
+            zoom: 1,
+            projection: new OpenLayers.Projection("EPSG:900913")
+        });    
+        
+        // set the base layer, but bypass setBaseLayer() here, because that function initiates an ajax request
+        // to fetch the layerInfo, which in this case we already have
+        app.currentBaseLayer = baseLayer;
+        app.emit("baselayerchange");
 
-        state.themeName         = vars.theme;
-        state.accordionGroupGid = vars.accgp;
-        state.baseLayerName     = vars.basemap;
-        state.extent            = vars.extent;
-        if (vars.layers) {
-            $.each(vars.layers.split(','), function () {
-                state.layerLids.push(this);
-            });
+        app.map.addLayers([layer]);
+        app.map.setLayerIndex(layer, 0);
+        setTheme(app.themes[themeIndex]);
+        app.map.zoomToExtent(maxExtentBounds, false);
+
+/*
+        // process shared url, if any
+        var shareState = FcavState.createFromURL(window.location.toString());
+        if (shareState.extent) {
+            // Only act on the url parameters if they includes an extent parameter.  This
+            // is simply a quick & dirty way to insure that the parameters are valid.
+            // We proabably ought to strengthen this to do a better validity check.
+            initializeFromState(shareState);
         }
-        if (vars.alphas) {
-            $.each(vars.alphas.split(','), function () {
-                state.layerAlphas.push(this);
-            });
-        }
-
-        return state;
-    };
-
-    function initOpenLayers(baseLayerIndex, themeIndex) {
-
-        var baseLayer = app.baseLayers[baseLayerIndex];
-        $('#baseCombo').val(baseLayerIndex);
-
-        app.zoomInTool   = new OpenLayers.Control.ZoomBox();
-        app.zoomOutTool  = new OpenLayers.Control.ZoomBox({out:true});
-        app.dragPanTool  = new OpenLayers.Control.DragPan();
-        app.identifyTool = createIdentifyTool();
-
-        $.ajax({
-            url: baseLayer.url + '?f=json&pretty=true',
-            dataType: "jsonp",
-            success:  function (layerInfo) {
-                var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
-                    layerInfo: layerInfo
-                });
-                var maxExtentBounds = new OpenLayers.Bounds(app.maxExtent.xmin, app.maxExtent.ymin,
-                                                   app.maxExtent.xmax, app.maxExtent.ymax);
-                app.map = new OpenLayers.Map('map', {
-                    maxExtent:         maxExtentBounds,
-                    units:             'm',
-                    resolutions:       layer.resolutions,
-                    numZoomLevels:     layer.numZoomLevels,
-                    tileSize:          layer.tileSize,
-                    controls: [
-                        new OpenLayers.Control.Navigation({
-                            dragPanOptions: {
-                                enableKinetic: true
-                            }
-                        }),
-                        new OpenLayers.Control.Attribution(),
-                        app.zoomInTool,
-                        app.zoomOutTool,
-                        app.identifyTool
-                    ],
-                    eventListeners: 
-                    {
-                        "moveend": mapEvent,
-                        "zoomend": mapEvent
-                    },               
-                    zoom: 1,
-                    projection: new OpenLayers.Projection("EPSG:900913")
-                });    
-                
-                app.currentBaseLayer = baseLayer;
-                app.map.addLayers([layer]);
-                app.map.setLayerIndex(layer, 0);
-                setTheme(app.themes[themeIndex]);
-                $('#themeCombo').val(themeIndex);
-                app.map.zoomToExtent(maxExtentBounds, false);
-
-                // process shared url, if any
-                var shareState = FcavState.createFromURL(window.location.toString());
-                if (shareState.extent) {
-                    // Only act on the url parameters if they includes an extent parameter.  This
-                    // is simply a quick & dirty way to insure that the parameters are valid.
-                    // We proabably ought to strengthen this to do a better validity check.
-                    initializeFromState(shareState);
-                }
-
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert(textStatus);
-            }
-        });
+*/
 
     }
 
-    function setArcGISCacheBaseLayer(baseLayer) {
+    function setAccordionGroup(accordionGroup) {
+        app.currentAccordionGroup = accordionGroup;
+        app.emit("accordiongroupchange");
+    }
+
+    function setBaseLayer(baseLayer) {
         $.ajax({
             url: baseLayer.url + '?f=json&pretty=true',
             dataType: "jsonp",
@@ -711,6 +682,7 @@
                 app.currentBaseLayer = baseLayer;
                 app.map.addLayers([layer]);
                 app.map.setLayerIndex(layer, 0);
+                app.emit("baselayerchange");
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert(textStatus);
@@ -725,7 +697,7 @@
             clearStyle : true,
             autoHeight : false,
             change     : function(event, ui) {
-                app.updateShareMapUrl();
+                setAccordionGroup($("#layerPickerAccordion").accordion('option', 'active'));
             }
         });
 
@@ -787,6 +759,7 @@
         });
         $('#layerPickerAccordion').accordion('activate', openAccordionGroupIndex);
         app.currentTheme = theme;
+        app.emit("themechange");
     }
 
     function createLayerToggleCheckbox(layer) {
@@ -1117,7 +1090,6 @@
     fcav.Theme                             = Theme;
     fcav.createWMSGetFeatureInfoRequestURL = createWMSGetFeatureInfoRequestURL;
     fcav.stringContainsChar                = stringContainsChar;
-    fcav.FcavState                         = FcavState ;
     window.fcav                            = fcav;
     
 }(jQuery));
