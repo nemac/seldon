@@ -360,7 +360,7 @@
             // zoom to full extent button
             // 
             $("#btnZoomExtent").click(function() {
-                app.map.zoomToExtent(new OpenLayers.Bounds(app.maxExtent.xmin, app.maxExtent.ymin, app.maxExtent.xmax, app.maxExtent.ymax), false);
+                app.map.zoomToExtent(new OpenLayers.Bounds(app.maxExtent.xmin, app.maxExtent.ymin, app.maxExtent.xmax, app.maxExtent.ymax), true);
             });
             $('#btnZoomExtent').hover(
                 function(){
