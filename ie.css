@@ -16,14 +16,24 @@ h2 {
 }
 
 #header {
-	clear:both;
+	position:absolute;
 	border-bottom:#666 thin solid;
+	z-index:2000;
 }
 
 #btntgllyrpick, #btnhelp, #btntgllegend {
 	display:inline;
 }
 
+#map {
+   border: 1px solid black;
+   position: absolute;
+   bottom: 0px;
+   top: 0px;
+   left: 0px;
+   right: 0px;
+   z-index:0;
+}
 
 .leftbuttons {
 	text-align:left;
