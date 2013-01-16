@@ -6,8 +6,20 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
     <!--<script type="text/javascript" src="libs/jquery18/jquery-1.8.2.js"></script>-->
-    <script type="text/javascript" src="libs/multigraph/multigraph.js"></script>
+    <script type="text/javascript" src="libs/multigraph/multigraph-min-4.0.js"></script>
+    <!--
+        NOTE:
+            Multigraph contains a copy of jQuery 1.8.  To make use of that copy of jQuery,
+            instead of loading our own separate copy, replace the line
+                <script type="text/javascript" src="libs/jquery17/jquery-1.7.2.js"></script>
+            below with the following instead:
+                <script type="text/javascript">$ = window.multigraph.jQuery;</script>
+            However, at the moment, doing this turns up errors in the jquery-ui code
+            that we are loading below.  We need to resolve those errors before we can
+            do this.  Maybe upgrade to a later version of jquery-ui???
 
+            See https://github.com/nemac/ol-fcav/issues/30
+    -->
     <script type="text/javascript" src="libs/jquery17/jquery-1.7.2.js"></script>
     <script type="text/javascript" src="libs/OpenLayers212/lib/OpenLayers.js"></script>
     <script type="text/javascript" src="libs/mustache/mustache.js"></script>
