@@ -20,8 +20,117 @@
         this.baseLayers       = []; // list of BaseLayer instances holding info about base layers from config file
         this.accordionGroups  = []; // list of AccordionGroup instances holding info about accordion groups from config file
         this.themes           = []; // list of Theme instances holding info about themes from config file
-        this.currentBaseLayer = undefined;
-        this.currentTheme     = undefined;
+        this.currentBaseLayer      = undefined;
+        this.currentAccordionGroup = undefined;
+        this.currentTheme          = undefined;
+
+        this.setBaseLayer = function(baseLayer) {
+            var app = this;
+            $.ajax({
+                url: baseLayer.url + '?f=json&pretty=true',
+                dataType: "jsonp",
+                success:  function (layerInfo) {
+                    var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
+                        layerInfo: layerInfo
+                    });
+                    app.map.removeLayer(app.map.layers[0]);
+                    app.currentBaseLayer = baseLayer;
+                    app.map.addLayers([layer]);
+                    app.map.setLayerIndex(layer, 0);
+                    app.emit("baselayerchange");
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert(textStatus);
+                }
+            });
+        };
+
+
+        this.setAccordionGroup = function(accordionGroup) {
+            this.currentAccordionGroup = accordionGroup;
+            this.emit("accordiongroupchange");
+        };
+
+        this.setTheme = function(theme, options) {
+            var app = this,
+                accordionGroup;
+
+            $('#layerPickerAccordion').empty();
+            $("#layerPickerAccordion").accordion('destroy');
+            $('#layerPickerAccordion').listAccordion({
+                clearStyle : true,
+                autoHeight : false,
+                change     : function(event, ui) {
+                    var accordionGroupIndex = $("#layerPickerAccordion").accordion('option', 'active');
+                    app.setAccordionGroup(theme.accordionGroups[accordionGroupIndex]);
+                }
+            });
+
+            $('#legend').empty();
+
+            if (options === undefined) {
+                options = {};
+            }
+
+            $.each(theme.accordionGroups, function (i, accGp) {
+                // Decide whether to open this accordion group.  If we received an
+                // `accordionGroup` setting in the options are, activate this accordion
+                // group only if it equals that setting.  If we did not receive an
+                // `accordionGroup` setting in the options are, activate this accordion
+                // group if its "selected" attribute was true in the config file.
+                if ((options.accordionGroup && (accGp === options.accordionGroup))
+                    ||
+                    (!options.accordionGroup && accGp.selectedInConfig)) {
+                    accordionGroup = accGp;
+                }
+                var g = $('#layerPickerAccordion').listAccordion('addSection', '<a>'+accGp.label+'</a>');
+                $.each(accGp.sublists, function (j, sublist) {
+                    var s = $('#layerPickerAccordion').listAccordion('addSublist', g, sublist.label);
+                    $.each(sublist.layers, function (k, layer) {
+                        // remove any previously defined listeners for this layer, in case this isn't the first
+                        // time we've been here
+                        layer.removeAllListeners("activate");
+                        layer.removeAllListeners("deactivate");
+                        layer.removeAllListeners("transparency");
+
+                        // listen for changes to this layer, and update share url accordingly
+                        layer.addListener("activate", function () {
+                            app.updateShareMapUrl();
+                        });
+                        layer.addListener("deactivate", function () {
+                            app.updateShareMapUrl();
+                        });
+                        layer.addListener("transparency", function () {
+                            app.updateShareMapUrl();
+                        });
+
+                        // add the layer to the accordion group
+                        $('#layerPickerAccordion').listAccordion('addSublistItem', s,
+                                                                 [createLayerToggleCheckbox(layer),
+                                                                  $('<label for="chk'+layer.lid+'">'+layer.name+'</label>'),
+                                                                  createLayerPropertiesIcon(layer)]);
+                        // Decide whether to activate the layer.  If we received a layer list in the
+                        // options arg, active the layer only if it appears in that list.  If we
+                        // received no layer list in the options arg, activate the layer if the layer's
+                        // "selected" attribute was true in the config file.
+                        if (((options.layers !== undefined) && (arrayContainsElement(options.layers, layer)))
+                            ||
+                            ((options.layers === undefined) && layer.selectedInConfig)) {
+                            layer.activate();
+                        }
+                    });
+                });
+            });
+            if (!accordionGroup) {
+                // if we get to this point and don't have an accordion group to open,
+                // default to the first one
+                accordionGroup = theme.accordionGroups[0];
+            }
+            app.setAccordionGroup(accordionGroup);
+            app.currentTheme = theme;
+            app.emit("themechange");
+        };
+
         this.shareUrl = function() {
             if (!this.currentTheme) { return undefined; }
             if (!this.currentAccordionGroup) { return undefined; }
@@ -69,6 +178,467 @@
                 }
             }
         };
+
+        this.launch = function(configFile, shareUrlInfo) {
+            var app = this;
+
+            $.ajax({
+                url: configFile,
+                dataType: "xml",
+                success: function(configXML) {
+                    app.parseConfig(configXML, shareUrlInfo);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert(textStatus);
+                }
+            });
+
+            //
+            // layerPicker button:
+            //
+            $("#btnTglLyrPick").click(function() {
+                if ($( "#layerPickerDialog" ).dialog('isOpen')) {
+                    $( "#layerPickerDialog" ).dialog('close');
+                } else {
+                    $( "#layerPickerDialog" ).dialog('open');
+                }
+            }).hover(
+                function(){
+                    $("#tglLyrPickPic").attr("src", "icons/layers_over.png");
+                    $("#btnTglLyrPick").attr('title', 'Show/hide Layer Picker');
+                },
+                function(){
+                    $("#tglLyrPickPic").attr("src", "icons/layers.png");
+                }
+            );  
+
+            //
+            // turn layerPickerDialog div into a jQuery UI dialog:
+            //
+            $("#layerPickerDialog").dialog({ zIndex:10050, 
+                                             position:"left",
+                                             autoOpen: true,
+                                             hide:"explode"
+                                           });
+            app.addListener("accordiongroupchange", function() {
+                $('#layerPickerAccordion').accordion('activate', app.currentAccordionGroup.index);
+            });
+
+            //
+            // mapTools button:
+            //
+            $("#btnTglMapTools").click(function() {
+                if ($( "#mapToolsDialog" ).dialog('isOpen')) {
+                    $( "#mapToolsDialog" ).dialog('close');
+                } else {
+                    $( "#mapToolsDialog" ).dialog('open');
+                }
+            }).hover(
+                function(){
+                    $('#tglLegendPic').attr('src', 'icons/legend_over.png');
+                    $("#btnTglMapTools").attr('title', 'Show/hide Legend');
+                },
+                function(){
+                    $('#tglLegendPic').attr('src', 'icons/legend.png');
+                }
+            );      
+
+            //
+            // turn mapToolsDialog div into a jQuery UI dialog:
+            //
+            $("#mapToolsDialog").dialog({ zIndex:10050, 
+                                          position:"right",
+                                          autoOpen: true,
+                                          hide:"explode"
+                                        });
+
+            app.addListener("themechange", function () {
+                app.updateShareMapUrl();
+            });
+            app.addListener("baselayerchange", function () {
+                app.updateShareMapUrl();
+            });
+            app.addListener("accordiongroupchange", function () {
+                app.updateShareMapUrl();
+            });
+            app.addListener("extentchange", function () {
+                app.updateShareMapUrl();
+            });
+
+            //
+            // mapTools accordion
+            //
+
+            //    initialize
+            $("#mapToolsAccordion").accordion({ clearStyle: true, autoHeight: false });
+
+            //    find the 'legend' layer in the mapTools accordion, and make sure it is initially turned on
+            var accordionGroupIndexToOpen = 0;
+            $('#mapToolsAccordion').find('div').each(function(i) {
+                if (this.id === "legend") {
+                    accordionGroupIndexToOpen = i;
+                    return false;
+                }
+                return true;
+            });
+            $('#mapToolsAccordion').accordion('activate', accordionGroupIndexToOpen);
+
+            //
+            // base layer combo change handler
+            //
+            $('#baseCombo').change(function() {
+                var i = parseInt($("#baseCombo").val(), 10);
+                app.setBaseLayer(app.baseLayers[i]);
+            });
+            app.addListener("baselayerchange", function() {
+                $('#baseCombo').val(app.currentBaseLayer.index);
+            });
+
+            //
+            // theme layer combo change handler
+            //
+            $('#themeCombo').change(function() {
+                var i = parseInt($("#themeCombo").val(), 10);
+                app.setTheme(app.themes[i]);
+            });
+            app.addListener("themechange", function() {
+                $('#themeCombo').val(app.currentTheme.index);
+            });
+
+
+            // 
+            // pan button
+            // 
+            $("#btnPan").click(function() {
+                deactivateActiveOpenLayersControls();
+                app.dragPanTool.activate();
+            }).hover(
+                function(){
+                    $('#panPic').attr('src',   'icons/pan_over.png');
+                    $("#btnPan").attr('title', 'Pan tool');
+                },
+                function(){
+                    $('#panPic').attr('src',   'icons/pan.png');
+                }
+            ); 
+
+            // 
+            // zoom in button
+            // 
+            $("#btnZoomIn").click(function() {
+                deactivateActiveOpenLayersControls();
+                app.zoomInTool.activate();
+            }).hover(
+                function(){
+                    $("#zoomInPic").attr('src',   'icons/zoom-in_over.png');
+                    $("#btnZoomIn").attr('title', 'Zoom in tool');
+                },
+                function(){
+                    $("#zoomInPic").attr('src',   'icons/zoom-in.png');
+                }
+            );
+
+            // 
+            // zoom out button
+            // 
+            $("#btnZoomOut").click(function() {
+                deactivateActiveOpenLayersControls();
+                app.zoomOutTool.activate();
+            }).hover(
+                function() {
+                    $("#zoomOutPic").attr('src',   'icons/zoom-out_over.png');
+                    $("#btnZoomOut").attr('title', 'Zoom out tool');
+                },
+                function() {
+                    $("#zoomOutPic").attr('src',   'icons/zoom-out.png');
+                }
+            ); 
+
+            // 
+            // zoom to full extent button
+            // 
+            $("#btnZoomExtent").click(function() {
+                app.map.zoomToExtent(new OpenLayers.Bounds(app.maxExtent.xmin, app.maxExtent.ymin, app.maxExtent.xmax, app.maxExtent.ymax), false);
+            });
+            $('#btnZoomExtent').hover(
+                function(){
+                    $("#btnZoomExtentPic").attr('src',  'icons/zoom-extent_over.png');
+                    $("#btnZoomExtent").attr('title', 'Full Extent tool');
+                },
+                function(){
+                    $("#btnZoomExtentPic").attr('src',  'icons/zoom-extent.png');
+                }
+            ); 
+            
+            // 
+            // identify button
+            // 
+            
+            $("#btnID").click(function() {
+                //alert("Handler for IDcalled.");
+                activateIdentifyTool();
+            });
+            
+            $('#btnID').hover(
+                function(){
+                    $("#idPic").attr('src',  'icons/map-info_over.png');
+                    $("#btnID").attr('title', 'Identify tool');
+                },
+                function(){
+                    $("#idPic").attr('src',  'icons/map-info.png');
+                }
+            ); 
+            
+            // 
+            // help button
+            // 
+            $("#btnHelp").click(function() {
+                console.log(app.shareUrl());
+                //alert("Handler for help called.");
+                //getCurrentExtent();
+            });
+            $('#btnHelp').hover(
+                function(){
+                    $("#btnPic").attr('src', 'icons/help_over.png');
+                    $("#btnHelp").attr('title', 'Get help');
+                },
+                function(){
+                    $("#btnPic").attr('src', 'icons/help.png');
+                }
+            ); 
+
+
+            /*        
+             // 
+             // multigraph button
+             // 
+             $("#btnMultiGraph").click(function() {
+             //http://openlayers.org/dev/examples/click.html
+             //http://dev.openlayers.org/releases/OpenLayers-2.12/doc/apidocs/files/OpenLayers/Handler/Click-js.html
+             //http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,-11915561.548108513,4714792.352997124
+             deactivateActiveOpenLayersControls();
+             map.addControl(clickTool);
+             clickTool.activate();        
+             });
+             $('#btnMultiGraph').hover(
+             function(){
+             document.getElementById("multiGraphPic").src = 'icons/multigraph_over.png';
+             $("#btnMultiGraph").attr('title', 'MultiGraph tool');
+             },
+             function(){
+             document.getElementById("multiGraphPic").src = 'icons/multigraph.png';
+             }
+             ); 
+
+             */
+        };
+
+        this.parseConfig = function(configXML, shareUrlInfo) {
+            var app = this;
+            var $configXML = $(configXML),
+                initialBaseLayer,
+                initialTheme,
+                shareUrlLayerAlpha,
+                themeOptions = {};
+
+            if (shareUrlInfo !== undefined) {
+                shareUrlLayerAlpha = {};
+                $.each(shareUrlInfo.layerLids, function(i) {
+                    shareUrlLayerAlpha[shareUrlInfo.layerLids[i]] = shareUrlInfo.layerAlphas[i];
+                });
+            }
+
+            // parse and store max map extent from config file
+            var $extent = $configXML.find("extent");
+            if ($extent && $extent.length > 0) {
+                app.maxExtent = {
+                    xmin : parseFloat($extent.attr('xmin')),
+                    ymin : parseFloat($extent.attr('ymin')),
+                    xmax : parseFloat($extent.attr('xmax')),
+                    ymax : parseFloat($extent.attr('ymax'))
+                };
+            }
+
+            // parse base layers and populate combo box
+            $configXML.find("images image").each(function(i) {
+                var $image    = $(this),
+                    selected  = $image.attr('selected'),
+                    baseLayer = new BaseLayer({
+                        name     : $image.attr('name'),
+                        label    : $image.attr('label'),
+                        url      : $image.attr('url'),
+                        index    : i
+                    });
+                app.baseLayers.push(baseLayer);
+                $('#baseCombo').append($('<option value="'+i+'">'+baseLayer.label+'</option>'));
+                if ((  shareUrlInfo  &&   (shareUrlInfo.baseLayerName===baseLayer.name))
+                    ||
+                    ( !shareUrlInfo  &&   ($image.attr('selected')                    ))) {
+                    initialBaseLayer = baseLayer;
+                }
+            });
+            if (initialBaseLayer === undefined) {
+                initialBaseLayer = app.baseLayers[0];
+            }
+
+            // parse layer groups and layers
+            var accordionGroupsByName = {};
+            $configXML.find("wmsGroup").each(function(i) {
+                var $wmsGroup      = $(this), // each <wmsGroup> corresponds to a (potential) layerPicker accordion group
+                    accordionGroup = new AccordionGroup({
+                        gid              : $wmsGroup.attr('gid'),
+                        name             : $wmsGroup.attr('name'),
+                        label            : $wmsGroup.attr('label'),
+                        selectedInConfig : ($wmsGroup.attr('selected') === "true"),
+                        index            : i
+                    });
+                app.accordionGroups.push(accordionGroup);
+                accordionGroupsByName[accordionGroup.name] = accordionGroup;
+                if (shareUrlInfo && (shareUrlInfo.accordionGroupGid === accordionGroup.gid)) {
+                    themeOptions.accordionGroup = accordionGroup;
+                }
+                $wmsGroup.find("wmsSubgroup").each(function() {
+                    var $wmsSubgroup = $(this), // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
+                        sublist      = new AccordionGroupSublist({
+                            label : $wmsSubgroup.attr('label')
+                        });
+                    accordionGroup.sublists.push(sublist);
+                    $wmsSubgroup.find("wmsLayer").each(function() {
+                        var $wmsLayer = $(this),
+                            layer = new Layer({
+                                lid              : $wmsLayer.attr('lid'),
+                                visible          : $wmsLayer.attr('visible'),
+                                url              : $wmsLayer.attr('url'),
+                                srs              : $wmsLayer.attr('srs'),
+                                layers           : $wmsLayer.attr('layers'),
+                                styles           : $wmsLayer.attr('styles'),
+                                identify         : $wmsLayer.attr('identify'),
+                                name             : $wmsLayer.attr('name'),
+                                legend           : $wmsLayer.attr('legend'),
+                                selectedInConfig : ($wmsLayer.attr('selected') === "true")
+                            });
+                        sublist.layers.push(layer);
+                        if (shareUrlInfo && (shareUrlLayerAlpha[layer.lid] !== undefined)) {
+                            if (themeOptions.layers === undefined) {
+                                themeOptions.layers = [];
+                            }
+                            themeOptions.layers.push(layer);
+                            layer.setTransparency(100*(1-shareUrlLayerAlpha[layer.lid]));
+                        }
+                    });
+                });
+            });
+
+            // parse themes
+            $configXML.find("mapviews view").each(function(i) {
+                var $view = $(this),
+                    theme = new Theme({
+                        name  : $view.attr('name'),
+                        label : $view.attr('label'),
+                        index : i
+                    });
+                app.themes.push(theme);
+                $('#themeCombo').append($('<option value="'+i+'">'+theme.label+'</option>'));
+                $view.find("viewGroup").each(function() {
+                    var $viewGroup     = $(this),
+                        name           = $viewGroup.attr('name'),
+                        accordionGroup = accordionGroupsByName[name];
+                    if (accordionGroup) {
+                        theme.accordionGroups.push(accordionGroup);
+                    } else {
+                        displayError("Unknown accordion group name '" + name + "' found in theme '" + theme.name + "'");
+                    }
+                });
+                if ((  shareUrlInfo  &&   (shareUrlInfo.themeName===theme.name))
+                    ||
+                    ( !shareUrlInfo  &&   ($view.attr('selected')                    ))) {
+                    initialTheme = theme;
+                }
+            });
+            if (initialTheme === undefined) {
+                initialTheme = app.themes[0];
+            }
+
+            // also need to address from share url:
+            //    layers, alphas
+            //    extent
+            //    accgp
+
+            app.zoomInTool   = new OpenLayers.Control.ZoomBox();
+            app.zoomOutTool  = new OpenLayers.Control.ZoomBox({out:true});
+            app.dragPanTool  = new OpenLayers.Control.DragPan();
+            app.identifyTool = createIdentifyTool();
+
+            var initialExtent = undefined;
+
+            if (shareUrlInfo) {
+                initialExtent = shareUrlInfo.extent;
+            }
+
+            $.ajax({
+                url: initialBaseLayer.url + '?f=json&pretty=true',
+                dataType: "jsonp",
+                success:  function (baseLayerInfo) {
+                    app.initOpenLayers(baseLayerInfo, initialBaseLayer, initialTheme, themeOptions, initialExtent);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert(textStatus);
+                }
+            });
+
+        };
+
+        this.initOpenLayers = function(baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
+            var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
+                layerInfo: baseLayerInfo
+            });
+            
+            var maxExtentBounds = new OpenLayers.Bounds(app.maxExtent.xmin, app.maxExtent.ymin,
+                                                        app.maxExtent.xmax, app.maxExtent.ymax);
+            var initialExtentBounds;
+            if (initialExtent !== undefined) {
+                initialExtentBounds = new OpenLayers.Bounds(initialExtent.left, initialExtent.bottom,
+                                                            initialExtent.right, initialExtent.top);
+            } else {
+                initialExtentBounds = maxExtentBounds;
+            }
+            app.map = new OpenLayers.Map('map', {
+                maxExtent:         maxExtentBounds,
+                units:             'm',
+                resolutions:       layer.resolutions,
+                numZoomLevels:     layer.numZoomLevels,
+                tileSize:          layer.tileSize,
+                controls: [
+                    new OpenLayers.Control.Navigation({
+                        dragPanOptions: {
+                            enableKinetic: true
+                        }
+                    }),
+                    new OpenLayers.Control.Attribution(),
+                    app.zoomInTool,
+                    app.zoomOutTool,
+                    app.identifyTool
+                ],
+                eventListeners: 
+                {
+                    "moveend": function() { app.emit("extentchange"); },
+                    "zoomend": function() { app.emit("extentchange"); }
+                },               
+                zoom: 1,
+                projection: new OpenLayers.Projection("EPSG:900913")
+            });    
+            
+            // set the base layer, but bypass setBaseLayer() here, because that function initiates an ajax request
+            // to fetch the layerInfo, which in this case we already have
+            this.currentBaseLayer = baseLayer;
+            this.emit("baselayerchange");
+
+            this.map.addLayers([layer]);
+            this.map.setLayerIndex(layer, 0);
+            this.setTheme(theme, themeOptions);
+            this.map.zoomToExtent(initialExtentBounds, true);
+        };
+
     };
     EventEmitter.declare(fcav.App);
 
@@ -78,7 +648,6 @@
         this.label = settings.label;
         this.url   = settings.url;
         this.index = settings.index;
-        //app.baseLayersByName[this.name] = this;
     }
     function AccordionGroup(settings) {
         this.sublists = [];
@@ -174,7 +743,6 @@
             this.transparency = transparency;
             this.emit({type : 'transparency', value : this.transparency});
         };
-        //app.layersByLid[this.lid] = this;
     }
     EventEmitter.declare(Layer);
 
@@ -184,266 +752,16 @@
         this.name  = settings.name;
         this.label = settings.label;
         this.index = settings.index;
-        //app.themesByName[this.name] = this;
     }
-
 
     function displayError(message) {
         console.log(message);
     }
 
     fcav.init = function() {
-
         app = new fcav.App();
-
         var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
-
-        $.ajax({
-            url: './config/ews_config.xml',
-            dataType: "xml",
-            success: function(configXML) {
-                parseConfig(configXML, shareUrlInfo);
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert(textStatus);
-            }
-        });
-
-        //
-        // layerPicker button:
-        //
-        $("#btnTglLyrPick").click(function() {
-            if ($( "#layerPickerDialog" ).dialog('isOpen')) {
-                $( "#layerPickerDialog" ).dialog('close');
-            } else {
-                $( "#layerPickerDialog" ).dialog('open');
-            }
-        }).hover(
-            function(){
-                $("#tglLyrPickPic").attr("src", "icons/layers_over.png");
-                $("#btnTglLyrPick").attr('title', 'Show/hide Layer Picker');
-            },
-            function(){
-                $("#tglLyrPickPic").attr("src", "icons/layers.png");
-            }
-        );  
-
-        //
-        // turn layerPickerDialog div into a jQuery UI dialog:
-        //
-        $("#layerPickerDialog").dialog({ zIndex:10050, 
-                                         position:"left",
-                                         autoOpen: true,
-                                         hide:"explode"
-                                       });
-        app.addListener("accordiongroupchange", function() {
-            $('#layerPickerAccordion').accordion('activate', app.currentAccordionGroup.index);
-        });
-
-        //
-        // mapTools button:
-        //
-        $("#btnTglMapTools").click(function() {
-            if ($( "#mapToolsDialog" ).dialog('isOpen')) {
-                $( "#mapToolsDialog" ).dialog('close');
-            } else {
-                $( "#mapToolsDialog" ).dialog('open');
-            }
-        }).hover(
-            function(){
-                $('#tglLegendPic').attr('src', 'icons/legend_over.png');
-                $("#btnTglMapTools").attr('title', 'Show/hide Legend');
-            },
-            function(){
-                $('#tglLegendPic').attr('src', 'icons/legend.png');
-            }
-        );      
-
-        //
-        // turn mapToolsDialog div into a jQuery UI dialog:
-        //
-        $("#mapToolsDialog").dialog({ zIndex:10050, 
-                                      position:"right",
-                                      autoOpen: true,
-                                      hide:"explode"
-                                    });
-
-        app.addListener("themechange", function () {
-            app.updateShareMapUrl();
-        });
-        app.addListener("baselayerchange", function () {
-            app.updateShareMapUrl();
-        });
-        app.addListener("accordiongroupchange", function () {
-            app.updateShareMapUrl();
-        });
-
-        //
-        // mapTools accordion
-        //
-
-        //    initialize
-        $("#mapToolsAccordion").accordion({ clearStyle: true, autoHeight: false });
-
-        //    find the 'legend' layer in the mapTools accordion, and make sure it is initially turned on
-        var accordionGroupIndexToOpen = 0;
-        $('#mapToolsAccordion').find('div').each(function(i) {
-            if (this.id === "legend") {
-                accordionGroupIndexToOpen = i;
-                return false;
-            }
-            return true;
-        });
-        $('#mapToolsAccordion').accordion('activate', accordionGroupIndexToOpen);
-
-        //
-        // base layer combo change handler
-        //
-        $('#baseCombo').change(function() {
-            var i = parseInt($("#baseCombo").val(), 10);
-            setBaseLayer(app.baseLayers[i]);
-        });
-        app.addListener("baselayerchange", function() {
-            $('#baseCombo').val(app.currentBaseLayer.index);
-        });
-
-        //
-        // theme layer combo change handler
-        //
-        $('#themeCombo').change(function() {
-            var i = parseInt($("#themeCombo").val(), 10);
-            setTheme(app.themes[i]);
-        });
-        app.addListener("themechange", function() {
-            $('#themeCombo').val(app.currentTheme.index);
-        });
-
-
-        // 
-        // pan button
-        // 
-        $("#btnPan").click(function() {
-            deactivateActiveOpenLayersControls();
-            app.dragPanTool.activate();
-        }).hover(
-            function(){
-                $('#panPic').attr('src',   'icons/pan_over.png');
-                $("#btnPan").attr('title', 'Pan tool');
-            },
-            function(){
-                $('#panPic').attr('src',   'icons/pan.png');
-            }
-        ); 
-
-        // 
-        // zoom in button
-        // 
-        $("#btnZoomIn").click(function() {
-            deactivateActiveOpenLayersControls();
-            app.zoomInTool.activate();
-        }).hover(
-            function(){
-                $("#zoomInPic").attr('src',   'icons/zoom-in_over.png');
-                $("#btnZoomIn").attr('title', 'Zoom in tool');
-            },
-            function(){
-                $("#zoomInPic").attr('src',   'icons/zoom-in.png');
-            }
-        );
-
-        // 
-        // zoom out button
-        // 
-        $("#btnZoomOut").click(function() {
-            deactivateActiveOpenLayersControls();
-            app.zoomOutTool.activate();
-        }).hover(
-            function() {
-                $("#zoomOutPic").attr('src',   'icons/zoom-out_over.png');
-                $("#btnZoomOut").attr('title', 'Zoom out tool');
-            },
-            function() {
-                $("#zoomOutPic").attr('src',   'icons/zoom-out.png');
-            }
-        ); 
-
-        // 
-        // zoom to full extent button
-        // 
-        $("#btnZoomExtent").click(function() {
-            app.map.zoomToExtent(new OpenLayers.Bounds(app.maxExtent.xmin, app.maxExtent.ymin, app.maxExtent.xmax, app.maxExtent.ymax), false);
-        });
-        $('#btnZoomExtent').hover(
-            function(){
-                $("#btnZoomExtentPic").attr('src',  'icons/zoom-extent_over.png');
-                $("#btnZoomExtent").attr('title', 'Full Extent tool');
-            },
-            function(){
-                $("#btnZoomExtentPic").attr('src',  'icons/zoom-extent.png');
-            }
-        ); 
-        
-        // 
-        // identify button
-        // 
-        
-        $("#btnID").click(function() {
-            //alert("Handler for IDcalled.");
-            activateIdentifyTool();
-        });
-        
-        $('#btnID').hover(
-            function(){
-                $("#idPic").attr('src',  'icons/map-info_over.png');
-                $("#btnID").attr('title', 'Identify tool');
-            },
-            function(){
-                $("#idPic").attr('src',  'icons/map-info.png');
-            }
-        ); 
-            
-        // 
-        // help button
-        // 
-        $("#btnHelp").click(function() {
-            console.log(app.shareUrl());
-            //alert("Handler for help called.");
-            //getCurrentExtent();
-        });
-        $('#btnHelp').hover(
-            function(){
-                $("#btnPic").attr('src', 'icons/help_over.png');
-                $("#btnHelp").attr('title', 'Get help');
-            },
-            function(){
-                $("#btnPic").attr('src', 'icons/help.png');
-            }
-        ); 
-
-
-/*        
-        // 
-        // multigraph button
-        // 
-        $("#btnMultiGraph").click(function() {
-            //http://openlayers.org/dev/examples/click.html
-            //http://dev.openlayers.org/releases/OpenLayers-2.12/doc/apidocs/files/OpenLayers/Handler/Click-js.html
-            //http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,-11915561.548108513,4714792.352997124
-            deactivateActiveOpenLayersControls();
-            map.addControl(clickTool);
-            clickTool.activate();        
-        });
-        $('#btnMultiGraph').hover(
-            function(){
-                document.getElementById("multiGraphPic").src = 'icons/multigraph_over.png';
-                $("#btnMultiGraph").attr('title', 'MultiGraph tool');
-            },
-            function(){
-                document.getElementById("multiGraphPic").src = 'icons/multigraph.png';
-            }
-        ); 
-
-         */
+        app.launch('./config/ews_config.xml', shareUrlInfo);
     };
 
     function deactivateActiveOpenLayersControls() {
@@ -554,314 +872,6 @@
             });
     };                    
 
-    function parseConfig(configXML, shareUrlInfo) {
-        var $configXML = $(configXML),
-            initialBaseLayer,
-            initialTheme,
-            shareUrlLayerAlpha,
-            themeOptions = {};
-
-        if (shareUrlInfo !== undefined) {
-            shareUrlLayerAlpha = {};
-            $.each(shareUrlInfo.layerLids, function(i) {
-                shareUrlLayerAlpha[shareUrlInfo.layerLids[i]] = shareUrlInfo.layerAlphas[i];
-            });
-        }
-
-        // parse and store max map extent from config file
-        var $extent = $configXML.find("extent");
-        if ($extent && $extent.length > 0) {
-            app.maxExtent = {
-                xmin : parseFloat($extent.attr('xmin')),
-                ymin : parseFloat($extent.attr('ymin')),
-                xmax : parseFloat($extent.attr('xmax')),
-                ymax : parseFloat($extent.attr('ymax'))
-            };
-        }
-
-        // parse base layers and populate combo box
-        $configXML.find("images image").each(function(i) {
-            var $image    = $(this),
-                selected  = $image.attr('selected'),
-                baseLayer = new BaseLayer({
-                    name     : $image.attr('name'),
-                    label    : $image.attr('label'),
-                    url      : $image.attr('url'),
-                    index    : i
-                });
-            app.baseLayers.push(baseLayer);
-            $('#baseCombo').append($('<option value="'+i+'">'+baseLayer.label+'</option>'));
-            if ((  shareUrlInfo  &&   (shareUrlInfo.baseLayerName===baseLayer.name))
-                ||
-                ( !shareUrlInfo  &&   ($image.attr('selected')                    ))) {
-                initialBaseLayer = baseLayer;
-            }
-        });
-        if (initialBaseLayer === undefined) {
-            initialBaseLayer = app.baseLayers[0];
-        }
-
-        // parse layer groups and layers
-        var accordionGroupsByName = {};
-        $configXML.find("wmsGroup").each(function(i) {
-            var $wmsGroup      = $(this), // each <wmsGroup> corresponds to a (potential) layerPicker accordion group
-                accordionGroup = new AccordionGroup({
-                    gid              : $wmsGroup.attr('gid'),
-                    name             : $wmsGroup.attr('name'),
-                    label            : $wmsGroup.attr('label'),
-                    selectedInConfig : ($wmsGroup.attr('selected') === "true"),
-                    index            : i
-                });
-            app.accordionGroups.push(accordionGroup);
-            accordionGroupsByName[accordionGroup.name] = accordionGroup;
-            if (shareUrlInfo && (shareUrlInfo.accordionGroupGid === accordionGroup.gid)) {
-                themeOptions.accordionGroup = accordionGroup;
-            }
-            $wmsGroup.find("wmsSubgroup").each(function() {
-                var $wmsSubgroup = $(this), // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
-                    sublist      = new AccordionGroupSublist({
-                        label : $wmsSubgroup.attr('label')
-                    });
-                accordionGroup.sublists.push(sublist);
-                $wmsSubgroup.find("wmsLayer").each(function() {
-                    var $wmsLayer = $(this),
-                        layer = new Layer({
-                            lid              : $wmsLayer.attr('lid'),
-                            visible          : $wmsLayer.attr('visible'),
-                            url              : $wmsLayer.attr('url'),
-                            srs              : $wmsLayer.attr('srs'),
-                            layers           : $wmsLayer.attr('layers'),
-                            styles           : $wmsLayer.attr('styles'),
-                            identify         : $wmsLayer.attr('identify'),
-                            name             : $wmsLayer.attr('name'),
-                            legend           : $wmsLayer.attr('legend'),
-                            selectedInConfig : ($wmsLayer.attr('selected') === "true")
-                        });
-                    sublist.layers.push(layer);
-                    if (shareUrlInfo && (shareUrlLayerAlpha[layer.lid] !== undefined)) {
-                        if (themeOptions.layers === undefined) {
-                            themeOptions.layers = [];
-                        }
-                        themeOptions.layers.push(layer);
-                        layer.setTransparency(100*(1-shareUrlLayerAlpha[layer.lid]));
-                    }
-                });
-            });
-        });
-
-        // parse themes
-        $configXML.find("mapviews view").each(function(i) {
-            var $view = $(this),
-                theme = new Theme({
-                    name  : $view.attr('name'),
-                    label : $view.attr('label'),
-                    index : i
-                });
-            app.themes.push(theme);
-            $('#themeCombo').append($('<option value="'+i+'">'+theme.label+'</option>'));
-            $view.find("viewGroup").each(function() {
-                var $viewGroup     = $(this),
-                    name           = $viewGroup.attr('name'),
-                    accordionGroup = accordionGroupsByName[name];
-                if (accordionGroup) {
-                    theme.accordionGroups.push(accordionGroup);
-                } else {
-                    displayError("Unknown accordion group name '" + name + "' found in theme '" + theme.name + "'");
-                }
-            });
-            if ((  shareUrlInfo  &&   (shareUrlInfo.themeName===theme.name))
-                ||
-                ( !shareUrlInfo  &&   ($view.attr('selected')                    ))) {
-                initialTheme = theme;
-            }
-        });
-        if (initialTheme === undefined) {
-            initialTheme = app.themes[0];
-        }
-
-        // also need to address from share url:
-        //    layers, alphas
-        //    extent
-        //    accgp
-
-        app.zoomInTool   = new OpenLayers.Control.ZoomBox();
-        app.zoomOutTool  = new OpenLayers.Control.ZoomBox({out:true});
-        app.dragPanTool  = new OpenLayers.Control.DragPan();
-        app.identifyTool = createIdentifyTool();
-
-        var initialExtent = undefined;
-
-        if (shareUrlInfo) {
-            initialExtent = shareUrlInfo.extent;
-        }
-
-        $.ajax({
-            url: initialBaseLayer.url + '?f=json&pretty=true',
-            dataType: "jsonp",
-            success:  function (baseLayerInfo) {
-                initOpenLayers(baseLayerInfo, initialBaseLayer, initialTheme, themeOptions, initialExtent);
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert(textStatus);
-            }
-        });
-
-    }
-
-    function initOpenLayers(baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
-        var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
-            layerInfo: baseLayerInfo
-        });
-        
-        var maxExtentBounds = new OpenLayers.Bounds(app.maxExtent.xmin, app.maxExtent.ymin,
-                                                    app.maxExtent.xmax, app.maxExtent.ymax);
-        var initialExtentBounds;
-        if (initialExtent !== undefined) {
-            initialExtentBounds = new OpenLayers.Bounds(initialExtent.left, initialExtent.bottom,
-                                                        initialExtent.right, initialExtent.top);
-        } else {
-            initialExtentBounds = maxExtentBounds;
-        }
-        app.map = new OpenLayers.Map('map', {
-            maxExtent:         maxExtentBounds,
-            units:             'm',
-            resolutions:       layer.resolutions,
-            numZoomLevels:     layer.numZoomLevels,
-            tileSize:          layer.tileSize,
-            controls: [
-                new OpenLayers.Control.Navigation({
-                    dragPanOptions: {
-                        enableKinetic: true
-                    }
-                }),
-                new OpenLayers.Control.Attribution(),
-                app.zoomInTool,
-                app.zoomOutTool,
-                app.identifyTool
-            ],
-            eventListeners: 
-            {
-                "moveend": mapEvent,
-                "zoomend": mapEvent
-            },               
-            zoom: 1,
-            projection: new OpenLayers.Projection("EPSG:900913")
-        });    
-        
-        // set the base layer, but bypass setBaseLayer() here, because that function initiates an ajax request
-        // to fetch the layerInfo, which in this case we already have
-        app.currentBaseLayer = baseLayer;
-        app.emit("baselayerchange");
-
-        app.map.addLayers([layer]);
-        app.map.setLayerIndex(layer, 0);
-        setTheme(theme, themeOptions);
-        app.map.zoomToExtent(initialExtentBounds, true);
-    }
-
-    function setAccordionGroup(accordionGroup) {
-        app.currentAccordionGroup = accordionGroup;
-        app.emit("accordiongroupchange");
-    }
-
-    function setBaseLayer(baseLayer) {
-        $.ajax({
-            url: baseLayer.url + '?f=json&pretty=true',
-            dataType: "jsonp",
-            success:  function (layerInfo) {
-                var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
-                    layerInfo: layerInfo
-                });
-                app.map.removeLayer(app.map.layers[0]);
-                app.currentBaseLayer = baseLayer;
-                app.map.addLayers([layer]);
-                app.map.setLayerIndex(layer, 0);
-                app.emit("baselayerchange");
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert(textStatus);
-            }
-        });
-    }
-
-    function setTheme(theme, options) {
-        $('#layerPickerAccordion').empty();
-        $("#layerPickerAccordion").accordion('destroy');
-        $('#layerPickerAccordion').listAccordion({
-            clearStyle : true,
-            autoHeight : false,
-            change     : function(event, ui) {
-                var accordionGroupIndex = $("#layerPickerAccordion").accordion('option', 'active');
-                setAccordionGroup(theme.accordionGroups[accordionGroupIndex]);
-            }
-        });
-
-        $('#legend').empty();
-        var accordionGroup;
-
-        if (options === undefined) {
-            options = {};
-        }
-
-        $.each(theme.accordionGroups, function (i, accGp) {
-            // Decide whether to open this accordion group.  If we received an
-            // `accordionGroup` setting in the options are, activate this accordion
-            // group only if it equals that setting.  If we did not receive an
-            // `accordionGroup` setting in the options are, activate this accordion
-            // group if its "selected" attribute was true in the config file.
-            if ((options.accordionGroup && (accGp === options.accordionGroup))
-                ||
-                (!options.accordionGroup && accGp.selectedInConfig)) {
-                    accordionGroup = accGp;
-            }
-            var g = $('#layerPickerAccordion').listAccordion('addSection', '<a>'+accGp.label+'</a>');
-            $.each(accGp.sublists, function (j, sublist) {
-                var s = $('#layerPickerAccordion').listAccordion('addSublist', g, sublist.label);
-                $.each(sublist.layers, function (k, layer) {
-                    // remove any previously defined listeners for this layer, in case this isn't the first
-                    // time we've been here
-                    layer.removeAllListeners("activate");
-                    layer.removeAllListeners("deactivate");
-                    layer.removeAllListeners("transparency");
-
-                    // listen for changes to this layer, and update share url accordingly
-                    layer.addListener("activate", function () {
-                        app.updateShareMapUrl();
-                    });
-                    layer.addListener("deactivate", function () {
-                        app.updateShareMapUrl();
-                    });
-                    layer.addListener("transparency", function () {
-                        app.updateShareMapUrl();
-                    });
-
-                    // add the layer to the accordion group
-                    $('#layerPickerAccordion').listAccordion('addSublistItem', s,
-                                                             [createLayerToggleCheckbox(layer),
-                                                              $('<label for="chk'+layer.lid+'">'+layer.name+'</label>'),
-                                                              createLayerPropertiesIcon(layer)]);
-                    // Decide whether to activate the layer.  If we received a layer list in the
-                    // options arg, active the layer only if it appears in that list.  If we
-                    // received no layer list in the options arg, activate the layer if the layer's
-                    // "selected" attribute was true in the config file.
-                    if (((options.layers !== undefined) && (arrayContainsElement(options.layers, layer)))
-                        ||
-                        ((options.layers === undefined) && layer.selectedInConfig)) {
-                        layer.activate();
-                    }
-                });
-            });
-        });
-        if (!accordionGroup) {
-            // if we get to this point and don't have an accordion group to open,
-            // default to the first one
-            accordionGroup = theme.accordionGroups[0];
-        }
-        setAccordionGroup(accordionGroup);
-        app.currentTheme = theme;
-        app.emit("themechange");
-    }
-
     function createLayerToggleCheckbox(layer) {
         // create the checkbox
         var $checkbox = $('<input type="checkbox" id="chk'+layer.lid+'"></input>').click(function() {
@@ -887,7 +897,6 @@
             createLayerPropertiesDialog(layer);
         });
     }
-
 
     function createLayerPropertiesDialog(layer) {
 
@@ -954,12 +963,6 @@
     // Object to be used as hash for tracking the $html objects created by createLayerPropertiesDialog;
     // keys are layer lids:
     createLayerPropertiesDialog.$html = {};
-
-
-    function mapEvent(event) {
-        app.updateShareMapUrl();
-        // ... update shareMapURL ...
-    }    
 
 
     function activateIdentifyTool()
