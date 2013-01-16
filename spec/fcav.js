@@ -28,15 +28,14 @@ describe("FCAV", function () {
         describe("parseUrl", function () {
             var url1 = 'http://www.example.com/foo/bar?theme=MYTHEME&accgp=MYACCGP&basemap=MYBASE',
                 url2 = 'theme=MYTHEME&accgp=MYACCGP&basemap=MYBASE',
-                url3 = 'http://www.example.com/foo/bar?theme=MYTHEME&accgp=MYACCGP&basemap=MYBASE&extent=MYEXTENT&layers=a,b,c&alphas=d,e,f',
-                url4 = 'theme=MYTHEME&accgp=MYACCGP&basemap=MYBASE&extent=MYEXTENT&layers=a,b,c&alphas=d,e,f';
+                url3 = 'http://www.example.com/foo/bar?theme=MYTHEME&accgp=MYACCGP&basemap=MYBASE&extent=5,6,7,8&layers=a,b,c&alphas=d,e,f',
+                url4 = 'theme=MYTHEME&accgp=MYACCGP&basemap=MYBASE&extent=5,6,7,8&layers=a,b,c&alphas=d,e,f';
 
             it("should work correctly on the url '" + url1 + "'", function () {
                 var info = fcav.ShareUrlInfo.parseUrl(url1);
                 expect(info.themeName).toEqual("MYTHEME");
                 expect(info.accordionGroupGid).toEqual("MYACCGP");
                 expect(info.baseLayerName).toEqual("MYBASE");
-                expect(info.extent).toBeUndefined();
                 expect(info.layerLids.length).toBe(0);
                 expect(info.layerAlphas.length).toBe(0);
             });
@@ -46,7 +45,6 @@ describe("FCAV", function () {
                 expect(info.themeName).toEqual("MYTHEME");
                 expect(info.accordionGroupGid).toEqual("MYACCGP");
                 expect(info.baseLayerName).toEqual("MYBASE");
-                expect(info.extent).toBeUndefined();
                 expect(info.layerLids.length).toBe(0);
                 expect(info.layerAlphas.length).toBe(0);
             });
@@ -56,7 +54,10 @@ describe("FCAV", function () {
                 expect(info.themeName).toEqual("MYTHEME");
                 expect(info.accordionGroupGid).toEqual("MYACCGP");
                 expect(info.baseLayerName).toEqual("MYBASE");
-                expect(info.extent).toEqual("MYEXTENT");
+                expect(info.extent.left).toEqual('5');
+                expect(info.extent.bottom).toEqual('6');
+                expect(info.extent.right).toEqual('7');
+                expect(info.extent.top).toEqual('8');
                 expect(info.layerLids.length).toBe(3);
                 expect(info.layerAlphas.length).toBe(3);
             });
@@ -66,7 +67,10 @@ describe("FCAV", function () {
                 expect(info.themeName).toEqual("MYTHEME");
                 expect(info.accordionGroupGid).toEqual("MYACCGP");
                 expect(info.baseLayerName).toEqual("MYBASE");
-                expect(info.extent).toEqual("MYEXTENT");
+                expect(info.extent.left).toEqual('5');
+                expect(info.extent.bottom).toEqual('6');
+                expect(info.extent.right).toEqual('7');
+                expect(info.extent.top).toEqual('8');
                 expect(info.layerLids.length).toBe(3);
                 expect(info.layerAlphas.length).toBe(3);
             });
