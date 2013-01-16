@@ -126,10 +126,10 @@
                 // default to the first one
                 accordionGroup = theme.accordionGroups[0];
             }
+            app.currentTheme = theme;
             app.setAccordionGroup(accordionGroup);
             $('#layerPickerDialog').scrollTop(0);
             $('#mapToolsDialog').scrollTop(0);
-            app.currentTheme = theme;
             app.emit("themechange");
         };
 
@@ -223,7 +223,9 @@
                                              hide:"explode"
                                            });
             app.addListener("accordiongroupchange", function() {
-                $('#layerPickerAccordion').accordion('activate', app.currentAccordionGroup.index);
+                if (app.currentTheme) {
+                    $('#layerPickerAccordion').accordion('activate', app.currentTheme.getAccordionGroupIndex(app.currentAccordionGroup));
+                }
             });
 
             //
@@ -491,8 +493,7 @@
                         gid              : $wmsGroup.attr('gid'),
                         name             : $wmsGroup.attr('name'),
                         label            : $wmsGroup.attr('label'),
-                        selectedInConfig : ($wmsGroup.attr('selected') === "true"),
-                        index            : i
+                        selectedInConfig : ($wmsGroup.attr('selected') === "true")
                     });
                 app.accordionGroups.push(accordionGroup);
                 accordionGroupsByName[accordionGroup.name] = accordionGroup;
@@ -658,7 +659,6 @@
         this.name             = settings.name;
         this.label            = settings.label;
         this.selectedInConfig = settings.selectedInConfig;
-        this.index            = settings.index;
     }
     function AccordionGroupSublist(settings) {
         this.layers = [];
@@ -754,6 +754,17 @@
         this.name  = settings.name;
         this.label = settings.label;
         this.index = settings.index;
+        this.getAccordionGroupIndex = function(accordionGroup) {
+            // return the index of a given AccordionGroup in this theme's list,
+            // or -1 if it is not in the list
+            var i;
+            for (i=0; i<this.accordionGroups.length; ++i) {
+                if (this.accordionGroups[i] === accordionGroup) {
+                    return i;
+                }
+            }
+            return -1;
+        };
     }
 
     function displayError(message) {
@@ -1053,7 +1064,6 @@
         );
     }
 
-    
     function createIdentifyTool() {
         return new ClickTool(
             function (e) {
