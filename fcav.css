@@ -177,3 +177,14 @@ body, td, th {
    margin-left: 8px;
    margin-right: 5px;
 }
+
+#fcavMultigraphMessage {
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.ajax-loader-image {
+    width: 16px;
+    height: 16px;
+    display: inline;
+}

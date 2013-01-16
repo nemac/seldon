@@ -23,6 +23,8 @@
         this.currentBaseLayer      = undefined;
         this.currentAccordionGroup = undefined;
         this.currentTheme          = undefined;
+        this.identifyTool          = undefined;
+        this.multigraphTool        = undefined;
 
         this.setBaseLayer = function(baseLayer) {
             var app = this;
@@ -397,7 +399,6 @@
             // help button
             // 
             $("#btnHelp").click(function() {
-                console.log(app.shareUrl());
                 //alert("Handler for help called.");
                 //getCurrentExtent();
             });
@@ -411,6 +412,22 @@
                 }
             ); 
 
+
+            // 
+            // identify button
+            // 
+            
+            $("#btnMultiGraph").click(function() {
+                activateMultigraphTool();
+            }).hover(
+                function(){
+                    $("#multiGraphPic").attr('src',  'icons/multigraph_over.png');
+                    $("#btnMultiGraph").attr('title', 'Multigraph tool');
+                },
+                function(){
+                    $("#multiGraphPic").attr('src',  'icons/multigraph.png');
+                }
+            ); 
 
             /*        
              // 
@@ -567,10 +584,11 @@
             //    extent
             //    accgp
 
-            app.zoomInTool   = new OpenLayers.Control.ZoomBox();
-            app.zoomOutTool  = new OpenLayers.Control.ZoomBox({out:true});
-            app.dragPanTool  = new OpenLayers.Control.DragPan();
-            app.identifyTool = createIdentifyTool();
+            app.zoomInTool     = new OpenLayers.Control.ZoomBox();
+            app.zoomOutTool    = new OpenLayers.Control.ZoomBox({out:true});
+            app.dragPanTool    = new OpenLayers.Control.DragPan();
+            app.identifyTool   = createIdentifyTool();
+            app.multigraphTool = createMultigraphTool();
 
             var initialExtent = undefined;
 
@@ -620,7 +638,8 @@
                     new OpenLayers.Control.Attribution(),
                     app.zoomInTool,
                     app.zoomOutTool,
-                    app.identifyTool
+                    app.identifyTool,
+                    app.multigraphTool
                 ],
                 eventListeners: 
                 {
@@ -984,6 +1003,12 @@
         app.identifyTool.activate();
     }
 
+    function activateMultigraphTool()
+    {
+        deactivateActiveOpenLayersControls();
+        app.multigraphTool.activate();
+    }
+
     // The following creates a new OpenLayers tool class called ClickTool
     // which calls a function whenever the user clicks in the map.  Each
     // instance of ClickTool corresponds to a specific callback function.
@@ -1104,7 +1129,7 @@
                             (''
                              + '<tr id="identify_results_for_{{name}}">'
                              +   '<td class="layer-label">{{label}}:</td>'
-                             +   '<td class="layer-results"><img src="icons/ajax-loader.gif"</td>'
+                             +   '<td class="layer-results"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></td>'
                              + '</tr>'
                             ),
                             {
@@ -1173,6 +1198,47 @@
         return undefined;
     }
 
+    var lastPopup;
+
+    function createMultigraphTool() {
+        return new ClickTool(
+            function (e) {
+                // This function gets called when the user clicks a point in the map while the
+                // Multigraph tool is active.  The argument `e` is the click event; the coordinates
+                // of the clicked point are (e.x, e.y).
+
+                // This coords object is not really in lon/lat; it's in the display projection of the map,
+                // which is EPSG:900913.
+                var coords = app.map.getLonLatFromPixel(e.xy); 
+
+                // Here we convert it to actual lon/lat:
+                var lonlat = app.map.getLonLatFromPixel(e.xy);
+                lonlat.transform(app.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
+
+                $('#myMultigraph').remove();
+                if (lastPopup) {
+                    app.map.removePopup(lastPopup);
+                }
+                app.map.addPopup(lastPopup =
+                                 new OpenLayers.Popup.FramedCloud(
+                                     "fcavMultigraphPopup", 
+                                     coords,
+                                     null,
+                                     '<div id="fcavMultigraphMessage"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="fcavMultigraph" style="width: 600px; height: 300px;"></div>',
+                                     null,
+                                     true));
+                var promise = window.multigraph.jQuery('#fcavMultigraph').multigraph({
+                    //NOTE: coords.lon and coords.lat on the next line are really x,y coords in EPSG:900913, not lon/lat:
+                    'mugl'   : "http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+coords.lon+","+coords.lat
+                });
+                window.multigraph.jQuery('#fcavMultigraph').multigraph('done', function() {
+                    $('#fcavMultigraphMessage').empty();
+                    $('#fcavMultigraphMessage').text(Mustache.render('MODIS NDVI for Lat: {{{lat}}} Lon: {{{lon}}}',
+                                                                     { lat : sprintf("%.4f", lonlat.lat),
+                                                                       lon : sprintf("%.4f", lonlat.lon) }));
+                });
+            });
+    }
 
     function stringContainsChar(string, c) {
         return (string.indexOf(c) >= 0);
