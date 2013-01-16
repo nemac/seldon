@@ -52,30 +52,14 @@
             url   = window.location.toString();
             url = url.replace(/\?.*$/, '');
             url = url.replace(/\/$/, '');
-
-            return Mustache.render(
-                (''
-                 + '{{{url}}}'
-                 + '?theme={{{theme}}}'
-                 + '&layers={{{layers}}}'
-                 + '&alphas={{{alphas}}}'
-                 + '&accgp={{{accgp}}}'
-                 + '&basemap={{{basemap}}}'
-                 + '&extent={{{left}}},{{{bottom}}},{{{right}}},{{{top}}}'
-                ),
-                {
-                    url     : url,
-                    theme   : this.currentTheme.name,
-                    layers  : layerLids.join(','),
-                    alphas  : layerAlphas.join(','),
-                    accgp   : this.currentAccordionGroup.gid,
-                    basemap : this.currentBaseLayer.name,
-                    left    : extent.left,
-                    bottom  : extent.bottom,
-                    right   : extent.right,
-                    top     : extent.top
-                });
-
+            return url + '?' + (new ShareUrlInfo({
+                themeName         : this.currentTheme.name,
+                layerLids         : layerLids,
+                layerAlphas       : layerAlphas,
+                accordionGroupGid : this.currentAccordionGroup.gid,
+                baseLayerName     : this.currentBaseLayer.name,
+                extent            : extent
+            })).urlArgs();
         };
         this.updateShareMapUrl = function() {
             if (this.currentTheme) {
@@ -211,10 +195,14 @@
 
         app = new fcav.App();
 
+        var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
+
         $.ajax({
-            url: './config/ews_config.xml', // name of file you want to parse
-            dataType: "xml", // type of file you are trying to read
-            success: parseConfig, // name of the function to call upon success
+            url: './config/ews_config.xml',
+            dataType: "xml",
+            success: function(configXML) {
+                parseConfig(configXML, shareUrlInfo);
+            },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert(textStatus);
             }
@@ -469,8 +457,91 @@
         }
     }
 
-    function parseConfig(configXML) {
-        var $configXML = $(configXML);
+    function ShareUrlInfo(settings) {
+        if (settings === undefined) {
+            settings = {};
+        }
+        this.themeName         = settings.themeName;
+        this.accordionGroupGid = settings.accordionGroupGid;
+        this.baseLayerName     = settings.baseLayerName;
+        this.extent            = settings.extent;
+        this.layerLids         = settings.layerLids;
+        this.layerAlphas       = settings.layerAlphas;
+        if (this.extent === undefined) {
+            this.extent = {};
+        }
+        if (this.layerLids === undefined) {
+            this.layerLids = [];
+        }
+        if (this.layerAlphas === undefined) {
+            this.layerAlphas = [];
+        }
+    }
+    ShareUrlInfo.parseUrl = function(url) {
+        var info = new ShareUrlInfo(),
+            vars = [],
+            hash,
+            q;
+
+        if (url === undefined) {
+            return info;
+        }
+        // Remove everything up to and including the first '?' char.
+        url = url.replace(/^[^\?]*\?/, '');
+
+        $.each(url.split('&'), function () {
+            var i = this.indexOf('='),
+                name, value;
+            if (i >= 0) {
+                name  = this.substring(0,i);
+                value = this.substring(i+1);
+            } else {
+                name  = this;
+                value = undefined;
+            }
+            vars[name] = value;
+        });
+
+        info.themeName         = vars.theme;
+        info.accordionGroupGid = vars.accgp;
+        info.baseLayerName     = vars.basemap;
+        info.extent            = vars.extent;
+        if (vars.layers) {
+            $.each(vars.layers.split(','), function () {
+                info.layerLids.push(this);
+            });
+        }
+        if (vars.alphas) {
+            $.each(vars.alphas.split(','), function () {
+                info.layerAlphas.push(this);
+            });
+        }
+        return info;
+    };
+    ShareUrlInfo.prototype.urlArgs = function() {
+        return Mustache.render(
+            (''
+             + '?theme={{{theme}}}'
+             + '&layers={{{layers}}}'
+             + '&alphas={{{alphas}}}'
+             + '&accgp={{{accgp}}}'
+             + '&basemap={{{basemap}}}'
+             + '&extent={{{extent.left}}},{{{extent.bottom}}},{{{extent.right}}},{{{extent.top}}}'
+            ),
+            {
+                theme   : this.themeName,
+                layers  : this.layerLids.join(','),
+                alphas  : this.layerAlphas.join(','),
+                accgp   : this.accordionGroupGid,
+                basemap : this.baseLayerName,
+                extent  : this.extent
+            });
+    };                    
+
+    function parseConfig(configXML, shareUrlInfo) {
+        var $configXML = $(configXML),
+            initialBaseLayer,
+            initialTheme;
 
         // parse and store max map extent from config file
         var $extent = $configXML.find("extent");
@@ -484,7 +555,6 @@
         }
 
         // parse base layers and populate combo box
-        var selectedBaseLayerIndex = 0;
         $configXML.find("images image").each(function(i) {
             var $image    = $(this),
                 selected  = $image.attr('selected'),
@@ -495,12 +565,16 @@
                     index    : i
                 });
             app.baseLayers.push(baseLayer);
-            //app.baseLayersByName[baseLayer.name] = baseLayer;
             $('#baseCombo').append($('<option value="'+i+'">'+baseLayer.label+'</option>'));
-            if (selected) {
-                selectedBaseLayerIndex = i;
+            if ((shareUrlInfo.baseLayerName === baseLayer.name)
+                ||
+                (!shareUrlInfo.baseLayerName && $image.attr('selected'))) {
+                initialBaseLayer = baseLayer;
             }
         });
+        if (initialBaseLayer === undefined) {
+            initialBaseLayer = app.baseLayers[0];
+        }
 
         // parse layer groups and layers
         var accordionGroupsByName = {};
@@ -540,10 +614,8 @@
         });
 
         // parse themes
-        var selectedThemeIndex = 0;
         $configXML.find("mapviews view").each(function(i) {
             var $view = $(this),
-                selected  = $view.attr('selected'),
                 theme = new Theme({
                     name  : $view.attr('name'),
                     label : $view.attr('label'),
@@ -561,12 +633,20 @@
                     displayError("Unknown accordion group name '" + name + "' found in theme '" + theme.name + "'");
                 }
             });
-            if (selected) {
-                selectedThemeIndex = i;
+            if ((shareUrlInfo.themeName === theme.name)
+                ||
+                (!shareUrlInfo.themeName && $view.attr('selected'))) {
+                initialTheme = theme;
             }
         });
+        if (initialTheme === undefined) {
+            initialTheme = app.themes[0];
+        }
 
-        var baseLayer = app.baseLayers[selectedBaseLayerIndex];
+        // also need to address from share url:
+        //    layers, alphas
+        //    extent
+        //    accgp
 
         app.zoomInTool   = new OpenLayers.Control.ZoomBox();
         app.zoomOutTool  = new OpenLayers.Control.ZoomBox({out:true});
@@ -574,10 +654,10 @@
         app.identifyTool = createIdentifyTool();
 
         $.ajax({
-            url: baseLayer.url + '?f=json&pretty=true',
+            url: initialBaseLayer.url + '?f=json&pretty=true',
             dataType: "jsonp",
             success:  function (baseLayerInfo) {
-                initOpenLayers(baseLayerInfo, baseLayer, selectedBaseLayerIndex, selectedThemeIndex);
+                initOpenLayers(baseLayerInfo, initialBaseLayer, initialTheme);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert(textStatus);
@@ -588,8 +668,8 @@
 
 /*
     function initializeFromState(state) {
-        var theme     = app.themesByName[state.themeName];
-        var baseLayer = app.baseLayersByName[state.baseLayerName];
+//        var theme     = app.themesByName[state.themeName];
+//        var baseLayer = app.baseLayersByName[state.baseLayerName];
 
         var layers = {};
         $.each(state.layerLids, function (i,lid) {
@@ -597,20 +677,11 @@
             layers[lid] = true;
         });
 
-        setBaseLayer(baseLayer);
-        $('#baseCombo').val(baseLayer.index);
-
-        setTheme(theme, {
-            openAccordionGroupGid : state.accordionGroupGid,
-            layers                : layers
-        });
-        $('#themeCombo').val(theme.index);
-        console.log(state.extent);
         app.map.zoomToExtent(parseExtent(state.extent), false);
     }
 */
 
-    function initOpenLayers(baseLayerInfo, baseLayer, baseLayerIndex, themeIndex) {
+    function initOpenLayers(baseLayerInfo, baseLayer, theme) {
         var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
             layerInfo: baseLayerInfo
         });
@@ -649,7 +720,7 @@
 
         app.map.addLayers([layer]);
         app.map.setLayerIndex(layer, 0);
-        setTheme(app.themes[themeIndex]);
+        setTheme(theme);
         app.map.zoomToExtent(maxExtentBounds, false);
 
 /*
@@ -697,7 +768,8 @@
             clearStyle : true,
             autoHeight : false,
             change     : function(event, ui) {
-                setAccordionGroup($("#layerPickerAccordion").accordion('option', 'active'));
+                var accordionGroupIndex = $("#layerPickerAccordion").accordion('option', 'active');
+                setAccordionGroup(theme.accordionGroups[accordionGroupIndex]);
             }
         });
 
@@ -1090,6 +1162,7 @@
     fcav.Theme                             = Theme;
     fcav.createWMSGetFeatureInfoRequestURL = createWMSGetFeatureInfoRequestURL;
     fcav.stringContainsChar                = stringContainsChar;
+    fcav.ShareUrlInfo                      = ShareUrlInfo;
     window.fcav                            = fcav;
     
 }(jQuery));
