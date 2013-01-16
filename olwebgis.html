@@ -1,0 +1,115 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <!-- test change test the order of these does matter -->
+    <title>Forest Change Assessment Viewer (OpenLayers Version)</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=8" >
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <!--<script type="text/javascript" src="libs/jquery18/jquery-1.8.2.js"></script>-->
+    <script type="text/javascript" src="libs/multigraph/multigraph.js"></script>
+
+    <script type="text/javascript" src="libs/jquery17/jquery-1.7.2.js"></script>
+    <script type="text/javascript" src="libs/OpenLayers212/lib/OpenLayers.js"></script>
+    <script type="text/javascript" src="listAccordion.js"></script>
+    <script type="text/javascript" src="OLWebGIS.js"></script>
+    <link type="text/css" rel="stylesheet" href="libs/jquery18/themes/base/jquery.ui.all.css" />
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.core.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.widget.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.mouse.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.draggable.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.resizable.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.accordion.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.dialog.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.position.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.slider.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.effects.core.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.effects.scale.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.effects.fold.js"></script>
+    <script type="text/javascript" src="http://maps.google.com/maps/api/js?v=3&amp;sensor=false"></script>
+    <link rel="stylesheet" type="text/css" href="NEMACStyle.css" />
+
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="ie.css" />
+    <![endif]-->
+
+  </head>
+
+  <body>
+    <div id="titleBar">
+      <h2>Forest Change Assessment Viewer (OpenLayers Version)</h2>
+    </div>
+    <div id="header">
+      
+      <table width="100%" border="0">
+        <tr>
+          <td align="left">
+            <div id='btnTglLyrPick' style="width:35px;display:inline-block;">
+              <img id="tglLyrPickPic" src='icons/layers.png'/>
+            </div>        
+            <div id='btnHelp' style="width:35px;display:inline-block;">
+              <img id="helpPic" src='icons/help.png'/>
+            </div>
+          </td>
+	  <td align="center">
+            <div id='mapBase' style="display:inline-block;vertical-align:top;">
+              <b>Base Map:</b> <select id="baseCombo"></select>
+	    </div>
+	    <div id='mapTheme' style="display:inline-block;vertical-align:top;">
+	      <b>Theme:</b> <select id="themeCombo"></select>
+	    </div>
+
+	    <div id='btnPan' style="display:inline-block;">
+	      <img id="panPic" src='icons/pan.png'/>
+	    </div>
+	    <div id='btnZoomIn' style="display:inline-block;">
+	      <img id="zoomInPic" src='icons/zoom-in.png'/>
+	    </div>
+	    <div id='btnZoomOut' style="display:inline-block;">
+	      <img id="zoomOutPic" src='icons/zoom-out.png'/>
+	    </div>
+	    <div id='btnID' style="display:inline-block;">
+	      <img id="idPic" src='icons/map-info.png'/>
+	    </div>
+	    <div id='btnZoomExtent' style="display:inline-block;">
+	      <img id="zoomExtentPic" src='icons/zoom-extent.png'/>
+	    </div>
+	    <div id='btnMultiGraph' style="display:inline-block;">
+	      <img id="multiGraphPic" src='icons/multigraph.png'/>
+	    </div>    
+	  </td>
+	  <td align="right">
+	    <div id='btnTglMapTools' style="display:inline-block;">
+	      <img id="tglLegendPic" src='icons/legend.png'/>
+	    </div> 
+	  </td>
+	</tr>
+      </table>           
+    </div>
+
+    <div id="opacityDialog" title="Adjust Opacity" style="width:auto;">
+      <div id="opacitySlider">
+      </div>
+    </div>
+    <div id="map">
+    </div>
+
+    <div title="Map Layers" id="layerPickerDialog">
+      <div id="layerPickerAccordion" class="layerAccordionClass" style="height:600px;">
+      </div>    
+    </div>    
+
+    <div title="Map Tools" id="mapToolsDialog">
+      <div id="mapToolsAccordion" style="height:400px;">
+
+        <h3><a href="#shareMapAccordion">Share this Map</a></h3>
+        <div id="test" class="shrMapURLClass"><p></p></div>
+
+        <h3><a href="#legendAccordion">Legend (click to clear layer)</a></h3>
+        <div id="legend"></div>
+
+      </div> 
+    </div>
+
+
+  </body>
+</html>
