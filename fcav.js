@@ -127,6 +127,8 @@
                 accordionGroup = theme.accordionGroups[0];
             }
             app.setAccordionGroup(accordionGroup);
+            $('#layerPickerDialog').scrollTop(0);
+            $('#mapToolsDialog').scrollTop(0);
             app.currentTheme = theme;
             app.emit("themechange");
         };
