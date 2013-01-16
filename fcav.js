@@ -138,6 +138,7 @@
                                          },
                                          options
                                         );
+            this.openLayersLayer.setOpacity(1-parseFloat(this.transparency)/100.0);
             this.openLayersLayer.fcavLayer = this;
             return this.openLayersLayer;
         };
@@ -235,7 +236,9 @@
                                          autoOpen: true,
                                          hide:"explode"
                                        });
-
+        app.addListener("accordiongroupchange", function() {
+            $('#layerPickerAccordion').accordion('activate', app.currentAccordionGroup.index);
+        });
 
         //
         // mapTools button:
@@ -484,7 +487,7 @@
             q;
 
         if (url === undefined) {
-            return info;
+            return undefined;
         }
         // Remove everything up to and including the first '?' char.
         url = url.replace(/^[^\?]*\?/, '');
@@ -505,7 +508,17 @@
         info.themeName         = vars.theme;
         info.accordionGroupGid = vars.accgp;
         info.baseLayerName     = vars.basemap;
-        info.extent            = vars.extent;
+
+        if (vars.extent) {
+            var extentCoords = vars.extent.split(',');
+            info.extent = {
+                left   : extentCoords[0],
+                bottom : extentCoords[1],
+                right  : extentCoords[2],
+                top    : extentCoords[3]
+            };
+        }
+
         if (vars.layers) {
             $.each(vars.layers.split(','), function () {
                 info.layerLids.push(this);
@@ -516,12 +529,15 @@
                 info.layerAlphas.push(this);
             });
         }
-        return info;
+        if (info.themeName && info.baseLayerName) {
+            return info;
+        }
+        return undefined;
     };
     ShareUrlInfo.prototype.urlArgs = function() {
         return Mustache.render(
             (''
-             + '?theme={{{theme}}}'
+             + 'theme={{{theme}}}'
              + '&layers={{{layers}}}'
              + '&alphas={{{alphas}}}'
              + '&accgp={{{accgp}}}'
@@ -541,7 +557,16 @@
     function parseConfig(configXML, shareUrlInfo) {
         var $configXML = $(configXML),
             initialBaseLayer,
-            initialTheme;
+            initialTheme,
+            shareUrlLayerAlpha,
+            themeOptions = {};
+
+        if (shareUrlInfo !== undefined) {
+            shareUrlLayerAlpha = {};
+            $.each(shareUrlInfo.layerLids, function(i) {
+                shareUrlLayerAlpha[shareUrlInfo.layerLids[i]] = shareUrlInfo.layerAlphas[i];
+            });
+        }
 
         // parse and store max map extent from config file
         var $extent = $configXML.find("extent");
@@ -566,9 +591,9 @@
                 });
             app.baseLayers.push(baseLayer);
             $('#baseCombo').append($('<option value="'+i+'">'+baseLayer.label+'</option>'));
-            if ((shareUrlInfo.baseLayerName === baseLayer.name)
+            if ((  shareUrlInfo  &&   (shareUrlInfo.baseLayerName===baseLayer.name))
                 ||
-                (!shareUrlInfo.baseLayerName && $image.attr('selected'))) {
+                ( !shareUrlInfo  &&   ($image.attr('selected')                    ))) {
                 initialBaseLayer = baseLayer;
             }
         });
@@ -589,6 +614,9 @@
                 });
             app.accordionGroups.push(accordionGroup);
             accordionGroupsByName[accordionGroup.name] = accordionGroup;
+            if (shareUrlInfo && (shareUrlInfo.accordionGroupGid === accordionGroup.gid)) {
+                themeOptions.accordionGroup = accordionGroup;
+            }
             $wmsGroup.find("wmsSubgroup").each(function() {
                 var $wmsSubgroup = $(this), // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
                     sublist      = new AccordionGroupSublist({
@@ -596,19 +624,27 @@
                     });
                 accordionGroup.sublists.push(sublist);
                 $wmsSubgroup.find("wmsLayer").each(function() {
-                    var $wmsLayer = $(this);
-                    sublist.layers.push(new Layer({
-                        lid              : $wmsLayer.attr('lid'),
-                        visible          : $wmsLayer.attr('visible'),
-                        url              : $wmsLayer.attr('url'),
-                        srs              : $wmsLayer.attr('srs'),
-                        layers           : $wmsLayer.attr('layers'),
-                        styles           : $wmsLayer.attr('styles'),
-                        identify         : $wmsLayer.attr('identify'),
-                        name             : $wmsLayer.attr('name'),
-                        legend           : $wmsLayer.attr('legend'),
-                        selectedInConfig : ($wmsLayer.attr('selected') === "true")
-                    }));
+                    var $wmsLayer = $(this),
+                        layer = new Layer({
+                            lid              : $wmsLayer.attr('lid'),
+                            visible          : $wmsLayer.attr('visible'),
+                            url              : $wmsLayer.attr('url'),
+                            srs              : $wmsLayer.attr('srs'),
+                            layers           : $wmsLayer.attr('layers'),
+                            styles           : $wmsLayer.attr('styles'),
+                            identify         : $wmsLayer.attr('identify'),
+                            name             : $wmsLayer.attr('name'),
+                            legend           : $wmsLayer.attr('legend'),
+                            selectedInConfig : ($wmsLayer.attr('selected') === "true")
+                        });
+                    sublist.layers.push(layer);
+                    if (shareUrlInfo && (shareUrlLayerAlpha[layer.lid] !== undefined)) {
+                        if (themeOptions.layers === undefined) {
+                            themeOptions.layers = [];
+                        }
+                        themeOptions.layers.push(layer);
+                        layer.setTransparency(100*(1-shareUrlLayerAlpha[layer.lid]));
+                    }
                 });
             });
         });
@@ -633,9 +669,9 @@
                     displayError("Unknown accordion group name '" + name + "' found in theme '" + theme.name + "'");
                 }
             });
-            if ((shareUrlInfo.themeName === theme.name)
+            if ((  shareUrlInfo  &&   (shareUrlInfo.themeName===theme.name))
                 ||
-                (!shareUrlInfo.themeName && $view.attr('selected'))) {
+                ( !shareUrlInfo  &&   ($view.attr('selected')                    ))) {
                 initialTheme = theme;
             }
         });
@@ -653,11 +689,17 @@
         app.dragPanTool  = new OpenLayers.Control.DragPan();
         app.identifyTool = createIdentifyTool();
 
+        var initialExtent = undefined;
+
+        if (shareUrlInfo) {
+            initialExtent = shareUrlInfo.extent;
+        }
+
         $.ajax({
             url: initialBaseLayer.url + '?f=json&pretty=true',
             dataType: "jsonp",
             success:  function (baseLayerInfo) {
-                initOpenLayers(baseLayerInfo, initialBaseLayer, initialTheme);
+                initOpenLayers(baseLayerInfo, initialBaseLayer, initialTheme, themeOptions, initialExtent);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert(textStatus);
@@ -666,27 +708,20 @@
 
     }
 
-/*
-    function initializeFromState(state) {
-//        var theme     = app.themesByName[state.themeName];
-//        var baseLayer = app.baseLayersByName[state.baseLayerName];
-
-        var layers = {};
-        $.each(state.layerLids, function (i,lid) {
-            app.layersByLid[lid].transparency = state.layerAlphas[i];
-            layers[lid] = true;
-        });
-
-        app.map.zoomToExtent(parseExtent(state.extent), false);
-    }
-*/
-
-    function initOpenLayers(baseLayerInfo, baseLayer, theme) {
+    function initOpenLayers(baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
         var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
             layerInfo: baseLayerInfo
         });
+        
         var maxExtentBounds = new OpenLayers.Bounds(app.maxExtent.xmin, app.maxExtent.ymin,
                                                     app.maxExtent.xmax, app.maxExtent.ymax);
+        var initialExtentBounds;
+        if (initialExtent !== undefined) {
+            initialExtentBounds = new OpenLayers.Bounds(initialExtent.left, initialExtent.bottom,
+                                                        initialExtent.right, initialExtent.top);
+        } else {
+            initialExtentBounds = maxExtentBounds;
+        }
         app.map = new OpenLayers.Map('map', {
             maxExtent:         maxExtentBounds,
             units:             'm',
@@ -720,20 +755,8 @@
 
         app.map.addLayers([layer]);
         app.map.setLayerIndex(layer, 0);
-        setTheme(theme);
-        app.map.zoomToExtent(maxExtentBounds, false);
-
-/*
-        // process shared url, if any
-        var shareState = FcavState.createFromURL(window.location.toString());
-        if (shareState.extent) {
-            // Only act on the url parameters if they includes an extent parameter.  This
-            // is simply a quick & dirty way to insure that the parameters are valid.
-            // We proabably ought to strengthen this to do a better validity check.
-            initializeFromState(shareState);
-        }
-*/
-
+        setTheme(theme, themeOptions);
+        app.map.zoomToExtent(initialExtentBounds, true);
     }
 
     function setAccordionGroup(accordionGroup) {
@@ -774,24 +797,25 @@
         });
 
         $('#legend').empty();
-        var openAccordionGroupIndex = 0;
+        var accordionGroup;
 
         if (options === undefined) {
             options = {};
         }
 
-        $.each(theme.accordionGroups, function (i, accordionGroup) {
-            if (options.openAccordionGroupGid) {
-                if (accordionGroup.gid === options.openAccordionGroupGid ) {
-                    openAccordionGroupIndex = i;
-                }
-            } else {
-                if (accordionGroup.selectedInConfig) {
-                    openAccordionGroupIndex = i;
-                }
+        $.each(theme.accordionGroups, function (i, accGp) {
+            // Decide whether to open this accordion group.  If we received an
+            // `accordionGroup` setting in the options are, activate this accordion
+            // group only if it equals that setting.  If we did not receive an
+            // `accordionGroup` setting in the options are, activate this accordion
+            // group if its "selected" attribute was true in the config file.
+            if ((options.accordionGroup && (accGp === options.accordionGroup))
+                ||
+                (!options.accordionGroup && accGp.selectedInConfig)) {
+                    accordionGroup = accGp;
             }
-            var g = $('#layerPickerAccordion').listAccordion('addSection', '<a>'+accordionGroup.label+'</a>');
-            $.each(accordionGroup.sublists, function (j, sublist) {
+            var g = $('#layerPickerAccordion').listAccordion('addSection', '<a>'+accGp.label+'</a>');
+            $.each(accGp.sublists, function (j, sublist) {
                 var s = $('#layerPickerAccordion').listAccordion('addSublist', g, sublist.label);
                 $.each(sublist.layers, function (k, layer) {
                     // remove any previously defined listeners for this layer, in case this isn't the first
@@ -816,20 +840,24 @@
                                                              [createLayerToggleCheckbox(layer),
                                                               $('<label for="chk'+layer.lid+'">'+layer.name+'</label>'),
                                                               createLayerPropertiesIcon(layer)]);
-                    // decide whether to activate the layer
-                    if (options.layers) {
-                        if (options.layers[layer.id]) {
-                            layer.activate();
-                        }
-                    } else {
-                        if (layer.selectedInConfig) {
-                            layer.activate();
-                        }
+                    // Decide whether to activate the layer.  If we received a layer list in the
+                    // options arg, active the layer only if it appears in that list.  If we
+                    // received no layer list in the options arg, activate the layer if the layer's
+                    // "selected" attribute was true in the config file.
+                    if (((options.layers !== undefined) && (arrayContainsElement(options.layers, layer)))
+                        ||
+                        ((options.layers === undefined) && layer.selectedInConfig)) {
+                        layer.activate();
                     }
                 });
             });
         });
-        $('#layerPickerAccordion').accordion('activate', openAccordionGroupIndex);
+        if (!accordionGroup) {
+            // if we get to this point and don't have an accordion group to open,
+            // default to the first one
+            accordionGroup = theme.accordionGroups[0];
+        }
+        setAccordionGroup(accordionGroup);
         app.currentTheme = theme;
         app.emit("themechange");
     }
@@ -1134,6 +1162,20 @@
     function stringContainsChar(string, c) {
         return (string.indexOf(c) >= 0);
     }
+
+    function arrayContainsElement(array, element) {
+        var i;
+        if (array === undefined) {
+            return false;
+        }
+        for (i=0; i<array.length; ++i) {
+            if (array[i] === element) {
+                return true;
+            }
+        }
+        return false;
+    }
+            
 
 
     // Accepts an array of strings, and returns a JavaScript object containing a property corresponding
