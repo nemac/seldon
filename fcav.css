@@ -132,6 +132,7 @@ body, td, th {
 #map {
   width: 100%;
   height: 100%;
+
 /*
   background: #ff0000;
   border: 10px solid green;
@@ -198,4 +199,13 @@ textarea.shareMapUrl {
 .ui-accordion .ui-accordion-content {
   padding-left: 10px;
   padding-right: 10px;
+}
+
+.nonselectable {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
