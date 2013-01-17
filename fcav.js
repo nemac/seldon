@@ -8,6 +8,7 @@
     fcav.App = function () {
         EventEmitter.call(this);
         this.map         = undefined; // OpenLayers map object
+        this.scalebar    = undefined;
         this.zoomInTool  = undefined; // OpenLayers zoom in tool
         this.zoomOutTool = undefined; // OpenLayers zoom out tool
         this.dragPanTool = undefined; // OpenLayers dragpan tool
@@ -653,7 +654,9 @@
             // to fetch the layerInfo, which in this case we already have
             this.currentBaseLayer = baseLayer;
             this.emit("baselayerchange");
-
+            this.scalebar = new OpenLayers.Control.ScaleBar();
+            this.scalebar.divisions = 3;
+            this.map.addControl(this.scalebar);
             this.map.addLayers([layer]);
             this.map.setLayerIndex(layer, 0);
             this.setTheme(theme, themeOptions);
