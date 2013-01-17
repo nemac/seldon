@@ -257,7 +257,6 @@
                                           autoOpen: true,
                                           hide:"explode"
                                         });
-
             app.addListener("themechange", function () {
                 app.updateShareMapUrl();
             });

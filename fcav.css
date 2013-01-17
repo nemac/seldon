@@ -188,3 +188,14 @@ body, td, th {
     height: 16px;
     display: inline;
 }
+
+textarea.shareMapUrl {
+    width: 100%;
+    height: 120px;
+    resize: none;
+}
+
+.ui-accordion .ui-accordion-content {
+  padding-left: 10px;
+  padding-right: 10px;
+}
