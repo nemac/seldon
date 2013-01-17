@@ -648,8 +648,8 @@
                 },               
                 zoom: 1,
                 projection: new OpenLayers.Projection("EPSG:900913")
-            });    
-            
+            });  
+
             // set the base layer, but bypass setBaseLayer() here, because that function initiates an ajax request
             // to fetch the layerInfo, which in this case we already have
             this.currentBaseLayer = baseLayer;
@@ -661,6 +661,13 @@
             this.map.setLayerIndex(layer, 0);
             this.setTheme(theme, themeOptions);
             this.map.zoomToExtent(initialExtentBounds, true);
+
+            this.map.events.register("mousemove", app.map, function(e) {
+                var pixel = app.map.events.getMousePosition(e);
+                var lonlat = app.map.getLonLatFromPixel(pixel);
+				lonlat = lonlat.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
+                OpenLayers.Util.getElement("latLonTracker").innerHTML = "Lat: " + lonlat.lat + " Lon: " + lonlat.lon + "";
+            });
         };
 
     };

@@ -9,6 +9,12 @@ body, td, th {
 	font-size:11pt;
 }
 
+a{
+    color: #000000;
+    text-decoration: none;
+}
+
+
 #titleBar {
     z-index:5;
     background:#665f45;
@@ -211,16 +217,16 @@ textarea.shareMapUrl {
 }
 
 .olControlScaleBar {
-    bottom: 10px;
+    bottom: 30px;
     left: 15px;
     font-family: sans-serif;
-    color: #00008B;
+    color: #696969;
 }
 
 .olControlScaleBarBar {
     height: 11px;
     top: 12px;
-    background-color: #00008B;
+    background-color: #696969;
     background-position: 0 0;
     background-repeat: repeat-x;
 }
@@ -228,7 +234,7 @@ textarea.shareMapUrl {
 .olControlScaleBarBarAlt {
     height: 11px;
     top: 12px;
-    background-color: #00008B;
+    background-color: #696969;
     background-position: 0 0;
     background-repeat: repeat-x;
 }
@@ -272,4 +278,23 @@ textarea.shareMapUrl {
     top: 0px;
     left: 10px;
     font-size: 13px;
+}
+
+#footer {
+    z-index:10003;
+    background:#dfddd0;
+    display: block;
+	height:30px;
+	padding-left:3px;
+	box-shadow:3px 1px 5px #333;
+	text-align:center;
+}
+#links
+{
+    float: left;
+}
+#latLonTracker
+{
+    float: right;
+    margin-right: .5in;
 }
