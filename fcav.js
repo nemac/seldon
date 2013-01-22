@@ -666,7 +666,7 @@
                 var pixel = app.map.events.getMousePosition(e);
                 var lonlat = app.map.getLonLatFromPixel(pixel);
 				lonlat = lonlat.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
-                OpenLayers.Util.getElement("latLonTracker").innerHTML = "Lat: " + lonlat.lat + " Lon: " + lonlat.lon + "";
+                OpenLayers.Util.getElement("latLonTracker").innerHTML = "Lat: " + sprintf("%.5f", lonlat.lat) + " Lon: " + sprintf("%.5f", lonlat.lon) + "";
             });
         };
 

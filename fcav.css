@@ -296,5 +296,7 @@ textarea.shareMapUrl {
 #latLonTracker
 {
     float: right;
-    margin-right: .5in;
+	overflow:hidden;
+    margin-top: 0;
+    margin-bottom: 0;	
 }
