@@ -69,3 +69,10 @@ h2 {
     bottom: 0px;
     width: 100%;
 }
+
+#customZoom {
+    z-index: 1001;
+    position:absolute;
+    right:100px;
+    top:100px;
+}
