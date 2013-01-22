@@ -300,3 +300,26 @@ textarea.shareMapUrl {
     margin-top: 0;
     margin-bottom: 0;	
 }
+#customZoom {
+    z-index: 1001;
+    position:absolute;
+    right:100px;
+}
+#customZoom a {
+    text-decoration: none;
+    position: absolute;
+    display: block;
+    width: 50px;
+    text-align: center;
+    font-weight: bold;
+    color: #fff;
+    background: #696969;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+#customZoom a:hover {
+    background: #C0C0C0;
+}
+#customZoomOut {
+    top: 25px;
+}

@@ -636,6 +636,10 @@
                         }
                     }),
                     new OpenLayers.Control.Attribution(),
+                    new OpenLayers.Control.Zoom({
+                        zoomInId: "customZoomIn",
+                        zoomOutId: "customZoomOut"
+                    }),                    
                     app.zoomInTool,
                     app.zoomOutTool,
                     app.identifyTool,
@@ -661,7 +665,6 @@
             this.map.setLayerIndex(layer, 0);
             this.setTheme(theme, themeOptions);
             this.map.zoomToExtent(initialExtentBounds, true);
-
             this.map.events.register("mousemove", app.map, function(e) {
                 var pixel = app.map.events.getMousePosition(e);
                 var lonlat = app.map.getLonLatFromPixel(pixel);
