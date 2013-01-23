@@ -41,7 +41,9 @@
         // extent
         this.saveCurrentExtent = function() {
             var newExtent,
-                currentSavedExtent;
+                currentSavedExtent,
+                newSavedExtents,
+                i;
 
             newExtent = (function (extent) {
                 return { left : extent.left, bottom : extent.bottom, right : extent.right, top : extent.top };
@@ -49,16 +51,17 @@
 
             if (this.currentSavedExtentIndex >= 0) {
                 currentSavedExtent = this.savedExtents[this.currentSavedExtentIndex];
-                if ((   newExtent.left   === currentSavedExtent.left)
-                    && (newExtent.bottom === currentSavedExtent.bottom)
-                    && (newExtent.right  === currentSavedExtent.right)
-                    && (newExtent.top    === currentSavedExtent.top)) {
+                if (extentsAreEqual(currentSavedExtent, newExtent)) {
                     return;
                 }
             }
 
-            // truncate the list after the current location
-            this.savedExtents.length = this.currentSavedExtentIndex + 1;
+            // chop off the list after the current position
+            newSavedExtents = [];
+            for (i=0; i<=this.currentSavedExtentIndex; ++i) {
+                newSavedExtents.push(this.savedExtents[i]);
+            }
+            this.savedExtents = newSavedExtents;
 
             // append current extent to the list
             this.savedExtents.push(newExtent);
@@ -66,11 +69,15 @@
         };
 
         this.zoomToExtent = function(extent, save) {
+            if (save === undefined) {
+                save = true;
+            }
             var bounds = new OpenLayers.Bounds(extent.left, extent.bottom, extent.right, extent.top);
             this.map.zoomToExtent(bounds, true);
             if (save) {
                 this.saveCurrentExtent();
             }
+            //$('#extentOutput').empty().append($(this.printSavedExtents()));
         };
 
         this.zoomToPreviousExtent = function() {
@@ -82,10 +89,31 @@
         this.zoomToNextExtent = function() {
             if (this.currentSavedExtentIndex < this.savedExtents.length-1) {
                 ++this.currentSavedExtentIndex;
-console.log('zooming to position ' + this.currentSavedExtentIndex);
-console.log(this.savedExtents[this.currentSavedExtentIndex]);
                 this.zoomToExtent(this.savedExtents[this.currentSavedExtentIndex], false);
             }
+        };
+
+        this.printSavedExtents = function() {
+            // This function is for debugging only and is not normally used.  It returns an HTML
+            // table showing the current savedExtents list, and the current position within the list.
+            var html = "<table>";
+            var len = this.savedExtents.length;
+            var i, e;
+            for (i=len-1; i>=0; --i) {
+                e = this.savedExtents[i];
+                html += Mustache.render('<tr><td>{{{marker}}}</td><td>{{{number}}}</td>'
+                                        + '<td>left:{{{left}}}, bottom:{{{bottom}}}, right:{{{right}}}, top:{{{top}}}</td></tr>',
+                                        {
+                                            marker : (i === this.currentSavedExtentIndex) ? "==&gt;" : "",
+                                            number : i,
+                                            left : e.left,
+                                            bottom : e.bottom,
+                                            right : e.right,
+                                            top : e.top
+                                            });
+            }
+            html += "</table>";
+            return html;
         };
 
         this.setBaseLayer = function(baseLayer) {
@@ -330,6 +358,7 @@ console.log(this.savedExtents[this.currentSavedExtentIndex]);
             });
             app.addListener("extentchange", function () {
                 app.saveCurrentExtent();
+                //$('#extentOutput').empty().append($(this.printSavedExtents()));
                 app.updateShareMapUrl();
             });
 
@@ -1359,6 +1388,14 @@ console.log(this.savedExtents[this.currentSavedExtentIndex]);
         var vals = extent.split(',');
         var bounds = new OpenLayers.Bounds(parseFloat(vals[0]), parseFloat(vals[1]), parseFloat(vals[2]), parseFloat(vals[3]));
         return bounds;
+    }
+
+    function extentsAreEqual(e1, e2) {
+        var tolerance = 0.001;
+        return ((Math.abs(e1.left - e2.left)        <= tolerance)
+                && (Math.abs(e1.bottom - e2.bottom) <= tolerance)
+                && (Math.abs(e1.right  - e2.right)  <= tolerance)
+                && (Math.abs(e1.top    - e2.top)    <= tolerance));
     }
 
     //
