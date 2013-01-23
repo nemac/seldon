@@ -13,10 +13,10 @@
         this.zoomOutTool = undefined; // OpenLayers zoom out tool
         this.dragPanTool = undefined; // OpenLayers dragpan tool
         this.maxExtent   = {
-            xmin : -15000000,  //NOTE: These values get replaced by settings from the config file.
-            ymin : 2000000,    //      Don't worry about keeping these in sync if the config fil 
-            xmax : -6000000,   //      changes; these are just here to prevent a crash if we ever
-            ymax : 7000000     //      read a config file that is missing the <extent> element.
+            left   : -15000000,  //NOTE: These values get replaced by settings from the config file.
+            bottom : 2000000,    //      Don't worry about keeping these in sync if the config fil 
+            right  : -6000000,   //      changes; these are just here to prevent a crash if we ever
+            top    : 7000000     //      read a config file that is missing the <extent> element.
         };
         this.baseLayers       = []; // list of BaseLayer instances holding info about base layers from config file
         this.accordionGroups  = []; // list of AccordionGroup instances holding info about accordion groups from config file
@@ -26,6 +26,67 @@
         this.currentTheme          = undefined;
         this.identifyTool          = undefined;
         this.multigraphTool        = undefined;
+
+        // array of saved extent objects; each entry is a JavaScript object of the form
+        //     { left : VALUE, bottom : VALUE, right : VALUE, top : VALUE }
+        this.savedExtents            = [];
+
+        // index of the "current" extent in the above array:
+        this.currentSavedExtentIndex = -1;
+
+        // save the current extent into the savedExtents array, if it is different from
+        // the "current" one.  It is important to only save it if it differs from the
+        // current one, because sometimes OpenLayers fires multiple events when the extent
+        // changes, causing this function to be called multiple times with the same
+        // extent
+        this.saveCurrentExtent = function() {
+            var newExtent,
+                currentSavedExtent;
+
+            newExtent = (function (extent) {
+                return { left : extent.left, bottom : extent.bottom, right : extent.right, top : extent.top };
+            }(this.map.getExtent()));
+
+            if (this.currentSavedExtentIndex >= 0) {
+                currentSavedExtent = this.savedExtents[this.currentSavedExtentIndex];
+                if ((   newExtent.left   === currentSavedExtent.left)
+                    && (newExtent.bottom === currentSavedExtent.bottom)
+                    && (newExtent.right  === currentSavedExtent.right)
+                    && (newExtent.top    === currentSavedExtent.top)) {
+                    return;
+                }
+            }
+
+            // truncate the list after the current location
+            this.savedExtents.length = this.currentSavedExtentIndex + 1;
+
+            // append current extent to the list
+            this.savedExtents.push(newExtent);
+            ++this.currentSavedExtentIndex;
+        };
+
+        this.zoomToExtent = function(extent, save) {
+            var bounds = new OpenLayers.Bounds(extent.left, extent.bottom, extent.right, extent.top);
+            this.map.zoomToExtent(bounds, true);
+            if (save) {
+                this.saveCurrentExtent();
+            }
+        };
+
+        this.zoomToPreviousExtent = function() {
+            if (this.currentSavedExtentIndex > 0) {
+                --this.currentSavedExtentIndex;
+                this.zoomToExtent(this.savedExtents[this.currentSavedExtentIndex], false);
+            }
+        };
+        this.zoomToNextExtent = function() {
+            if (this.currentSavedExtentIndex < this.savedExtents.length-1) {
+                ++this.currentSavedExtentIndex;
+console.log('zooming to position ' + this.currentSavedExtentIndex);
+console.log(this.savedExtents[this.currentSavedExtentIndex]);
+                this.zoomToExtent(this.savedExtents[this.currentSavedExtentIndex], false);
+            }
+        };
 
         this.setBaseLayer = function(baseLayer) {
             var app = this;
@@ -268,6 +329,7 @@
                 app.updateShareMapUrl();
             });
             app.addListener("extentchange", function () {
+                app.saveCurrentExtent();
                 app.updateShareMapUrl();
             });
 
@@ -364,7 +426,8 @@
             // zoom to full extent button
             // 
             $("#btnZoomExtent").click(function() {
-                app.map.zoomToExtent(new OpenLayers.Bounds(app.maxExtent.xmin, app.maxExtent.ymin, app.maxExtent.xmax, app.maxExtent.ymax), true);
+                app.zoomToExtent(app.maxExtent);
+                //app.map.zoomToExtent(new OpenLayers.Bounds(app.maxExtent.left, app.maxExtent.bottom, app.maxExtent.right, app.maxExtent.top), true);
             });
             $('#btnZoomExtent').hover(
                 function(){
@@ -411,6 +474,20 @@
                     $("#btnPic").attr('src', 'icons/help.png');
                 }
             ); 
+
+            // 
+            // previous extent button
+            // 
+            $("#btnPrev").click(function() {
+                app.zoomToPreviousExtent();
+            });
+
+            // 
+            // next extent button
+            // 
+            $("#btnNext").click(function() {
+                app.zoomToNextExtent();
+            });
 
 
             // 
@@ -473,10 +550,10 @@
             var $extent = $configXML.find("extent");
             if ($extent && $extent.length > 0) {
                 app.maxExtent = {
-                    xmin : parseFloat($extent.attr('xmin')),
-                    ymin : parseFloat($extent.attr('ymin')),
-                    xmax : parseFloat($extent.attr('xmax')),
-                    ymax : parseFloat($extent.attr('ymax'))
+                    left   : parseFloat($extent.attr('xmin')),
+                    bottom : parseFloat($extent.attr('ymin')),
+                    right  : parseFloat($extent.attr('xmax')),
+                    top    : parseFloat($extent.attr('ymax'))
                 };
             }
 
@@ -614,14 +691,10 @@
                 layerInfo: baseLayerInfo
             });
             
-            var maxExtentBounds = new OpenLayers.Bounds(app.maxExtent.xmin, app.maxExtent.ymin,
-                                                        app.maxExtent.xmax, app.maxExtent.ymax);
-            var initialExtentBounds;
-            if (initialExtent !== undefined) {
-                initialExtentBounds = new OpenLayers.Bounds(initialExtent.left, initialExtent.bottom,
-                                                            initialExtent.right, initialExtent.top);
-            } else {
-                initialExtentBounds = maxExtentBounds;
+            var maxExtentBounds = new OpenLayers.Bounds(app.maxExtent.left, app.maxExtent.bottom,
+                                                        app.maxExtent.right, app.maxExtent.top);
+            if (initialExtent === undefined) {
+                initialExtent = app.maxExtent;
             }
             app.map = new OpenLayers.Map('map', {
                 maxExtent:         maxExtentBounds,
@@ -664,7 +737,7 @@
             this.map.addLayers([layer]);
             this.map.setLayerIndex(layer, 0);
             this.setTheme(theme, themeOptions);
-            this.map.zoomToExtent(initialExtentBounds, true);
+            this.zoomToExtent(initialExtent);
             this.map.events.register("mousemove", app.map, function(e) {
                 var pixel = app.map.events.getMousePosition(e);
                 var lonlat = app.map.getLonLatFromPixel(pixel);
@@ -806,6 +879,7 @@
         app = new fcav.App();
         var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
         app.launch('./config/ews_config.xml', shareUrlInfo);
+        fcav.app = app;
     };
 
     function deactivateActiveOpenLayersControls() {
