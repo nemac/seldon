@@ -171,6 +171,10 @@ a{
 /*   width:auto; */
 }
 
+.splashScreenStyle {
+    opacity: 0.9 !important;; 
+}
+
 .layer-properties-dialog td {
   white-space: nowrap;
 }

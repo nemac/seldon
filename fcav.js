@@ -488,19 +488,18 @@
             ); 
             
             // 
-            // help button
+            // about button
             // 
-            $("#btnHelp").click(function() {
-                //alert("Handler for help called.");
-                //getCurrentExtent();
+            $("#btnAbout").click(function() {
+                showSplashScreen();
             });
-            $('#btnHelp').hover(
+            $('#btnAbout').hover(
                 function(){
-                    $("#btnPic").attr('src', 'icons/help_over.png');
-                    $("#btnHelp").attr('title', 'Get help');
+                    $("#aboutPic").attr('src', 'icons/about_over.png');
+                    $("#btnAbout").attr('title', 'About tool');
                 },
                 function(){
-                    $("#btnPic").attr('src', 'icons/help.png');
+                    $("#aboutPic").attr('src', 'icons/about.png');
                 }
             ); 
 
@@ -1045,6 +1044,41 @@
         });
     }
 
+    function showSplashScreen() {
+        var windowWidth = Math.round($(document).width()/2);
+        var windowHeight = Math.round($(document).height()/2);    
+        var $html = $(''
+                      + '<div class="splash-screen-dialog" align="center">'
+                      +   '<table>'
+                      +     '<tr>'
+                      +       '<td align="center"><img src="icons/logos.png"/></td>'
+                      +     '</tr>'
+                      +     '<tr>'
+                      +       '<td align="center"><p><a href="http://forwarn.forestthreats.org/fcav/assets/FCAV_Users_Guide_4.2.2012.pdf">FCAV Users Guide</a></p></td>'
+                      +     '</tr>'
+                      +     '<tr>'
+                      +       '<td align="center"><p>For information on this viewer, contact support at ews-support@nemac.org</p></td>'
+                      +     '</tr>'
+                      +   '</table>'
+                      + '</div>'
+                     );
+        $('#splashScreenContainer').dialog({
+            zIndex    : 10051, 
+            position  : "center",
+            height:windowHeight,
+            width:windowWidth,
+            dialogClass: 'splashScreenStyle',            
+            autoOpen  : true,
+            hide      : "explode",
+            title     : "U.S. Forest Change Assesment Viewer",
+            close     : function() {
+                $(this).dialog('destroy');
+                $html.remove();
+            }
+        });
+        $('#splashScreenContainer').append($($html));
+    }
+    
     function createLayerPropertiesDialog(layer) {
 
         if (createLayerPropertiesDialog.$html[layer.lid]) {
