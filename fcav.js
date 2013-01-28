@@ -618,6 +618,18 @@
             $("#btnPrev").click(function() {
                 app.zoomToPreviousExtent();
             });
+            $('#btnPrev').hover(
+                function(){
+                    $('#prevPic').css({'background-color':'black'});						
+                    $('#prevPic').css({'opacity':'.4'});
+                },
+                function(){
+                    $('#prevPic').css({'background-color':'transparent'});						
+                    $('#prevPic').css({'opacity':'1'});
+                }
+            ); 
+
+            
 
             // 
             // next extent button
@@ -625,6 +637,16 @@
             $("#btnNext").click(function() {
                 app.zoomToNextExtent();
             });
+            $('#btnNext').hover(
+                function(){
+                    $('#nextPic').css({'background-color':'black'});						
+                    $('#nextPic').css({'opacity':'.4'});
+                },
+                function(){
+                    $('#nextPic').css({'background-color':'transparent'});						
+                    $('#nextPic').css({'opacity':'1'});
+                }
+            );             
 
 
             // 
