@@ -4,6 +4,7 @@
     var EventEmitter = window.EventEmitter,
         fcav = {},
         activeBtn = [],
+        areasList = [],
         app;
 
     fcav.App = function () {
@@ -664,6 +665,21 @@
                     $("#multiGraphPic").attr('src',  'icons/multigraph.png');
                 }
             ); 
+            
+            //Find Area 
+            $('#findArea').findArea();
+            areasList = $('#findArea').findArea('getAreasList');
+            $("#findArea").autocomplete({
+                source: areasList
+            });  
+            $("#findArea").keypress(function(e) {
+                if(e.which == 13) {
+                    var areaExtent = $('#findArea').findArea('getAreaExtent',$("#findArea").val(),areasList);
+                    app.zoomToExtent(areaExtent);
+                }
+            });            
+            
+            
 
             /*        
              // 

@@ -27,6 +27,8 @@
     <script type="text/javascript" src="libs/sprintf/sprintf-0.7-beta1.js"></script>
     <script type="text/javascript" src="eventEmitter.js"></script>
     <script type="text/javascript" src="listAccordion.js"></script>
+    <script type="text/javascript" src="findArea.js"></script>
+    <script type="text/javascript" src="areas.js"></script>
     <script type="text/javascript" src="fcav.js"></script>
     <link type="text/css" rel="stylesheet" href="libs/jquery18/themes/base/jquery.ui.all.css" />
     <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.core.js"></script>
@@ -37,6 +39,7 @@
     <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.accordion.js"></script>
     <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.dialog.js"></script>
     <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.position.js"></script>
+    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.autocomplete.js"></script>
     <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.slider.js"></script>
     <script type="text/javascript" src="libs/jquery18/ui/jquery.effects.core.js"></script>
     <script type="text/javascript" src="libs/jquery18/ui/jquery.effects.scale.js"></script>
@@ -108,7 +111,11 @@
                   <div id='btnNext' style="width:23px;display:inline-block;">
                     <img id="nextPic" title="Next Extent" src='icons/next.png'/>
                   </div>
-	            </td>
+                  <div id='txtFindArea' class="ui-widget" style="display:inline-block;vertical-align:top;">
+                    <label for="findArea">Find Area: </label>
+                    <input id="findArea" />
+                  </div>                
+                </td>
 	            <td align="right">
 	              <div id='btnTglMapTools' style="display:inline-block;">
 	                <img id="tglLegendPic" src='icons/legend.png'/>

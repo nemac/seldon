@@ -304,6 +304,13 @@ textarea.shareMapUrl {
     margin-top: 0;
     margin-bottom: 0;	
 }
+
+#txtFindArea
+{
+    z-index: 1005;
+    position:absolute;
+}
+
 #customZoom {
     z-index: 1001;
     position:absolute;
