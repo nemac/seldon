@@ -1496,7 +1496,11 @@
         // the text content of that child as the result for this layer.
         for (i=0; i<children.length; ++i) {
             if (children[i].nodeName !== 'gml:boundedBy') {
-                return children[i].textContent;
+				if ( $.browser.msie ) { //jdm: IE doesn't have textContent on children[i], but Chrome and FireFox do
+					return children[i].text;
+				} else {
+					return children[i].textContent;
+				}			
             }
         }
         return undefined;
