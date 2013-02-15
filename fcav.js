@@ -1053,7 +1053,7 @@
     fcav.init = function() {
         app = new fcav.App();
         var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
-        app.launch('./config/ews_config.xml', shareUrlInfo);
+        app.launch('http://forwarn.forestthreats.org/fcav/config/ews_config.xml', shareUrlInfo);
         fcav.app = app;
     };
 
