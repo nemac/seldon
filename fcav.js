@@ -755,7 +755,7 @@
             }
 
             // parse layer groups and layers
-            var accordionGroupsByName = {};
+            var accordionGroupsByName = {}, index=0;
             $configXML.find("wmsGroup").each(function(i) {
                 var $wmsGroup      = $(this), // each <wmsGroup> corresponds to a (potential) layerPicker accordion group
                     accordionGroup = new AccordionGroup({
@@ -789,7 +789,8 @@
                                 legend           : $wmsLayer.attr('legend'),
                                 selectedInConfig : ($wmsLayer.attr('selected') === "true")
                             });
-                        sublist.layers.push(layer);
+                        layer.index = index;
+						sublist.layers.push(layer);
                         if (shareUrlInfo && (shareUrlLayerAlpha[layer.lid] !== undefined)) {
                             if (themeOptions.layers === undefined) {
                                 themeOptions.layers = [];
@@ -797,6 +798,7 @@
                             themeOptions.layers.push(layer);
                             layer.setTransparency(100*(1-shareUrlLayerAlpha[layer.lid]));
                         }
+						index = index+1;
                     });
                 });
             });
@@ -957,6 +959,7 @@
         this.name               = settings.name;
         this.legend             = settings.legend;
         this.transparency       = 0;
+		this.index       		= 0;
         this.selectedInConfig   = settings.selectedInConfig;
         this.openLayersLayer    = undefined;
         this.createOpenLayersLayer = function() {
@@ -993,9 +996,16 @@
             return this.openLayersLayer;
         };
         this.activate = function(suppressCheckboxUpdate) {
-            app.map.addLayer(this.createOpenLayersLayer());
+			app.map.addLayer(this.createOpenLayersLayer());
             this.addToLegend();
             this.emit("activate");
+			//reorder maps layers based on the current layer index
+			var lyrJustAdded = app.map.layers[app.map.getNumLayers()-1];
+			for (var i = app.map.getNumLayers(); i > 0; i--) {
+				if (this.index>i){
+					app.map.setLayerIndex(lyrJustAdded, i);
+				}
+			}
         };
         this.deactivate = function(suppressCheckboxUpdate) {
             if (this.openLayersLayer) {
@@ -1053,7 +1063,7 @@
     fcav.init = function() {
         app = new fcav.App();
         var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
-        app.launch('http://forwarn.forestthreats.org/fcav/config/ews_config.xml', shareUrlInfo);
+        app.launch('../config/ews_config.xml', shareUrlInfo);
         fcav.app = app;
     };
 
