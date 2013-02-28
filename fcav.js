@@ -295,36 +295,36 @@
             $("#btnTglLyrPick").click(function() {
                 if ($( "#layerPickerDialog" ).dialog('isOpen')) {
                     $( "#layerPickerDialog" ).dialog('close');
-					$('#tglLyrPickPic').css({'background-color':'black'});						
-					$('#tglLyrPickPic').css({'opacity':'.4'});
-					activeBtn = $("#btnTglLyrPick");						
+                    $('#tglLyrPickPic').css({'background-color':'black'});                      
+                    $('#tglLyrPickPic').css({'opacity':'.4'});
+                    activeBtn = $("#btnTglLyrPick");                        
                 } else {
                     $( "#layerPickerDialog" ).dialog('open');
-					$('#'+activeBtn[0].children[0].id).css({'background-color':'transparent'});						
-					$('#'+activeBtn[0].children[0].id).css({'opacity':'1'});
-					activeBtn = [];					
+                    $('#'+activeBtn[0].children[0].id).css({'background-color':'transparent'});                     
+                    $('#'+activeBtn[0].children[0].id).css({'opacity':'1'});
+                    activeBtn = [];                 
                 }
             }).hover(
                 function(){
                     if (activeBtn[0]!=this) {
-						$('#tglLyrPickPic').css({'background-color':'black'});						
-						$('#tglLyrPickPic').css({'opacity':'.4'});
+                        $('#tglLyrPickPic').css({'background-color':'black'});                      
+                        $('#tglLyrPickPic').css({'opacity':'.4'});
                     }
                     else {
-						$('#tglLyrPickPic').css({'background-color':'black'});						
-						$('#tglLyrPickPic').css({'opacity':'.75'});
-                    }				
-					$("#btnTglLyrPick").attr('title', 'Show/hide Layer Picker');
+                        $('#tglLyrPickPic').css({'background-color':'black'});                      
+                        $('#tglLyrPickPic').css({'opacity':'.75'});
+                    }               
+                    $("#btnTglLyrPick").attr('title', 'Show/hide Layer Picker');
                 },
                 function(){
                     if (activeBtn[0]!=this) {
-						$('#tglLyrPickPic').css({'background-color':'transparent'});						
-						$('#tglLyrPickPic').css({'opacity':'1'});
+                        $('#tglLyrPickPic').css({'background-color':'transparent'});                        
+                        $('#tglLyrPickPic').css({'opacity':'1'});
                     }
                     else {
-						$('#tglLyrPickPic').css({'background-color':'black'});						
-						$('#tglLyrPickPic').css({'opacity':'.4'});						
-					}
+                        $('#tglLyrPickPic').css({'background-color':'black'});                      
+                        $('#tglLyrPickPic').css({'opacity':'.4'});                      
+                    }
                 }
 
             );  
@@ -349,36 +349,36 @@
             $("#btnTglMapTools").click(function() {
                 if ($( "#mapToolsDialog" ).dialog('isOpen')) {
                     $( "#mapToolsDialog" ).dialog('close');
-					$('#tglLegendPic').css({'background-color':'black'});						
-					$('#tglLegendPic').css({'opacity':'.4'});
-					activeBtn = $("#btnTglMapTools");				
-				} else {
+                    $('#tglLegendPic').css({'background-color':'black'});                       
+                    $('#tglLegendPic').css({'opacity':'.4'});
+                    activeBtn = $("#btnTglMapTools");               
+                } else {
                     $( "#mapToolsDialog" ).dialog('open');
-					$('#'+activeBtn[0].children[0].id).css({'background-color':'transparent'});						
-					$('#'+activeBtn[0].children[0].id).css({'opacity':'1'});
-					activeBtn = [];
-				}
+                    $('#'+activeBtn[0].children[0].id).css({'background-color':'transparent'});                     
+                    $('#'+activeBtn[0].children[0].id).css({'opacity':'1'});
+                    activeBtn = [];
+                }
             }).hover(
                 function(){
                     if (activeBtn[0]!=this) {
-						$('#tglLegendPic').css({'background-color':'black'});						
-						$('#tglLegendPic').css({'opacity':'.4'});
+                        $('#tglLegendPic').css({'background-color':'black'});                       
+                        $('#tglLegendPic').css({'opacity':'.4'});
                     }
                     else {
-						$('#tglLegendPic').css({'background-color':'black'});						
-						$('#tglLegendPic').css({'opacity':'.75'});
-                    }				
-					$("#btnTglMapTools").attr('title', 'Show/hide Map Tools');
+                        $('#tglLegendPic').css({'background-color':'black'});                       
+                        $('#tglLegendPic').css({'opacity':'.75'});
+                    }               
+                    $("#btnTglMapTools").attr('title', 'Show/hide Map Tools');
                 },
                 function(){
                     if (activeBtn[0]!=this) {
-						$('#tglLegendPic').css({'background-color':'transparent'});						
-						$('#tglLegendPic').css({'opacity':'1'});
+                        $('#tglLegendPic').css({'background-color':'transparent'});                     
+                        $('#tglLegendPic').css({'opacity':'1'});
                     }
                     else {
-						$('#tglLegendPic').css({'background-color':'black'});						
-						$('#tglLegendPic').css({'opacity':'.4'});						
-					}
+                        $('#tglLegendPic').css({'background-color':'black'});                       
+                        $('#tglLegendPic').css({'opacity':'.4'});                       
+                    }
                 }
             );      
 
@@ -468,30 +468,30 @@
             $("#btnZoomIn").click(function() {
                 deactivateActiveOpenLayersControls();
                 app.zoomInTool.activate();
-				$('#zoomInPic').css({'background-color':'black'});						
-				$('#zoomInPic').css({'opacity':'.4'});
-                activeBtn = $("#btnZoomIn");				
+                $('#zoomInPic').css({'background-color':'black'});                      
+                $('#zoomInPic').css({'opacity':'.4'});
+                activeBtn = $("#btnZoomIn");                
             }).hover(
                 function(){
                     if (activeBtn[0]!=this) {
-						$('#zoomInPic').css({'background-color':'black'});						
-						$('#zoomInPic').css({'opacity':'.4'});
+                        $('#zoomInPic').css({'background-color':'black'});                      
+                        $('#zoomInPic').css({'opacity':'.4'});
                     }
                     else {
-						$('#zoomInPic').css({'background-color':'black'});						
-						$('#zoomInPic').css({'opacity':'.75'});
-                    }				
-					$("#btnZoomIn").attr('title', 'Zoom in tool');
+                        $('#zoomInPic').css({'background-color':'black'});                      
+                        $('#zoomInPic').css({'opacity':'.75'});
+                    }               
+                    $("#btnZoomIn").attr('title', 'Zoom in tool');
                 },
                 function(){
                     if (activeBtn[0]!=this) {
-						$('#zoomInPic').css({'background-color':'transparent'});						
-						$('#zoomInPic').css({'opacity':'1'});
+                        $('#zoomInPic').css({'background-color':'transparent'});                        
+                        $('#zoomInPic').css({'opacity':'1'});
                     }
                     else {
-						$('#zoomInPic').css({'background-color':'black'});						
-						$('#zoomInPic').css({'opacity':'.4'});						
-					}
+                        $('#zoomInPic').css({'background-color':'black'});                      
+                        $('#zoomInPic').css({'opacity':'.4'});                      
+                    }
                 }
             );
 
@@ -501,30 +501,30 @@
             $("#btnZoomOut").click(function() {
                 deactivateActiveOpenLayersControls();
                 app.zoomOutTool.activate();
-				$('#zoomOutPic').css({'background-color':'black'});						
-				$('#zoomOutPic').css({'opacity':'.4'});
-                activeBtn = $("#btnZoomOut");				
+                $('#zoomOutPic').css({'background-color':'black'});                     
+                $('#zoomOutPic').css({'opacity':'.4'});
+                activeBtn = $("#btnZoomOut");               
             }).hover(
                 function(){
                     if (activeBtn[0]!=this) {
-						$('#zoomOutPic').css({'background-color':'black'});						
-						$('#zoomOutPic').css({'opacity':'.4'});
+                        $('#zoomOutPic').css({'background-color':'black'});                     
+                        $('#zoomOutPic').css({'opacity':'.4'});
                     }
                     else {
-						$('#zoomOutPic').css({'background-color':'black'});						
-						$('#zoomOutPic').css({'opacity':'.75'});
-                    }				
-					$("#btnZoomOut").attr('title', 'Zoom out tool');
+                        $('#zoomOutPic').css({'background-color':'black'});                     
+                        $('#zoomOutPic').css({'opacity':'.75'});
+                    }               
+                    $("#btnZoomOut").attr('title', 'Zoom out tool');
                 },
                 function(){
                     if (activeBtn[0]!=this) {
-						$('#zoomOutPic').css({'background-color':'transparent'});						
-						$('#zoomOutPic').css({'opacity':'1'});
+                        $('#zoomOutPic').css({'background-color':'transparent'});                       
+                        $('#zoomOutPic').css({'opacity':'1'});
                     }
                     else {
-						$('#zoomOutPic').css({'background-color':'black'});						
-						$('#zoomOutPic').css({'opacity':'.4'});						
-					}
+                        $('#zoomOutPic').css({'background-color':'black'});                     
+                        $('#zoomOutPic').css({'opacity':'.4'});                     
+                    }
                 }
             ); 
 
@@ -550,32 +550,32 @@
             
             $("#btnID").click(function() {
                 activateIdentifyTool();
-				$('#idPic').css({'background-color':'black'});						
-				$('#idPic').css({'opacity':'.4'});
-                activeBtn = $("#btnID");				
+                $('#idPic').css({'background-color':'black'});                      
+                $('#idPic').css({'opacity':'.4'});
+                activeBtn = $("#btnID");                
             });
             
             $('#btnID').hover(
                 function(){
                     if (activeBtn[0]!=this) {
-						$('#idPic').css({'background-color':'black'});						
-						$('#idPic').css({'opacity':'.4'});
+                        $('#idPic').css({'background-color':'black'});                      
+                        $('#idPic').css({'opacity':'.4'});
                     }
                     else {
-						$('#idPic').css({'background-color':'black'});						
-						$('#idPic').css({'opacity':'.75'});
-                    }				
-					$("#btnID").attr('title', 'Identify tool');
+                        $('#idPic').css({'background-color':'black'});                      
+                        $('#idPic').css({'opacity':'.75'});
+                    }               
+                    $("#btnID").attr('title', 'Identify tool');
                 },
                 function(){
                     if (activeBtn[0]!=this) {
-						$('#idPic').css({'background-color':'transparent'});						
-						$('#idPic').css({'opacity':'1'});
+                        $('#idPic').css({'background-color':'transparent'});                        
+                        $('#idPic').css({'opacity':'1'});
                     }
                     else {
-						$('#idPic').css({'background-color':'black'});						
-						$('#idPic').css({'opacity':'.4'});						
-					}
+                        $('#idPic').css({'background-color':'black'});                      
+                        $('#idPic').css({'opacity':'.4'});                      
+                    }
                 }
             ); 
             
@@ -584,32 +584,32 @@
             // 
             $("#btnAbout").click(function() {
                 deactivateActiveOpenLayersControls();
-				showSplashScreen();
-				$('#aboutPic').css({'background-color':'black'});						
-				$('#aboutPic').css({'opacity':'.4'});				
+                showSplashScreen();
+                $('#aboutPic').css({'background-color':'black'});                       
+                $('#aboutPic').css({'opacity':'.4'});               
                 activeBtn = $("#btnAbout");
             });
             $('#btnAbout').hover(
                 function(){
                     if (activeBtn[0]!=this) {
-						$('#aboutPic').css({'background-color':'black'});						
-						$('#aboutPic').css({'opacity':'.4'});
+                        $('#aboutPic').css({'background-color':'black'});                       
+                        $('#aboutPic').css({'opacity':'.4'});
                     }
                     else {
-						$('#aboutPic').css({'background-color':'black'});						
-						$('#aboutPic').css({'opacity':'.75'});
+                        $('#aboutPic').css({'background-color':'black'});                       
+                        $('#aboutPic').css({'opacity':'.75'});
                     }
                     $("#btnAbout").attr('title', 'About tool');
                 },
                 function(){
                     if (activeBtn[0]!=this) {
-						$('#aboutPic').css({'background-color':'transparent'});						
-						$('#aboutPic').css({'opacity':'1'});
+                        $('#aboutPic').css({'background-color':'transparent'});                     
+                        $('#aboutPic').css({'opacity':'1'});
                     }
                     else {
-						$('#aboutPic').css({'background-color':'black'});						
-						$('#aboutPic').css({'opacity':'.4'});						
-					}
+                        $('#aboutPic').css({'background-color':'black'});                       
+                        $('#aboutPic').css({'opacity':'.4'});                       
+                    }
                 }
             ); 
 
@@ -621,11 +621,11 @@
             });
             $('#btnPrev').hover(
                 function(){
-                    $('#prevPic').css({'background-color':'black'});						
+                    $('#prevPic').css({'background-color':'black'});                        
                     $('#prevPic').css({'opacity':'.4'});
                 },
                 function(){
-                    $('#prevPic').css({'background-color':'transparent'});						
+                    $('#prevPic').css({'background-color':'transparent'});                      
                     $('#prevPic').css({'opacity':'1'});
                 }
             ); 
@@ -640,11 +640,11 @@
             });
             $('#btnNext').hover(
                 function(){
-                    $('#nextPic').css({'background-color':'black'});						
+                    $('#nextPic').css({'background-color':'black'});                        
                     $('#nextPic').css({'opacity':'.4'});
                 },
                 function(){
-                    $('#nextPic').css({'background-color':'transparent'});						
+                    $('#nextPic').css({'background-color':'transparent'});                      
                     $('#nextPic').css({'opacity':'1'});
                 }
             );             
@@ -790,7 +790,7 @@
                                 selectedInConfig : ($wmsLayer.attr('selected') === "true")
                             });
                         layer.index = index;
-						sublist.layers.push(layer);
+                        sublist.layers.push(layer);
                         if (shareUrlInfo && (shareUrlLayerAlpha[layer.lid] !== undefined)) {
                             if (themeOptions.layers === undefined) {
                                 themeOptions.layers = [];
@@ -798,7 +798,7 @@
                             themeOptions.layers.push(layer);
                             layer.setTransparency(100*(1-shareUrlLayerAlpha[layer.lid]));
                         }
-						index = index+1;
+                        index = index+1;
                     });
                 });
             });
@@ -918,7 +918,7 @@
             this.map.events.register("mousemove", app.map, function(e) {
                 var pixel = app.map.events.getMousePosition(e);
                 var lonlat = app.map.getLonLatFromPixel(pixel);
-				lonlat = lonlat.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
+                lonlat = lonlat.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
                 OpenLayers.Util.getElement("latLonTracker").innerHTML = "Lat: " + sprintf("%.5f", lonlat.lat) + " Lon: " + sprintf("%.5f", lonlat.lon) + "";
             });
         };
@@ -959,7 +959,7 @@
         this.name               = settings.name;
         this.legend             = settings.legend;
         this.transparency       = 0;
-		this.index       		= 0;
+        this.index              = 0;
         this.selectedInConfig   = settings.selectedInConfig;
         this.openLayersLayer    = undefined;
         this.createOpenLayersLayer = function() {
@@ -996,16 +996,16 @@
             return this.openLayersLayer;
         };
         this.activate = function(suppressCheckboxUpdate) {
-			app.map.addLayer(this.createOpenLayersLayer());
+            app.map.addLayer(this.createOpenLayersLayer());
             this.addToLegend();
             this.emit("activate");
-			//reorder maps layers based on the current layer index
-			var lyrJustAdded = app.map.layers[app.map.getNumLayers()-1];
-			for (var i = app.map.getNumLayers(); i > 0; i--) {
-				if (this.index>i){
-					app.map.setLayerIndex(lyrJustAdded, i);
-				}
-			}
+            //reorder maps layers based on the current layer index
+            var lyrJustAdded = app.map.layers[app.map.getNumLayers()-1];
+            for (var i = app.map.getNumLayers(); i > 0; i--) {
+                if (this.index>i){
+                    app.map.setLayerIndex(lyrJustAdded, i);
+                }
+            }
         };
         this.deactivate = function(suppressCheckboxUpdate) {
             if (this.openLayersLayer) {
@@ -1076,12 +1076,12 @@
                  (app.map.controls[i].displayClass=="olControlWMSGetFeatureInfo")
                  ||
                  (app.map.controls[i].displayClass=="ClickTool"))) {
-					app.map.controls[i].deactivate();
-					if (activeBtn.length>0){ //weve already activated a three-state button
-						$('#'+activeBtn[0].children[0].id).css({'background-color':'transparent'});						
-						$('#'+activeBtn[0].children[0].id).css({'opacity':'1'});
-						activeBtn = [];
-					}
+                    app.map.controls[i].deactivate();
+                    if (activeBtn.length>0){ //weve already activated a three-state button
+                        $('#'+activeBtn[0].children[0].id).css({'background-color':'transparent'});                     
+                        $('#'+activeBtn[0].children[0].id).css({'opacity':'1'});
+                        activeBtn = [];
+                    }
             }
         }
     }
@@ -1236,8 +1236,8 @@
             close     : function() {
                 $(this).dialog('destroy');
                 $html.remove();
-				$('#aboutPic').css({'background-color':'transparent'});						
-				$('#aboutPic').css({'opacity':'1'});
+                $('#aboutPic').css({'background-color':'transparent'});                     
+                $('#aboutPic').css({'opacity':'1'});
                 activeBtn = [];
             }
         });
@@ -1476,9 +1476,11 @@
                             requestUrl = createWMSGetFeatureInfoRequestURL(service.url, service.layers, service.srs, e.xy.x, e.xy.y);
                         $.ajax({
                             url: requestUrl,
-                            dataType: "xml",
+                            dataType: "text",
                             success: function(response) {
-                                var $gml = $(response);
+                                var $gml = $($.parseXML(response));
+                                //var $gml = $($(xml).children()[0]);
+                                //var $gml = $(response);
                                 // For each layer that this request was for, parse the GML for the results
                                 // for that layer, and populate the corresponding result in the popup
                                 // created above.
@@ -1506,11 +1508,11 @@
         // the text content of that child as the result for this layer.
         for (i=0; i<children.length; ++i) {
             if (children[i].nodeName !== 'gml:boundedBy') {
-				if ( $.browser.msie ) { //jdm: IE doesn't have textContent on children[i], but Chrome and FireFox do
-					return children[i].text;
-				} else {
-					return children[i].textContent;
-				}			
+                if ( $.browser.msie ) { //jdm: IE doesn't have textContent on children[i], but Chrome and FireFox do
+                    return children[i].text;
+                } else {
+                    return children[i].textContent;
+                }           
             }
         }
         return undefined;
