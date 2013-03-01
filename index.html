@@ -13,21 +13,32 @@
             instead of loading our own separate copy, replace the line
                 <script type="text/javascript" src="libs/jquery17/jquery-1.7.2.js"></script>
             below with the following instead:
+-->
                 <script type="text/javascript">$ = window.multigraph.jQuery;</script>
+<!--
             However, at the moment, doing this turns up errors in the jquery-ui code
             that we are loading below.  We need to resolve those errors before we can
             do this.  Maybe upgrade to a later version of jquery-ui???
 
             See https://github.com/nemac/ol-fcav/issues/30
     -->
+<!--
     <script type="text/javascript" src="libs/jquery17/jquery-1.7.2.js"></script>
+-->
     <script type="text/javascript" src="ajaxtransport.js"></script>
     <script type="text/javascript">
       fixJQueryAjaxTransport(jQuery);
-      fixJQueryAjaxTransport(window.multigraph.jQuery);
+      //fixJQueryAjaxTransport(window.multigraph.jQuery);
     </script>
     <script type="text/javascript" src="libs/OpenLayers212/lib/OpenLayers.js"></script>
     <script src="libs/OpenLayers212/lib/OpenLayers/Control/ScaleBar.js"></script>
+
+    <link type="text/css" rel="stylesheet"
+          href="libs/jquery-ui/smoothness/jquery-ui-1.10.1.custom/css/smoothness/jquery-ui-1.10.1.custom.min.css"/>
+    <script type="text/javascript"
+            src="libs/jquery-ui/smoothness/jquery-ui-1.10.1.custom/js/jquery-ui-1.10.1.custom.min.js"></script>
+
+
     <script type="text/javascript" src="libs/mustache/mustache.js"></script>
     <script type="text/javascript" src="libs/sprintf/sprintf-0.7-beta1.js"></script>
     <script type="text/javascript" src="eventEmitter.js"></script>
@@ -35,6 +46,12 @@
     <script type="text/javascript" src="findArea.js"></script>
     <script type="text/javascript" src="areas.js"></script>
     <script type="text/javascript" src="fcav.js"></script>
+
+
+
+
+<!--
+
     <link type="text/css" rel="stylesheet" href="libs/jquery18/themes/base/jquery.ui.all.css" />
     <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.core.js"></script>
     <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.widget.js"></script>
@@ -49,6 +66,9 @@
     <script type="text/javascript" src="libs/jquery18/ui/jquery.effects.core.js"></script>
     <script type="text/javascript" src="libs/jquery18/ui/jquery.effects.scale.js"></script>
     <script type="text/javascript" src="libs/jquery18/ui/jquery.effects.fold.js"></script>
+
+-->
+
     <link rel="stylesheet" type="text/css" href="fcav.css" />
 
     <script type="text/javascript">
@@ -131,13 +151,6 @@
       </td></tr>
 
       <tr height="100%"><td>
-          <div id="map">
-            <div id="customZoom">
-                <a href="#customZoomIn" id="customZoomIn">+</a>
-                <a href="#customZoomOut" id="customZoomOut">&#8722;</a>
-            </div>           
-          </div>
-
           <div title="Map Layers" id="layerPickerDialog">
             <div id="layerPickerAccordion" class="layerAccordionClass" style="height:400px;">
             </div>    
@@ -150,6 +163,13 @@
               <h3><a href="#legendAccordion">Legend (click to clear layer)</a></h3>
               <div id="legend"></div>
             </div> 
+          </div>
+
+          <div id="map">
+            <div id="customZoom">
+                <a href="#customZoomIn" id="customZoomIn">+</a>
+                <a href="#customZoomOut" id="customZoomOut">&#8722;</a>
+            </div>           
           </div>
 
       </td></tr>

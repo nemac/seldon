@@ -150,7 +150,9 @@
                 accordionGroup;
 
             $('#layerPickerAccordion').empty();
-            $("#layerPickerAccordion").accordion('destroy');
+            if ($("#layerPickerAccordion").data('listAccordion')) {
+                $("#layerPickerAccordion").accordion('destroy');
+            }
             $('#layerPickerAccordion').listAccordion({
                 clearStyle : true,
                 autoHeight : false,
@@ -339,7 +341,7 @@
                                            });
             app.addListener("accordiongroupchange", function() {
                 if (app.currentTheme) {
-                    $('#layerPickerAccordion').accordion('activate', app.currentTheme.getAccordionGroupIndex(app.currentAccordionGroup));
+                    $('#layerPickerAccordion').accordion('option', 'active', app.currentTheme.getAccordionGroupIndex(app.currentAccordionGroup));
                 }
             });
 
@@ -421,7 +423,8 @@
                 }
                 return true;
             });
-            $('#mapToolsAccordion').accordion('activate', accordionGroupIndexToOpen);
+            //$('#mapToolsAccordion').accordion('activate', accordionGroupIndexToOpen);
+            $('#mapToolsAccordion').accordion('option', 'active', accordionGroupIndexToOpen);
 
             //
             // base layer combo change handler

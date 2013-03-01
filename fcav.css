@@ -72,6 +72,8 @@ a{
 
 
 #mapToolsDialog {
+   position: relative;
+   z-index: 10003;
    padding: 0px;
 }
 
@@ -102,6 +104,8 @@ a{
 
 
 #layerPickerDialog {
+  position: relative;
+  z-index: 10004;
   padding: 0px;
 }
 
@@ -136,6 +140,7 @@ a{
     font-size: 9px;
 }
 #map {
+  position: relative;
   width: 100%;
   height: 100%;
 

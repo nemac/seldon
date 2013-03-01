@@ -10,10 +10,12 @@
                 sublists    : []
             };
             $(this).data('listAccordion').sections.push(sectionObj);
+            if ($(this).data('accordion')) {
+                $(this).accordion('destroy');
+            }
             $(this) .
                 append(sectionObj.titleElement) .
                 append(sectionObj.contentElement) .
-                accordion('destroy') .
                 accordion($(this).data('listAccordion').accordionOptions);
             return sectionObj;
         },
