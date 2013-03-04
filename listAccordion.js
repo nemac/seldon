@@ -2,6 +2,12 @@
     "use strict";
 
     var methods = {
+        clearSections : function() {
+            $(this).empty();
+            $(this).data('listAccordion').sections = [];
+            $(this).accordion('refresh');
+        },
+
         addSection : function(title) {
             var sectionObj = {
                 title          : title,
@@ -10,13 +16,10 @@
                 sublists    : []
             };
             $(this).data('listAccordion').sections.push(sectionObj);
-            if ($(this).data('accordion')) {
-                $(this).accordion('destroy');
-            }
             $(this) .
                 append(sectionObj.titleElement) .
-                append(sectionObj.contentElement) .
-                accordion($(this).data('listAccordion').accordionOptions);
+                append(sectionObj.contentElement);
+            $(this).accordion('refresh');
             return sectionObj;
         },
 
@@ -59,11 +62,10 @@
                 if ( ! data ) {
 
                     $this.data('listAccordion', {
-                        accordionOptions : options,
-                        sections         : []
+                        accordionOptions     : options,
+                        sections             : []
                     });
-
-                    //$this.accordion();
+                    $this.accordion(options);
                 }
 
                 return this;

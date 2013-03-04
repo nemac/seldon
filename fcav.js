@@ -149,13 +149,17 @@
             var app = this,
                 accordionGroup;
 
+            if ($("#layerPickerAccordion").data('listAccordion')) {
+                $('#layerPickerAccordion').listAccordion('clearSections');
+            }
+/*
             $('#layerPickerAccordion').empty();
             if ($("#layerPickerAccordion").data('listAccordion')) {
                 $("#layerPickerAccordion").accordion('destroy');
             }
+*/
             $('#layerPickerAccordion').listAccordion({
-                clearStyle : true,
-                autoHeight : false,
+                heightStyle : 'content',
                 change     : function(event, ui) {
                     var accordionGroupIndex = $("#layerPickerAccordion").accordion('option', 'active');
                     app.setAccordionGroup(theme.accordionGroups[accordionGroupIndex]);
@@ -412,7 +416,9 @@
             //
 
             //    initialize
-            $("#mapToolsAccordion").accordion({ clearStyle: true, autoHeight: false });
+            $("#mapToolsAccordion").accordion({ 
+                heightStyle: 'content'
+            });
 
             //    find the 'legend' layer in the mapTools accordion, and make sure it is initially turned on
             var accordionGroupIndexToOpen = 0;
@@ -423,7 +429,6 @@
                 }
                 return true;
             });
-            //$('#mapToolsAccordion').accordion('activate', accordionGroupIndexToOpen);
             $('#mapToolsAccordion').accordion('option', 'active', accordionGroupIndexToOpen);
 
             //

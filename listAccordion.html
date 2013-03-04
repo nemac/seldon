@@ -5,67 +5,47 @@
     <meta http-equiv="X-UA-Compatible" content="IE=8" >
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-    <script type="text/javascript" src="libs/jquery17/jquery-1.7.2.js"></script>
 
-    <link type="text/css" rel="stylesheet" href="libs/jquery18/themes/base/jquery.ui.all.css" />
-    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.core.js"></script>
-    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.widget.js"></script>
-    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.mouse.js"></script>
-    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.draggable.js"></script>
-    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.resizable.js"></script>
-    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.accordion.js"></script>
-    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.dialog.js"></script>
-    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.position.js"></script>
-    <script type="text/javascript" src="libs/jquery18/ui/jquery.ui.slider.js"></script>
-    <script type="text/javascript" src="libs/jquery18/ui/jquery.effects.core.js"></script>
-    <script type="text/javascript" src="libs/jquery18/ui/jquery.effects.scale.js"></script>
-    <script type="text/javascript" src="libs/jquery18/ui/jquery.effects.fold.js"></script>
+    <script type="text/javascript" src="libs/multigraph/multigraph-min-4.0.js"></script>
+                <script type="text/javascript">$ = window.multigraph.jQuery;</script>
+    <script type="text/javascript" src="ajaxtransport.js"></script>
+    <script type="text/javascript">
+      fixJQueryAjaxTransport(jQuery);
+      //fixJQueryAjaxTransport(window.multigraph.jQuery);
+    </script>
+    <script type="text/javascript" src="libs/OpenLayers212/lib/OpenLayers.js"></script>
+    <script src="libs/OpenLayers212/lib/OpenLayers/Control/ScaleBar.js"></script>
 
-    <script type="text/javascript" src="layerPicker.js"></script>
+    <link type="text/css" rel="stylesheet"
+          href="libs/jquery-ui/smoothness/jquery-ui-1.10.1.custom/css/smoothness/jquery-ui-1.10.1.custom.min.css"/>
+    <script type="text/javascript"
+            src="libs/jquery-ui/smoothness/jquery-ui-1.10.1.custom/js/jquery-ui-1.10.1.custom.min.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="NEMACStyle.css" />
+    <script type="text/javascript" src="listAccordion.js"></script>
 
-    <style type="text/css">
-.layerPicker {
-  width: 300px;
-  height: 500px;
-}
+<!--     <link rel="stylesheet" type="text/css" href="NEMACStyle.css" /> -->
 
-.layerPicker h2 {
-  font-size: 10pt;
-  font-weight: normal;
-}
-
-.layerPicker div.layer {
-  margin-left: 20px;
-}
-
-    </style>
     <script type="text/javascript">
       $('document').ready(function() {
 
-        var s, g;
+       $('.listAccordion').listAccordion({
+//          heightStyle: 'content'
+       });
 
-        $('.layerPicker').layerPicker();
+       var g = $('.listAccordion').listAccordion('addSection', 'Political Boundaries and Roads');
+       g = $('.listAccordion').listAccordion('addSection', 'Fires');
 
-        g = $('.layerPicker').layerPicker('addSublist', 'Political Boundaries and Roads');
-        s = $('.layerPicker').layerPicker('addSublist', g, 'Boundaries');
-        $('.layerPicker').layerPicker('addSublistItem', s, "boundary one")
-        $('.layerPicker').layerPicker('addSublistItem', s, "boundary two")
+/*
+       var g = $('.listAccordion').listAccordion('addSection', 'Political Boundaries and Roads');
+       var s = $('.listAccordion').listAccordion('addSublist', g, 'Boundaries');
+       $('.listAccordion').listAccordion('addSublistItem', s, 'Cities');
+       $('.listAccordion').listAccordion('addSublistItem', s, 'State Boundaries');
 
-        s = $('.layerPicker').layerPicker('addSublist', g, 'Roads');
-        $('.layerPicker').layerPicker('addSublistItem', s, "roads one")
-        $('.layerPicker').layerPicker('addSublistItem', s, "roads two")
-
-        g = $('.layerPicker').layerPicker('addSublist', 'Fires');
-        s = $('.layerPicker').layerPicker('addSublist', g, 'Big');
-        $('.layerPicker').layerPicker('addSublistItem', s, "big fire one")
-        $('.layerPicker').layerPicker('addSublistItem', s, "big fire two")
-        s = $('.layerPicker').layerPicker('addSublist', g, 'Little');
-        $('.layerPicker').layerPicker('addSublistItem', s, "little fire one")
-        $('.layerPicker').layerPicker('addSublistItem', s, "little fire two")
-
-        console.log($('.layerPicker').data('layerPicker'));
+       g = $('.listAccordion').listAccordion('addSection', 'Fires');
+       s = $('.listAccordion').listAccordion('addSublist', g, 'Current/NRT Fire Detections');
+       $('.listAccordion').listAccordion('addSublistItem', s, 'Current Large Incidents (Active Fire Maps)');
+       $('.listAccordion').listAccordion('addSublistItem', s, 'State Boundaries');
+*/
 
       });
     </script>
@@ -74,8 +54,8 @@
 
   <body>
 
-    <div class="layerPicker">
-    </div>
+<div class="listAccordion">
+</div>
 
 
   </body>
