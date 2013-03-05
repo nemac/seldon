@@ -14394,7 +14394,7 @@
 	 styles="default" 
 	 identify="true" 
 	 name="Forest Type (USFS FIA-RSAC)" 
-	 legend="http://rain.nemac.org/~derek/fswms/html/cmapicons/foresttype.png"/>
+	 legend="http://rain.nemac.org/~derek/fswms/html/cmapicons/forestTypeLegend.png"/>
       <wmsLayer 
 	 lid="AIP"
 	 visible="false" 
