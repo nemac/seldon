@@ -14280,78 +14280,6 @@
 	 name="Major River Basins (HUC 8)" 
 	 legend="http://rain.nemac.org/~derek/fswms/html/vlayers?SERVICE=WMS&amp;REQUEST=GetLegendGraphic&amp;layer=HUC8&amp;VERSION=1.1.1&amp;FORMAT=image/png"/>
     </wmsSubgroup>
-    <wmsSubgroup label="Landcover">
-      <wmsLayer 
-	 lid="AIO"
-	 visible="false" 
-	 url="http://rain.nemac.org/~derek/fswms/html/rlayers?TRANSPARENT=true" 
-	 srs="EPSG:3785" 
-	 layers="forest-type" 
-	 styles="default" 
-	 identify="true" 
-	 name="Forest Type (USFS FIA-RSAC)" 
-	 legend="http://rain.nemac.org/~derek/fswms/html/cmapicons/foresttype.png"/>
-      <wmsLayer 
-	 lid="AIP"
-	 visible="false" 
-	 url="http://rain.nemac.org/~derek/fswms/html/rlayers?TRANSPARENT=true" 
-	 srs="EPSG:3785" 
-	 layers="forest-group" 
-	 styles="default" 
-	 identify="true" 
-	 name="Major Forest Group (USFS FIA-RSAC)" 
-	 legend="http://rain.nemac.org/~derek/fswms/html/cmapicons/CONUS_FORESTGROUP.png"/>
-      <wmsLayer 
-	 lid="AIQ"
-	 visible="false" 
-	 url="http://rain.nemac.org/~derek/fswms/html/rlayers?TRANSPARENT=true" 
-	 srs="EPSG:3785" 
-	 layers="forest-biomass" 
-	 styles="default" 
-	 identify="true" 
-	 name="Forest Biomass (USFS FIA-RSAC)" 
-	 legend="http://rain.nemac.org/~derek/fswms/html/cmapicons/FIA-RSAC_Forest_Biomass.png"/>
-      <wmsLayer 
-	 lid="BRI"
-	 visible="false" 
-	 url="http://rain.nemac.org/~derek/fswms/html/rlayers?TRANSPARENT=true" 
-	 srs="EPSG:3785" 
-	 layers="nlcd-2006" 
-	 styles="default" 
-	 identify="true" 
-	 name="NLCD 2006" 
-	 legend="http://rain.nemac.org/~derek/fswms/html/cmapicons/custom-nlcd2006.png"/>
-      <wmsLayer 
-	 lid="BRP"
-	 visible="false" 
-	 url="http://rain.nemac.org/~derek/fswms/html/rlayers?TRANSPARENT=true" 
-	 srs="EPSG:3785" 
-	 layers="gapnat-2001" 
-	 styles="default" 
-	 identify="true" 
-	 name="2001 GAP Landfire CONUS" 
-	 legend="http://rain.nemac.org/~derek/fswms/html/cmapicons/legend_gapnat_lndcov_0210_rs_to_231p66m_laea.jpg"/>
-      <wmsLayer 
-	 lid="LFFM40"
-	 visible="false" 
-	 url="http://rain.nemac.org/~derek/fswms/html/rlayers?TRANSPARENT=true" 
-	 srs="EPSG:3785" 
-	 layers="LANDFIREFuelModel40" 
-	 styles="default" 
-	 identify="true" 
-	 name="LANDFIRE Fuel Mode 40" 
-	 legend="http://rain.nemac.org/~derek/fswms/html/cmapicons/fbfm40Legend.png"/>
-      <wmsLayer 
-	 lid="LFV"
-	 visible="false" 
-	 url="http://rain.nemac.org/~derek/fswms/html/rlayers?TRANSPARENT=true" 
-	 srs="EPSG:3785" 
-	 layers="LANDFIREVegetation" 
-	 styles="default" 
-	 identify="true" 
-	 name="LANDFIRE Vegetation" 
-	 legend="http://rain.nemac.org/~derek/fswms/html/cmapicons/EVTLegend.png"/>	 
-    </wmsSubgroup>
     <wmsSubgroup label="Decadal Change">
       <wmsLayer 
 	 lid="DCDT"
@@ -14456,6 +14384,78 @@
 	 name="Phenoregions 5000 MaxMode" 
 	 legend=""/>
 	</wmsSubgroup>
+    <wmsSubgroup label="Landcover">
+      <wmsLayer 
+	 lid="AIO"
+	 visible="false" 
+	 url="http://rain.nemac.org/~derek/fswms/html/rlayers?TRANSPARENT=true" 
+	 srs="EPSG:3785" 
+	 layers="forest-type" 
+	 styles="default" 
+	 identify="true" 
+	 name="Forest Type (USFS FIA-RSAC)" 
+	 legend="http://rain.nemac.org/~derek/fswms/html/cmapicons/foresttype.png"/>
+      <wmsLayer 
+	 lid="AIP"
+	 visible="false" 
+	 url="http://rain.nemac.org/~derek/fswms/html/rlayers?TRANSPARENT=true" 
+	 srs="EPSG:3785" 
+	 layers="forest-group" 
+	 styles="default" 
+	 identify="true" 
+	 name="Major Forest Group (USFS FIA-RSAC)" 
+	 legend="http://rain.nemac.org/~derek/fswms/html/cmapicons/CONUS_FORESTGROUP.png"/>
+      <wmsLayer 
+	 lid="AIQ"
+	 visible="false" 
+	 url="http://rain.nemac.org/~derek/fswms/html/rlayers?TRANSPARENT=true" 
+	 srs="EPSG:3785" 
+	 layers="forest-biomass" 
+	 styles="default" 
+	 identify="true" 
+	 name="Forest Biomass (USFS FIA-RSAC)" 
+	 legend="http://rain.nemac.org/~derek/fswms/html/cmapicons/FIA-RSAC_Forest_Biomass.png"/>
+      <wmsLayer 
+	 lid="BRI"
+	 visible="false" 
+	 url="http://rain.nemac.org/~derek/fswms/html/rlayers?TRANSPARENT=true" 
+	 srs="EPSG:3785" 
+	 layers="nlcd-2006" 
+	 styles="default" 
+	 identify="true" 
+	 name="NLCD 2006" 
+	 legend="http://rain.nemac.org/~derek/fswms/html/cmapicons/custom-nlcd2006.png"/>
+      <wmsLayer 
+	 lid="BRP"
+	 visible="false" 
+	 url="http://rain.nemac.org/~derek/fswms/html/rlayers?TRANSPARENT=true" 
+	 srs="EPSG:3785" 
+	 layers="gapnat-2001" 
+	 styles="default" 
+	 identify="true" 
+	 name="2001 GAP Landfire CONUS" 
+	 legend="http://rain.nemac.org/~derek/fswms/html/cmapicons/legend_gapnat_lndcov_0210_rs_to_231p66m_laea.jpg"/>
+      <wmsLayer 
+	 lid="LFFM40"
+	 visible="false" 
+	 url="http://rain.nemac.org/~derek/fswms/html/rlayers?TRANSPARENT=true" 
+	 srs="EPSG:3785" 
+	 layers="LANDFIREFuelModel40" 
+	 styles="default" 
+	 identify="true" 
+	 name="LANDFIRE Fuel Mode 40" 
+	 legend="http://rain.nemac.org/~derek/fswms/html/cmapicons/fbfm40Legend.png"/>
+      <wmsLayer 
+	 lid="LFV"
+	 visible="false" 
+	 url="http://rain.nemac.org/~derek/fswms/html/rlayers?TRANSPARENT=true" 
+	 srs="EPSG:3785" 
+	 layers="LANDFIREVegetation" 
+	 styles="default" 
+	 identify="true" 
+	 name="LANDFIRE Vegetation" 
+	 legend="http://rain.nemac.org/~derek/fswms/html/cmapicons/EVTLegend.png"/>	 
+    </wmsSubgroup>	
 	<wmsSubgroup label="Ecoregions">
       <wmsLayer 
 	 lid="AIR"
