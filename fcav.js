@@ -10,6 +10,7 @@
     fcav.App = function () {
         EventEmitter.call(this);
         this.map         = undefined; // OpenLayers map object
+		this.projection         = undefined; // OpenLayers map projection
         this.scalebar    = undefined;
         this.zoomInTool  = undefined; // OpenLayers zoom in tool
         this.zoomOutTool = undefined; // OpenLayers zoom out tool
@@ -904,7 +905,7 @@
                     "zoomend": function() { app.emit("extentchange"); }
                 },               
                 zoom: 1,
-                projection: new OpenLayers.Projection("EPSG:900913")
+                projection: new OpenLayers.Projection(fcav.projection)
             });  
 
             // set the base layer, but bypass setBaseLayer() here, because that function initiates an ajax request
@@ -1063,11 +1064,13 @@
         console.log(message);
     }
 
-    fcav.init = function() {
+    fcav.init = function(config,projection) {
         app = new fcav.App();
         var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
-        app.launch('config/ews_config.xml', shareUrlInfo);
+        // app.launch('config/ews_config.xml', shareUrlInfo);
+		app.launch(config, shareUrlInfo);
         fcav.app = app;
+		fcav.projection = projection;
     };
 
     function deactivateActiveOpenLayersControls() {
