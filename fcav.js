@@ -1465,16 +1465,17 @@
                 // as they arrive.
                 app.map.addPopup(new OpenLayers.Popup.FramedCloud(
                     "identify_popup",                   // id
-                    app.map.getLonLatFromPixel(e.xy),  // lonlat
-                    null,                               // contentSize
+                    app.map.getLonLatFromPixel(e.xy),   // lonlat
+                    null,       						// contentSize
                     html,                               // contentHTML
                     null,                               // anchor
                     true,                               // closeBox
                     null                                // closeBoxCallback
                 ));
                 
-                // Now loop over each item in the `services` object, generating the GetFeatureInfo request for it
+				// Now loop over each item in the `services` object, generating the GetFeatureInfo request for it
                 for (urlsrs in services) {
+					var firstResultsYet=0;
                     (function () {
                         var service = services[urlsrs],
                             //NOTE: the correct coords to use in the request are (e.xy.y,e.xy.y), which are NOT the same as (e.x,e.y).
@@ -1485,14 +1486,35 @@
                             dataType: "text",
                             success: function(response) {
                                 var $gml = $($.parseXML(response));
-                                //var $gml = $($(xml).children()[0]);
-                                //var $gml = $(response);
                                 // For each layer that this request was for, parse the GML for the results
                                 // for that layer, and populate the corresponding result in the popup
                                 // created above.
-                                $.each(service.layers, function () {
-                                    var result = getLayerResultsFromGML($gml, this);
-                                    $('#identify_results_for_'+this+' td.layer-results').text(result);
+								if (firstResultsYet<1){
+									$("#identify_results").empty(); //first clear out orginal
+									firstResultsYet = firstResultsYet+1;
+								}
+								$.each(service.layers, function () {
+                                    //jdm: Need to modify what comes back to be a list of 
+									//vales which can then be used to reconstruct the table
+									var result = getLayerResultsFromGML($gml, this);
+									//jdm: with this list back from getLayerResultsFromGML
+									//loop through and build up new table structure
+									var i=0,
+										newTableContents = '';
+									newTableContents = newTableContents +''
+									+ '<tr>'
+									+	'<td><b>'+service.layers[i]+'</b></td>'
+									+   '<td>&nbsp</td>'
+									+ '</tr>'
+									for (i=1; i<result.length; ++i) {
+										newTableContents = newTableContents +''
+										+ '<tr>'
+										+	'<td align="right">'+String(result[i][0]).replace("_0","")+':&nbsp&nbsp</td>'
+										+   '<td>'+result[i][1]+'</td>'
+										+ '</tr>'
+									}
+									i++;
+									$("#identify_results").append(newTableContents);
                                 });
                             },
                             error: function(jqXHR, textStatus, errorThrown) {
@@ -1502,6 +1524,9 @@
                         });
                     }());
                 }
+				//jdm: last thing make the popup bigger
+				//this doesn't work for some reason
+				//app.map.popups[0].updateSize(new OpenLayers.Size(500, 500));
             }
         );
     }
@@ -1509,19 +1534,26 @@
     function getLayerResultsFromGML($gml, layerName) {
         var i,
             children = $gml.find(layerName + '_feature').first().children();
-        // Scan the children of the first <layerName_feature> element, looking for the first
+		var returnVals = [];	
+		
+		// Scan the children of the first <layerName_feature> element, looking for the first
         // child which is an element whose name is something other than `gml:boundedBy`; take
         // the text content of that child as the result for this layer.
         for (i=0; i<children.length; ++i) {
             if (children[i].nodeName !== 'gml:boundedBy') {
                 if ( $.browser.msie ) { //jdm: IE doesn't have textContent on children[i], but Chrome and FireFox do
-                    return children[i].text;
-                } else {
-                    return children[i].textContent;
+					returnVals[i] = new Array(2)
+					returnVals[i][0] = [children[i].nodeName];
+					returnVals[i][1] = [children[i].text];
+				} else {
+					returnVals[i] = new Array(2)
+					returnVals[i][0] = [children[i].nodeName];
+					returnVals[i][1] = [children[i].textContent];
                 }           
             }
         }
-        return undefined;
+        return returnVals;
+		//return undefined;
     }
 
     var lastPopup;

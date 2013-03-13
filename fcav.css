@@ -340,3 +340,8 @@ textarea.shareMapUrl {
 #customZoomOut {
     top: 25px;
 }
+
+#identify_results, td {
+	border-collapse: collapse; 
+	border: .05em solid #C0C0C0; 
+}
