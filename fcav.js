@@ -1433,7 +1433,7 @@
                 // entry records a url, srs, and list of layers, corresponding to one
                 // GetFeatureInfo request that will need to be made.  We also builds up the html
                 // that will display the results in the popup window here.
-                var html = '<table id="identify_results">';
+                var html = '<table id="identify_results" height="100">';
                 $.each(app.map.layers, function () {
                     var srs, url, name, urlsrs;
                     if (! this.isBaseLayer) {
@@ -1493,28 +1493,32 @@
 									$("#identify_results").empty(); //first clear out orginal
 									firstResultsYet = firstResultsYet+1;
 								}
+								var layerIDCount=0,
+									newTableContents = '',
+									lastURL='';
 								$.each(service.layers, function () {
                                     //jdm: Need to modify what comes back to be a list of 
-									//vales which can then be used to reconstruct the table
+									//values which can then be used to reconstruct the table
 									var result = getLayerResultsFromGML($gml, this);
 									//jdm: with this list back from getLayerResultsFromGML
 									//loop through and build up new table structure
-									var i=0,
-										newTableContents = '';
-									newTableContents = newTableContents +''
+									newTableContents = ''
 									+ '<tr>'
-									+	'<td><b>'+service.layers[i]+'</b></td>'
+									+	'<td><b>'+service.layers[layerIDCount]+'</b></td>'
 									+   '<td>&nbsp</td>'
 									+ '</tr>'
+									$("#identify_results").append(newTableContents);
+									var i=0;
 									for (i=1; i<result.length; ++i) {
-										newTableContents = newTableContents +''
+										newTableContents = ''
 										+ '<tr>'
 										+	'<td align="right">'+String(result[i][0]).replace("_0","")+':&nbsp&nbsp</td>'
 										+   '<td>'+result[i][1]+'</td>'
 										+ '</tr>'
+										$("#identify_results").append(newTableContents);
 									}
-									i++;
-									$("#identify_results").append(newTableContents);
+									layerIDCount++;
+									//$("#identify_results").append(newTableContents);
                                 });
                             },
                             error: function(jqXHR, textStatus, errorThrown) {
