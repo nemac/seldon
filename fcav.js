@@ -1005,11 +1005,13 @@
             this.emit("activate");
             //reorder maps layers based on the current layer index
             var lyrJustAdded = app.map.layers[app.map.getNumLayers()-1];
-            for (var i = app.map.getNumLayers(); i > 0; i--) {
-                if (this.index>i){
+            for (var i = app.map.getNumLayers()-2; i > 0; i--) {
+                var nextLayerDown = app.map.layers[i]; //use app.map.layers[2].fcavLayer.index
+				if (this.index>nextLayerDown.fcavLayer.index){
                     app.map.setLayerIndex(lyrJustAdded, i);
                 }
             }
+			app.map.updateSize();
         };
         this.deactivate = function(suppressCheckboxUpdate) {
             if (this.openLayersLayer) {
