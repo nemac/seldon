@@ -1504,19 +1504,21 @@
 									var result = getLayerResultsFromGML($gml, this);
 									//jdm: with this list back from getLayerResultsFromGML
 									//loop through and build up new table structure
-									newTableContents = ''
-									+ '<tr>'
-									+	'<td><b>'+service.layers[layerIDCount]+'</b></td>'
-									+   '<td>&nbsp</td>'
-									+ '</tr>'
+									newTableContents = (''
+									                    + '<tr>'
+									                    +	'<td><b>'+service.layers[layerIDCount]+'</b></td>'
+									                    +   '<td>&nbsp</td>'
+									                    + '</tr>'
+                                                        );
 									$("#identify_results").append(newTableContents);
 									var i=0;
 									for (i=1; i<result.length; ++i) {
-										newTableContents = ''
-										+ '<tr>'
-										+	'<td align="right">'+String(result[i][0]).replace("_0","")+':&nbsp&nbsp</td>'
-										+   '<td>'+result[i][1]+'</td>'
-										+ '</tr>'
+										newTableContents = (''
+										                    + '<tr>'
+                                                            +	'<td align="right">'+String(result[i][0]).replace("_0","")+':&nbsp&nbsp</td>'
+										                    +   '<td>'+result[i][1]+'</td>'
+										                    + '</tr>'
+                                                            );
 										$("#identify_results").append(newTableContents);
 									}
 									layerIDCount++;
@@ -1537,25 +1539,31 @@
         );
     }
 
+    function stringStartsWith(string, prefix) {
+        return (string.substring(0, prefix.length) === prefix);
+    }
+
     function getLayerResultsFromGML($gml, layerName) {
         var i,
             children = $gml.find(layerName + '_feature').first().children();
 		var returnVals = [];	
-		
+
 		// Scan the children of the first <layerName_feature> element, looking for the first
         // child which is an element whose name is something other than `gml:boundedBy`; take
         // the text content of that child as the result for this layer.
         for (i=0; i<children.length; ++i) {
             if (children[i].nodeName !== 'gml:boundedBy') {
+                var value;
                 if ( $.browser.msie ) { //jdm: IE doesn't have textContent on children[i], but Chrome and FireFox do
-					returnVals[i] = new Array(2)
-					returnVals[i][0] = [children[i].nodeName];
-					returnVals[i][1] = [children[i].text];
+                    value = children[i].text;
 				} else {
-					returnVals[i] = new Array(2)
-					returnVals[i][0] = [children[i].nodeName];
-					returnVals[i][1] = [children[i].textContent];
-                }           
+                    value = children[i].textContent;
+                }
+                if ((stringStartsWith(layerName,"EFETAC-NASA") || stringStartsWith(layerName,"RSAC-FHTET"))
+                    && (children[i].nodeName === "value_0")) {
+                    value = value + sprintf(" (%.2f %%)", parseFloat(value,10) * 200.0 / 255.0 - 100);
+                }
+				returnVals[i] = [children[i].nodeName, value];
             }
         }
         return returnVals;
