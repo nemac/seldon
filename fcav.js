@@ -10,7 +10,8 @@
     fcav.App = function () {
         EventEmitter.call(this);
         this.map         = undefined; // OpenLayers map object
-		this.projection         = undefined; // OpenLayers map projection
+		this.projection  = undefined; // OpenLayers map projection
+		this.gisServerType = undefined; //The type of server that the wms layers will be served from
         this.scalebar    = undefined;
         this.zoomInTool  = undefined; // OpenLayers zoom in tool
         this.zoomOutTool = undefined; // OpenLayers zoom out tool
@@ -1066,13 +1067,13 @@
         console.log(message);
     }
 
-    fcav.init = function(config,projection) {
+    fcav.init = function(config,projection,gisServerType) {
         app = new fcav.App();
         var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
-        // app.launch('config/ews_config.xml', shareUrlInfo);
 		app.launch(config, shareUrlInfo);
         fcav.app = app;
 		fcav.projection = projection;
+		fcav.gisServerType = gisServerType;
     };
 
     function deactivateActiveOpenLayersControls() {
@@ -1376,7 +1377,10 @@
     //
     function createWMSGetFeatureInfoRequestURL(serviceUrl, layers, srs, x, y) {
         var extent = app.map.getExtent();
-        return Mustache.render(
+		if (fcav.gisServerType=="ArcGIS"){		
+			extent = extent.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
+		}
+		return Mustache.render(
             (''
              + serviceUrl
              + '{{{c}}}LAYERS={{layers}}'
@@ -1499,9 +1503,16 @@
 									newTableContents = '',
 									lastURL='';
 								$.each(service.layers, function () {
-                                    //jdm: Need to modify what comes back to be a list of 
-									//values which can then be used to reconstruct the table
-									var result = getLayerResultsFromGML($gml, this);
+                                    //jdm: Check to see if we are using ArcGIS
+									//if so handle the xml that comes back differently
+									//on a related note ArcGIS WMS Raster layers do not support
+									//GetFeatureInfo
+									if (fcav.gisServerType=="ArcGIS"){
+										var result = getLayerResultsFromArcXML($gml, this);
+									}
+									else { //assuming MapServer at this point
+										var result = getLayerResultsFromGML($gml, this);
+									}
 									//jdm: with this list back from getLayerResultsFromGML
 									//loop through and build up new table structure
 									newTableContents = (''
@@ -1543,6 +1554,21 @@
         return (string.substring(0, prefix.length) === prefix);
     }
 
+	function getLayerResultsFromArcXML($xml, layerName) {
+		var returnVals = [];	
+		try {
+			var i;
+			var fields = $xml.find( "FIELDS" );
+			for (i=0; i<fields[0].attributes.length; ++i) {
+				returnVals[i] = [fields[0].attributes[i].name, fields[0].attributes[i].value];
+			}
+		}
+		catch(err){
+			returnVals[0] = ["Error description:", err.message];
+		}
+		return returnVals;
+	}
+	
     function getLayerResultsFromGML($gml, layerName) {
         var i,
             children = $gml.find(layerName + '_feature').first().children();
