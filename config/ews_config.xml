@@ -39,8 +39,9 @@
       <viewGroup name="US_Fire" />
       <viewGroup name="US_FHM_ADS" />
       <viewGroup name="MODIS_Change_Detection_Products" />
-      <viewGroup name="Archived_NRT" />
+      <viewGroup name="Archived_TACS" />
       <viewGroup name="MODISCloud" />
+	  <viewGroup name="Archived_RSAC" />
       <viewGroup name="Drought_Monitor" />
       <viewGroup name="vegdri_new" />
       <viewGroup name="US_Climate" />
@@ -650,7 +651,7 @@
       </wmsSubgroup>
 
   </wmsGroup>
-  <wmsGroup gid="G05" name="Archived_NRT" label="Archived Forest Disturbance Detection Maps">
+  <wmsGroup gid="G05" name="Archived_TACS" label="Archived Forest Disturbance Detection Maps">
     <wmsSubgroup label="Archived NRT 1-Year Baseline (TACs-NASA)">
     
         <wmsLayer
@@ -6417,7 +6418,7 @@
           legend="http://rain.nemac.org/~derek/fswms/html/"/>
     </wmsSubgroup>
   </wmsGroup>
-  <wmsGroup gid="G07" name="Archived_NRT" label="Archived RSAC-FHTET Forest Change Disturbance">
+  <wmsGroup gid="G07" name="Archived_RSAC" label="Archived RSAC-FHTET Forest Change Disturbance">
     <wmsSubgroup label="Archived 3-Year Baseline (RSAC-FHTET)">
 	<wmsLayer
 		lid="BJT"
@@ -6866,6 +6867,16 @@
            name="Current Drought Monitor" 
            legend="http://rain.nemac.org/~derek/fswms/html/cmapicons/drought-monitor.png" />
         
+        <wmsLayer
+          lid="DRTAVM"
+          visible="false"
+          url="http://torka.unl.edu:8080/cgi-bin/mapserv.exe?map=/ms4w/apps/dm/service/usdm130319_wms.map&amp;TRANSPARENT=true" 
+          srs="EPSG:900913"
+          layers="usdm130319"
+          name="03/19/2013"
+          styles="default" 
+          identify="false"
+          legend="http://rain.nemac.org/~derek/fswms/html/cmapicons/drought-monitor.png"/>
         <wmsLayer
           lid="DRTAVL"
           visible="false"
