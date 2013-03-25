@@ -322,7 +322,7 @@
                         $('#tglLyrPickPic').css({'background-color':'black'});                      
                         $('#tglLyrPickPic').css({'opacity':'.75'});
                     }               
-                    $("#btnTglLyrPick").attr('title', 'Show/hide Layer Picker');
+                    $("#btnTglLyrPick").attr('title', 'Toggle Map Layers');
                 },
                 function(){
                     if (activeBtn[0]!=this) {
@@ -376,7 +376,7 @@
                         $('#tglLegendPic').css({'background-color':'black'});                       
                         $('#tglLegendPic').css({'opacity':'.75'});
                     }               
-                    $("#btnTglMapTools").attr('title', 'Show/hide Map Tools');
+                    $("#btnTglMapTools").attr('title', 'Toggle Map Tools');
                 },
                 function(){
                     if (activeBtn[0]!=this) {
@@ -465,7 +465,7 @@
             }).hover(
                 function(){
                     $('#panPic').attr('src',   'icons/pan_over.png');
-                    $("#btnPan").attr('title', 'Pan tool');
+                    $("#btnPan").attr('title', 'Pan');
                 },
                 function(){
                     $('#panPic').attr('src',   'icons/pan.png');
@@ -491,7 +491,7 @@
                         $('#zoomInPic').css({'background-color':'black'});                      
                         $('#zoomInPic').css({'opacity':'.75'});
                     }               
-                    $("#btnZoomIn").attr('title', 'Zoom in tool');
+                    $("#btnZoomIn").attr('title', 'Zoom In');
                 },
                 function(){
                     if (activeBtn[0]!=this) {
@@ -524,7 +524,7 @@
                         $('#zoomOutPic').css({'background-color':'black'});                     
                         $('#zoomOutPic').css({'opacity':'.75'});
                     }               
-                    $("#btnZoomOut").attr('title', 'Zoom out tool');
+                    $("#btnZoomOut").attr('title', 'Zoom Out');
                 },
                 function(){
                     if (activeBtn[0]!=this) {
@@ -547,7 +547,7 @@
             $('#btnZoomExtent').hover(
                 function(){
                     $("#zoomExtentPic").attr('src',  'icons/zoom-extent_over.png');
-                    $("#btnZoomExtent").attr('title', 'Full Extent tool');
+                    $("#btnZoomExtent").attr('title', 'Full Extent');
                 },
                 function(){
                     $("#zoomExtentPic").attr('src',  'icons/zoom-extent.png');
@@ -575,7 +575,7 @@
                         $('#idPic').css({'background-color':'black'});                      
                         $('#idPic').css({'opacity':'.75'});
                     }               
-                    $("#btnID").attr('title', 'Identify tool');
+                    $("#btnID").attr('title', 'Identify');
                 },
                 function(){
                     if (activeBtn[0]!=this) {
@@ -609,7 +609,7 @@
                         $('#aboutPic').css({'background-color':'black'});                       
                         $('#aboutPic').css({'opacity':'.75'});
                     }
-                    $("#btnAbout").attr('title', 'About tool');
+                    $("#btnAbout").attr('title', 'About');
                 },
                 function(){
                     if (activeBtn[0]!=this) {
@@ -669,7 +669,7 @@
             }).hover(
                 function(){
                     $("#multiGraphPic").attr('src',  'icons/multigraph_over.png');
-                    $("#btnMultiGraph").attr('title', 'Multigraph tool');
+                    $("#btnMultiGraph").attr('title', 'Graph NDVI');
                 },
                 function(){
                     $("#multiGraphPic").attr('src',  'icons/multigraph.png');
