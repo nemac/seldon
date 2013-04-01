@@ -32,7 +32,8 @@
 
     <script type="text/javascript">
       $('document').ready(function() {
-          fcav.init("config/ews_config.xml","EPSG:900913");
+          //fcav.init("config/ews_config.xml","EPSG:900913");
+		  fcav.init("http://wms.forwarn.forestthreats.org/view/config/ews_config.xml","EPSG:900913");
       });
     </script>
 
@@ -124,6 +125,7 @@
           <div id="map">
             <div id="customZoom">
                 <a href="#customZoomIn" id="customZoomIn">+</a>
+				<!-- <div id="customZoomSlider"></div> -->
                 <a href="#customZoomOut" id="customZoomOut">&#8722;</a>
             </div>           
           </div>
