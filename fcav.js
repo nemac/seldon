@@ -891,10 +891,6 @@
                         }
                     }),
                     new OpenLayers.Control.Attribution(),
-                    new OpenLayers.Control.Zoom({
-                        zoomInId: "customZoomIn",
-                        zoomOutId: "customZoomOut"
-                    }),                    
                     app.zoomInTool,
                     app.zoomOutTool,
                     app.identifyTool,
@@ -926,6 +922,7 @@
                 lonlat = lonlat.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
                 OpenLayers.Util.getElement("latLonTracker").innerHTML = "Lat: " + sprintf("%.5f", lonlat.lat) + " Lon: " + sprintf("%.5f", lonlat.lon) + "";
             });
+			app.map.addControl(new OpenLayers.Control.PanZoomBar());
         };
 
     };
