@@ -1,6 +1,6 @@
 /*global describe, it, beforeEach, expect, xit, jasmine */
 
-describe("FCAV", function () {
+describe("Seldon", function () {
     "use strict";
 
     var fcav = window.fcav;
