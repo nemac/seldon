@@ -1,4 +1,4 @@
-ol-fcav
+Seldon
 =======
 
-OpenLayers Version of FCAV
+Foundation for OpenLayers GIS viewer.
