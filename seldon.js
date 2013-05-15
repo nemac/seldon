@@ -212,7 +212,7 @@
                         });
                         layer.addListener("transparency", function () {
                             app.updateShareMapUrl();
-                        });
+                        });                       
                         // add the layer to the accordion group
                         $('#layerPickerAccordion').listAccordion('addSublistItem', s,
                                                                  [createLayerToggleCheckbox(layer),
@@ -860,6 +860,7 @@
                                 identify         : $wmsLayer.attr('identify'),
                                 name             : $wmsLayer.attr('name'),
                                 legend           : $wmsLayer.attr('legend'),
+                                mask             : $wmsLayer.attr('mask'),
                                 selectedInConfig : ($wmsLayer.attr('selected') === "true")
                             });
                         layer.index = index;
@@ -1026,6 +1027,7 @@
         this.identify           = settings.identify;
         this.name               = settings.name;
         this.legend             = settings.legend;
+        this.mask               = settings.mask;
         this.transparency       = 0;
         this.index              = 0;
         this.selectedInConfig   = settings.selectedInConfig;
@@ -1103,7 +1105,55 @@
             }
             this.transparency = transparency;
             this.emit({type : 'transparency', value : this.transparency});
-        };
+        };   
+        this.setMask = function(toggle, maskLayerName) {
+            //now we need to turn on the mask and turn off the lid layer
+            //but still we need to be able to reactivate the lid layer when mask
+            //is turned off.
+            // alert(this.lid + toggle + maskLayerName); 
+            if (toggle) { //mask is active
+                 try {
+                 //try catche here because when turning on multiple mask the 
+                 //i get an error when trying to deactivate for a second time the 
+                 //parent layer
+                    this.deactivate();
+                 }
+                 catch(err) {
+                    //console.log(err);
+                 }
+                //now we need to activate the mask
+                //this should be a function on the layer, activateMask(maskName)
+                //reason being that the same legend and identify values should exist
+                //it is really a conceptually also on the same layer object/function
+                this.activateMask(maskLayerName);
+            }
+            else {
+                this.activate();
+                this.deactivateMask(maskLayerName);
+            }
+        };  
+        this.activateMask = function(maskLayerName) {
+            //maskLayerName.replace("/","").substring(0,(maskLayerName.length-1)-this.lid.lengt
+            var maskLayer = new Layer({
+                    visible          : this.visible,
+                    url              : this.url,
+                    srs              : this.srs,
+                    layers           : this.layers+maskLayerName.replace("/","").substring(0,(maskLayerName.length-1)-this.lid.length),
+                    identify         : this.identify,
+                    name             : maskLayerName.replace("/",""),
+                    legend           : this.legend,
+            });
+            maskLayer.activate();
+        };     
+        this.deactivateMask = function(maskLayerName) {
+            for (var i = app.map.getNumLayers()-1; i > 0; i--) {
+                var currLayer = app.map.layers[i]; 
+				if (maskLayerName.replace("/","")==currLayer.name){
+                    app.map.layers[i].fcavLayer.removeFromLegend();
+                    app.map.removeLayer(app.map.layers[i]);
+                }
+            }
+        };           
     }
     EventEmitter.declare(Layer);
 
@@ -1322,7 +1372,7 @@
             createLayerPropertiesDialog.$html[layer.lid].dialog('destroy');
             createLayerPropertiesDialog.$html[layer.lid].remove();
         }
-
+        
         var $html = $(''
                       + '<div class="layer-properties-dialog">'
                       +   '<table>'
@@ -1338,6 +1388,41 @@
                       +   '</table>'
                       + '</div>'
                      );
+
+		//jdm:5/13/13 need to check for mask on this layer, and if so
+		//adjust the htm accordingly to have the toggles for those mask.
+		var $testForMask = layer.mask;
+        if ($testForMask){
+            var $html = $(''
+                          + '<div class="layer-properties-dialog">'
+                          +   '<table>'
+                          +     '<tr>'
+                          +       '<td>Transparency:</td>'
+                          +       '<td>'
+                          +         '<div class="transparency-slider"></div>'
+                          +       '</td>'
+                          +       '<td>'
+                          +        '<input class="transparency-text" type="text" size="2"/>'
+                          +       '</td>'
+                          +     '</tr>'
+                         );
+            $testForMask = $testForMask.split(',');
+            for(var i=0; i<$testForMask.length; ++i){
+                $html.append(''
+                          +     '<tr>'
+                          +       '<td>Filter By:</td>'
+                          +       '<td>'
+                          +         '<div class="mask-description">'+$testForMask[i].replace("MaskFor","")+'</div>'
+                          +       '</td>'
+                          +       '<td>'
+                          +        '<input class="mask-toggle" type="checkbox" size="2" value='+$testForMask[i]+layer.lid+'/>'
+                          +       '</td>'
+                          +     '</tr>'  
+                        ); 
+            }
+            $html.append('</table></div>')
+        } //end if $testForMask 
+        
         $html.find('input.transparency-text').val(layer.transparency);
         $html.find('.transparency-slider').slider({
             min   : 0,
@@ -1359,10 +1444,27 @@
             }
             layer.setTransparency($(this).val());
         });
+        
         layer.addListener("transparency", function (e) {
             $html.find('input.transparency-text').val(e.value);
         });
-
+        
+        //jdm 5/14/13: add listener for mask functionality
+        //for every mask checkbox we check we getting a click event
+        $(function(){
+              $('.mask-toggle').live('click', function(){
+                  if (layer.lid == this.value.replace("/","").slice(-layer.lid.length)) { 
+                  //check to make sure the layer matches the mask being requested
+                      if($(this).is(':checked')){
+                        layer.setMask(true, this.value);
+                      }
+                      else {
+                        layer.setMask(false, this.value);
+                      }
+                  }
+              });
+         });
+        
         $html.dialog({
             zIndex    : 10050, 
             position  : "left",
