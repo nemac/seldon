@@ -1113,7 +1113,7 @@
             // alert(this.lid + toggle + maskLayerName); 
             if (toggle) { //mask is active
                  try {
-                 //try catche here because when turning on multiple mask the 
+                 //try catch here because when turning on multiple mask the 
                  //i get an error when trying to deactivate for a second time the 
                  //parent layer
                     this.deactivate();
@@ -1128,7 +1128,19 @@
                 this.activateMask(maskLayerName);
             }
             else {
-                this.activate();
+                var checkForOtherActiveMask = false;
+                for (var i = app.map.getNumLayers()-1; i > 0; i--) {
+                    var currLayer = app.map.layers[i]; 
+                    if (maskLayerName.replace("/","")!=currLayer.name){
+                        if (currLayer.name.indexOf("Mask") !== -1) {
+                            checkForOtherActiveMask = true;
+                        }
+                    }
+                }                
+                if (!checkForOtherActiveMask) { 
+                //only re-activate the parent layer if there are no other mask active
+                    this.activate();
+                }
                 this.deactivateMask(maskLayerName);
             }
         };  
