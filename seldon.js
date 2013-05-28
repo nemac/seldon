@@ -10,15 +10,15 @@
     fcav.App = function () {
         EventEmitter.call(this);
         this.map         = undefined; // OpenLayers map object
-		this.projection  = undefined; // OpenLayers map projection
-		this.gisServerType = undefined; //The type of server that the wms layers will be served from
+        this.projection  = undefined; // OpenLayers map projection
+        this.gisServerType = undefined; //The type of server that the wms layers will be served from
         this.scalebar    = undefined;
         this.zoomInTool  = undefined; // OpenLayers zoom in tool
         this.zoomOutTool = undefined; // OpenLayers zoom out tool
         this.dragPanTool = undefined; // OpenLayers dragpan tool
         this.maxExtent   = {
             left   : -15000000,  //NOTE: These values get replaced by settings from the config file.
-            bottom : 2000000,    //      Don't worry about keeping these in sync if the config fil 
+            bottom : 2000000,    //      Don't worry about keeping these in sync if the config fil
             right  : -6000000,   //      changes; these are just here to prevent a crash if we ever
             top    : 7000000     //      read a config file that is missing the <extent> element.
         };
@@ -103,7 +103,7 @@
             var html = "<table>";
             var len = this.savedExtents.length;
             var i, e;
-            for (i=len-1; i>=0; --i) {
+            for (i = len-1; i >= 0; --i) {
                 e = this.savedExtents[i];
                 html += Mustache.render('<tr><td>{{{marker}}}</td><td>{{{number}}}</td>'
                                         + '<td>left:{{{left}}}, bottom:{{{bottom}}}, right:{{{right}}}, top:{{{top}}}</td></tr>',
@@ -142,31 +142,37 @@
         };
 
 
-        this.setAccordionGroup = function(accordionGroup) {
+        this.setAccordionGroup = function (accordionGroup) {
             this.currentAccordionGroup = accordionGroup;
             this.emit("accordiongroupchange");
         };
 
-        this.setTheme = function(theme, options) {
-            //console.log("setTheme1: "+Date());
-			var app = this,
-                accordionGroup;
+        this.setTheme = function (theme, options) {
+            var app = this,
+                $layerPickerAccordion = $("#layerPickerAccordion"),
+                flag,
+                accordionGroup,
+                labelElem,
+                textElem,
+                maskLabelElem, 
+                maskTextElem;
 
-            if ($("#layerPickerAccordion").data('listAccordion')) {
-                $('#layerPickerAccordion').listAccordion('clearSections');
+            if ($layerPickerAccordion.length === 0) {
+                flag = true;
+                $layerPickerAccordion = $(document.createElement("div"))
+                    .attr("id", "layerPickerAccordion")
+                    .addClass("layerAccordionClass")
+                    .css("height", "400px");
             }
-			
-			//console.log("setTheme2: "+Date());
-/*
-            $('#layerPickerAccordion').empty();
-            if ($("#layerPickerAccordion").data('listAccordion')) {
-                $("#layerPickerAccordion").accordion('destroy');
+
+            if ($layerPickerAccordion.data('listAccordion')) {
+                $layerPickerAccordion.listAccordion('clearSections');
             }
-*/
-            $('#layerPickerAccordion').listAccordion({
+
+            $layerPickerAccordion.listAccordion({
                 heightStyle : 'content',
                 change     : function(event, ui) {
-                    var accordionGroupIndex = $("#layerPickerAccordion").accordion('option', 'active');
+                    var accordionGroupIndex = $layerPickerAccordion.accordion('option', 'active');
                     app.setAccordionGroup(theme.accordionGroups[accordionGroupIndex]);
                 }
             });
@@ -176,28 +182,27 @@
             if (options === undefined) {
                 options = {};
             }
-			//console.log("setTheme3: "+Date());
-			
-			//jdm: re-wrote loop using traditional for loops (more vintage-IE friendly)
-			//vintage-IE does work with jquery each loops, but seems to be slower
-			for (var a = 0, b = theme.accordionGroups.length; a < b; a++) {
-				var accGp = theme.accordionGroups[a];
+
+            //jdm: re-wrote loop using traditional for loops (more vintage-IE friendly)
+            //vintage-IE does work with jquery each loops, but seems to be slower
+            for (var a = 0, b = theme.accordionGroups.length; a < b; a++) {
+                var accGp = theme.accordionGroups[a],
+                    accordionGroupOption = options.accordionGroup;
                 // Decide whether to open this accordion group.  If we received an
                 // `accordionGroup` setting in the options are, activate this accordion
                 // group only if it equals that setting.  If we did not receive an
                 // `accordionGroup` setting in the options are, activate this accordion
                 // group if its "selected" attribute was true in the config file.
-                if ((options.accordionGroup && (accGp === options.accordionGroup))
-                    ||
-                    (!options.accordionGroup && accGp.selectedInConfig)) {
+                if ((accordionGroupOption && (accGp === accordionGroupOption)) ||
+                    (!accordionGroupOption && accGp.selectedInConfig)) {
                     accordionGroup = accGp;
                 }
-                var g = $('#layerPickerAccordion').listAccordion('addSection', '<a>'+accGp.label+'</a>');
-				for (var i = 0, j = accGp.sublists.length; i < j; i++) {
-					var sublist = accGp.sublists[i];
-					var s = $('#layerPickerAccordion').listAccordion('addSublist', g, sublist.label);
-					for (var k = 0, l = sublist.layers.length; k < l; k++) {
-						var layer = sublist.layers[k];
+                var g = $layerPickerAccordion.listAccordion('addSection', '<a>'+accGp.label+'</a>');
+                for (var i = 0, j = accGp.sublists.length; i < j; i++) {
+                    var sublist = accGp.sublists[i],
+                        s = $layerPickerAccordion.listAccordion('addSublist', g, sublist.label);
+                    for (var k = 0, l = sublist.layers.length; k < l; k++) {
+                        var layer = sublist.layers[k];
                         // remove any previously defined listeners for this layer, in case this isn't the first
                         // time we've been here
                         layer.removeAllListeners("activate");
@@ -212,78 +217,58 @@
                         });
                         layer.addListener("transparency", function () {
                             app.updateShareMapUrl();
-                        });                       
-                        // add the layer to the accordion group
-                        $('#layerPickerAccordion').listAccordion('addSublistItem', s,
-                                                                 [createLayerToggleCheckbox(layer),
-                                                                  $('<label for="chk'+layer.lid+'">'+layer.name+'</label>'),
-                                                                  createLayerPropertiesIcon(layer)]);
+                        });
+                        
+                        labelElem = document.createElement("label");
+                        textElem = document.createTextNode(layer.name);
+                        labelElem.setAttribute("for", "chk" + layer.lid);
+                        labelElem.appendChild(textElem);
+
+                        
+                        
+                        //jdm 5/28/13: if there is a mask for this layer then we will provide a status 
+                        //as to when that mask is active
+                        var $testForMask = layer.mask;
+                        if ($testForMask){                        
+                            maskLabelElem = document.createElement("label");
+                            maskTextElem = document.createTextNode(""); //empty until active, if active then put (m)
+                            maskLabelElem.setAttribute("id", "mask-status" + layer.lid);
+                            maskLabelElem.appendChild(maskTextElem);                        
+                            // add the layer to the accordion group
+                            $layerPickerAccordion.listAccordion('addSublistItem', s,
+                                                                [createLayerToggleCheckbox(layer),
+                                                                 labelElem,
+                                                                 createLayerPropertiesIcon(layer),
+                                                                 maskLabelElem]);
+                        }
+                        else { //no mask for this layer
+                            // add the layer to the accordion group
+                            $layerPickerAccordion.listAccordion('addSublistItem', s,
+                                                                [createLayerToggleCheckbox(layer),
+                                                                 labelElem,
+                                                                 createLayerPropertiesIcon(layer)]);                        
+                        }
+                        
+                        
                         // Decide whether to activate the layer.  If we received a layer list in the
                         // options arg, active the layer only if it appears in that list.  If we
                         // received no layer list in the options arg, activate the layer if the layer's
                         // "selected" attribute was true in the config file.
-                        if (((options.layers !== undefined) && (arrayContainsElement(options.layers, layer)))
-                            ||
+                        if (((options.layers !== undefined) && (arrayContainsElement(options.layers, layer))) ||
                             ((options.layers === undefined) && layer.selectedInConfig)) {
                             layer.activate();
-                        }						
-					}
-				}
+                        }
+                    }
+                }
             }
-		  
-		  //jdm: orginal jquery loop	
-          // $.each(theme.accordionGroups, function (i, accGp) {
-                // // Decide whether to open this accordion group.  If we received an
-                // // `accordionGroup` setting in the options are, activate this accordion
-                // // group only if it equals that setting.  If we did not receive an
-                // // `accordionGroup` setting in the options are, activate this accordion
-                // // group if its "selected" attribute was true in the config file.
-                // if ((options.accordionGroup && (accGp === options.accordionGroup))
-                    // ||
-                    // (!options.accordionGroup && accGp.selectedInConfig)) {
-                    // accordionGroup = accGp;
-                // }
-                // var g = $('#layerPickerAccordion').listAccordion('addSection', '<a>'+accGp.label+'</a>');
-                // $.each(accGp.sublists, function (j, sublist) {
-                    // var s = $('#layerPickerAccordion').listAccordion('addSublist', g, sublist.label);
-                    // $.each(sublist.layers, function (k, layer) {
-                        // // remove any previously defined listeners for this layer, in case this isn't the first
-                        // // time we've been here
-                        // layer.removeAllListeners("activate");
-                        // layer.removeAllListeners("deactivate");
-                        // layer.removeAllListeners("transparency");
 
-                        // // listen for changes to this layer, and update share url accordingly
-                        // layer.addListener("activate", function () {
-                            // app.updateShareMapUrl();
-                        // });
-                        // layer.addListener("deactivate", function () {
-                            // app.updateShareMapUrl();
-                        // });
-                        // layer.addListener("transparency", function () {
-                            // app.updateShareMapUrl();
-                        // });
+            $layerPickerAccordion.accordion("refresh");
 
-                        // // add the layer to the accordion group
-                        // $('#layerPickerAccordion').listAccordion('addSublistItem', s,
-                                                                 // [createLayerToggleCheckbox(layer),
-                                                                  // $('<label for="chk'+layer.lid+'">'+layer.name+'</label>'),
-                                                                  // createLayerPropertiesIcon(layer)]);
-                        // // Decide whether to activate the layer.  If we received a layer list in the
-                        // // options arg, active the layer only if it appears in that list.  If we
-                        // // received no layer list in the options arg, activate the layer if the layer's
-                        // // "selected" attribute was true in the config file.
-                        // if (((options.layers !== undefined) && (arrayContainsElement(options.layers, layer)))
-                            // ||
-                            // ((options.layers === undefined) && layer.selectedInConfig)) {
-                            // layer.activate();
-                        // }
-                    // });
-                // });
-            // });			
-			
-			
-			//console.log("setTheme4: "+Date());
+            // if page doesn't have layerPickerAccordion, insert it
+            if (flag === true) {
+                $("#layerPickerDialog").append($layerPickerAccordion);
+            }
+
             if (!accordionGroup) {
                 // if we get to this point and don't have an accordion group to open,
                 // default to the first one
@@ -294,7 +279,6 @@
             $('#layerPickerDialog').scrollTop(0);
             $('#mapToolsDialog').scrollTop(0);
             app.emit("themechange");
-			//console.log("setTheme5: "+Date());
         };
 
         this.shareUrl = function() {
@@ -336,7 +320,7 @@
                 extent            : extent
             })).urlArgs();
         };
-        this.updateShareMapUrl = function() {
+        this.updateShareMapUrl = function () {
             if (this.currentTheme) {
                 var url = this.shareUrl();
                 if (url) {
@@ -345,7 +329,7 @@
             }
         };
 
-        this.launch = function(configFile, shareUrlInfo) {
+        this.launch = function (configFile, shareUrlInfo) {
             var app = this;
 
             $.ajax({
@@ -362,52 +346,66 @@
             //
             // layerPicker button:
             //
-            $("#btnTglLyrPick").click(function() {
-                if ($( "#layerPickerDialog" ).dialog('isOpen')) {
-                    $( "#layerPickerDialog" ).dialog('close');
-                    $('#tglLyrPickPic').css({'background-color':'black'});                      
-                    $('#tglLyrPickPic').css({'opacity':'.4'});
-                    activeBtn = $("#btnTglLyrPick");                        
+            $("#btnTglLyrPick").click(function () {
+                var $layerPickerDialog = $("#layerPickerDialog");
+                if ($layerPickerDialog.dialog('isOpen')) {
+                    $layerPickerDialog.dialog('close');
+                    $('#tglLyrPickPic').css({
+                        'background-color' : 'black',
+                        'opacity'          : '.4'
+                    });
+                    activeBtn = $(this);
                 } else {
-                    $( "#layerPickerDialog" ).dialog('open');
-                    $('#'+activeBtn[0].children[0].id).css({'background-color':'transparent'});                     
-                    $('#'+activeBtn[0].children[0].id).css({'opacity':'1'});
-                    activeBtn = [];                 
+                    $layerPickerDialog.dialog('open');
+                    $('#'+activeBtn[0].children[0].id).css({
+                        'background-color' : 'transparent',
+                        'opacity'          : '1'
+                    });
+                    activeBtn = [];
                 }
             }).hover(
-                function(){
-                    if (activeBtn[0]!=this) {
-                        $('#tglLyrPickPic').css({'background-color':'black'});                      
-                        $('#tglLyrPickPic').css({'opacity':'.4'});
+                function () {
+                    var $tglLyrPickPic = $('#tglLyrPickPic');
+                    if (activeBtn[0] != this) {
+                        $tglLyrPickPic.css({
+                            'background-color' : 'black',
+                            'opacity'          : '.4'
+                        });
                     }
                     else {
-                        $('#tglLyrPickPic').css({'background-color':'black'});                      
-                        $('#tglLyrPickPic').css({'opacity':'.75'});
-                    }               
-                    $("#btnTglLyrPick").attr('title', 'Toggle Map Layers');
+                        $tglLyrPickPic.css({
+                            'background-color' : 'black',
+                            'opacity'          : '.75'
+                        });
+                    }
+                    $(this).attr('title', 'Toggle Map Layers');
                 },
-                function(){
-                    if (activeBtn[0]!=this) {
-                        $('#tglLyrPickPic').css({'background-color':'transparent'});                        
-                        $('#tglLyrPickPic').css({'opacity':'1'});
+                function () {
+                    var $tglLyrPickPic = $('#tglLyrPickPic');
+                    if (activeBtn[0] != this) {
+                        $tglLyrPickPic.css({
+                            'background-color' : 'transparent',
+                            'opacity'          : '1'
+                        });
                     }
                     else {
-                        $('#tglLyrPickPic').css({'background-color':'black'});                      
-                        $('#tglLyrPickPic').css({'opacity':'.4'});                      
+                        $tglLyrPickPic.css({
+                            'background-color' : 'black',
+                            'opacity'          : '.4'
+                        });
                     }
                 }
-
-            );  
+            );
 
             //
             // turn layerPickerDialog div into a jQuery UI dialog:
             //
-            $("#layerPickerDialog").dialog({ zIndex:10050, 
-                                             position:"left",
-                                             autoOpen: true,
-                                             hide:"fade"
+            $("#layerPickerDialog").dialog({ zIndex   : 10050,
+                                             position : { my : "left top", at: "left top+100"},
+                                             autoOpen : true,
+                                             hide     : "fade"
                                            });
-            app.addListener("accordiongroupchange", function() {
+            app.addListener("accordiongroupchange", function () {
                 if (app.currentTheme) {
                     $('#layerPickerAccordion').accordion('option', 'active', app.currentTheme.getAccordionGroupIndex(app.currentAccordionGroup));
                 }
@@ -416,49 +414,63 @@
             //
             // mapTools button:
             //
-            $("#btnTglMapTools").click(function() {
-                if ($( "#mapToolsDialog" ).dialog('isOpen')) {
-                    $( "#mapToolsDialog" ).dialog('close');
-                    $('#tglLegendPic').css({'background-color':'black'});                       
-                    $('#tglLegendPic').css({'opacity':'.4'});
-                    activeBtn = $("#btnTglMapTools");               
+            $("#btnTglMapTools").click(function () {
+                var $mapToolsDialog = $("#mapToolsDialog");
+                if ($mapToolsDialog.dialog('isOpen')) {
+                    $mapToolsDialog.dialog('close');
+                    $('#tglLegendPic').css({
+                        'background-color' : 'black',
+                        'opacity'          : '.4'
+                    });
+                    activeBtn = $("#btnTglMapTools");
                 } else {
-                    $( "#mapToolsDialog" ).dialog('open');
-                    $('#'+activeBtn[0].children[0].id).css({'background-color':'transparent'});                     
-                    $('#'+activeBtn[0].children[0].id).css({'opacity':'1'});
+                    $mapToolsDialog.dialog('open');
+                    $('#'+activeBtn[0].children[0].id).css({
+                        'background-color' : 'transparent',
+                        'opacity'          : '1'
+                    });
                     activeBtn = [];
                 }
             }).hover(
-                function(){
-                    if (activeBtn[0]!=this) {
-                        $('#tglLegendPic').css({'background-color':'black'});                       
-                        $('#tglLegendPic').css({'opacity':'.4'});
+                function () {
+                    var $tglLegendPic = $('#tglLegendPic');
+                    if (activeBtn[0] != this) {
+                        $tglLegendPic.css({
+                            'background-color' : 'black',
+                            'opacity'          : '.4'
+                        });
+                    } else {
+                        $tglLegendPic.css({
+                            'background-color' : 'black',
+                            'opacity'          : '.75'
+                        });
                     }
-                    else {
-                        $('#tglLegendPic').css({'background-color':'black'});                       
-                        $('#tglLegendPic').css({'opacity':'.75'});
-                    }               
-                    $("#btnTglMapTools").attr('title', 'Toggle Map Tools');
+                    $(this).attr('title', 'Toggle Map Tools');
                 },
-                function(){
-                    if (activeBtn[0]!=this) {
-                        $('#tglLegendPic').css({'background-color':'transparent'});                     
-                        $('#tglLegendPic').css({'opacity':'1'});
+                function () {
+                    var $tglLegendPic = $('#tglLegendPic');
+                    if (activeBtn[0] != this) {
+                        $tglLegendPic.css({
+                            'background-color' : 'transparent',
+                            'opacity'          : '1'
+                        });
                     }
                     else {
-                        $('#tglLegendPic').css({'background-color':'black'});                       
-                        $('#tglLegendPic').css({'opacity':'.4'});                       
+                        $tglLegendPic.css({
+                            'background-color' : 'black',
+                            'opacity'          : '.4'
+                        });
                     }
                 }
-            );      
+            );
 
             //
             // turn mapToolsDialog div into a jQuery UI dialog:
             //
-            $("#mapToolsDialog").dialog({ zIndex:10050, 
-                                          position:"right",
-                                          autoOpen: true,
-                                          hide:"fade"
+            $("#mapToolsDialog").dialog({ zIndex   : 10050,
+                                          position : { my : "right top", at: "right top+100"},
+                                          autoOpen : true,
+                                          hide     : "fade"
                                         });
             app.addListener("themechange", function () {
                 app.updateShareMapUrl();
@@ -479,319 +491,336 @@
             // mapTools accordion
             //
 
+            var $mapToolsAccordion = $("#mapToolsAccordion"),
+                accordionGroupIndexToOpen = 0;
+
             //    initialize
-            $("#mapToolsAccordion").accordion({ 
+            $mapToolsAccordion.accordion({
                 heightStyle: 'content'
             });
 
             //    find the 'legend' layer in the mapTools accordion, and make sure it is initially turned on
-            var accordionGroupIndexToOpen = 0;
-            $('#mapToolsAccordion').find('div').each(function(i) {
+            $mapToolsAccordion.find('div').each(function (i) {
                 if (this.id === "legend") {
                     accordionGroupIndexToOpen = i;
                     return false;
                 }
                 return true;
             });
-            $('#mapToolsAccordion').accordion('option', 'active', accordionGroupIndexToOpen);
+            $mapToolsAccordion.accordion('option', 'active', accordionGroupIndexToOpen);
 
             //
             // base layer combo change handler
             //
-            $('#baseCombo').change(function() {
-                var i = parseInt($("#baseCombo").val(), 10);
+            $('#baseCombo').change(function () {
+                var i = parseInt($(this).val(), 10);
                 app.setBaseLayer(app.baseLayers[i]);
             });
-            app.addListener("baselayerchange", function() {
+            app.addListener("baselayerchange", function () {
                 $('#baseCombo').val(app.currentBaseLayer.index);
             });
 
             //
             // theme layer combo change handler
             //
-            $('#themeCombo').change(function() {
-                var i = parseInt($("#themeCombo").val(), 10);
+            $('#themeCombo').change(function () {
+                var i = parseInt($(this).val(), 10);
                 app.setTheme(app.themes[i]);
             });
-            app.addListener("themechange", function() {
+            app.addListener("themechange", function () {
                 $('#themeCombo').val(app.currentTheme.index);
             });
 
 
-            // 
+            //
             // pan button
-            // 
-            $("#btnPan").click(function() {
+            //
+            $("#btnPan").click(function () {
                 deactivateActiveOpenLayersControls();
                 app.dragPanTool.activate();
             }).hover(
-                function(){
-                    $('#panPic').attr('src',   'icons/pan_over.png');
-                    $("#btnPan").attr('title', 'Pan');
+                function () {
+                    $('#panPic').attr('src', 'icons/pan_over.png');
+                    $(this).attr('title', 'Pan');
                 },
-                function(){
-                    $('#panPic').attr('src',   'icons/pan.png');
+                function () {
+                    $('#panPic').attr('src', 'icons/pan.png');
                 }
-            ); 
+            );
 
-            // 
+            //
             // zoom in button
-            // 
-            $("#btnZoomIn").click(function() {
+            //
+            $("#btnZoomIn").click(function () {
                 deactivateActiveOpenLayersControls();
                 app.zoomInTool.activate();
-                $('#zoomInPic').css({'background-color':'black'});                      
-                $('#zoomInPic').css({'opacity':'.4'});
-                activeBtn = $("#btnZoomIn");                
+                $('#zoomInPic').css({
+                    'background-color' : 'black',
+                    'opacity'          : '.4'
+                });
+                activeBtn = $(this);
             }).hover(
-                function(){
-                    if (activeBtn[0]!=this) {
-                        $('#zoomInPic').css({'background-color':'black'});                      
-                        $('#zoomInPic').css({'opacity':'.4'});
+                function () {
+                    var $zoomInPic = $('#zoomInPic');
+                    if (activeBtn[0] != this) {
+                        $zoomInPic.css({
+                            'background-color' : 'black',
+                            'opacity'          : '.4'
+                        });
+                    } else {
+                        $zoomInPic.css({
+                            'background-color' : 'black',
+                            'opacity'          : '.75'
+                        });
                     }
-                    else {
-                        $('#zoomInPic').css({'background-color':'black'});                      
-                        $('#zoomInPic').css({'opacity':'.75'});
-                    }               
-                    $("#btnZoomIn").attr('title', 'Zoom In');
+                    $(this).attr('title', 'Zoom In');
                 },
-                function(){
-                    if (activeBtn[0]!=this) {
-                        $('#zoomInPic').css({'background-color':'transparent'});                        
-                        $('#zoomInPic').css({'opacity':'1'});
+                function () {
+                    var $zoomInPic = $('#zoomInPic');
+                    if (activeBtn[0] != this) {
+                        $zoomInPic.css({
+                            'background-color' : 'transparent',
+                            'opacity'          : '1'
+                        });
                     }
                     else {
-                        $('#zoomInPic').css({'background-color':'black'});                      
-                        $('#zoomInPic').css({'opacity':'.4'});                      
+                        $zoomInPic.css({
+                            'background-color' : 'black',
+                            'opacity'          : '.4'
+                        });
                     }
                 }
             );
 
-            // 
+            //
             // zoom out button
-            // 
-            $("#btnZoomOut").click(function() {
+            //
+            $("#btnZoomOut").click(function () {
                 deactivateActiveOpenLayersControls();
                 app.zoomOutTool.activate();
-                $('#zoomOutPic').css({'background-color':'black'});                     
-                $('#zoomOutPic').css({'opacity':'.4'});
-                activeBtn = $("#btnZoomOut");               
+                $('#zoomOutPic').css({
+                    'background-color' : 'black',
+                    'opacity'          : '.4'
+                });
+                activeBtn = $(this);
             }).hover(
-                function(){
-                    if (activeBtn[0]!=this) {
-                        $('#zoomOutPic').css({'background-color':'black'});                     
-                        $('#zoomOutPic').css({'opacity':'.4'});
+                function () {
+                    var $zoomOutPic = $('#zoomOutPic');
+                    if (activeBtn[0] != this) {
+                        $zoomOutPic.css({
+                            'background-color' : 'black',
+                            'opacity'          : '.4'
+                        });
+                    } else {
+                        $zoomOutPic.css({
+                            'background-color' : 'black',
+                            'opacity'          : '.75'
+                        });
                     }
-                    else {
-                        $('#zoomOutPic').css({'background-color':'black'});                     
-                        $('#zoomOutPic').css({'opacity':'.75'});
-                    }               
-                    $("#btnZoomOut").attr('title', 'Zoom Out');
+                    $(this).attr('title', 'Zoom Out');
                 },
-                function(){
-                    if (activeBtn[0]!=this) {
-                        $('#zoomOutPic').css({'background-color':'transparent'});                       
-                        $('#zoomOutPic').css({'opacity':'1'});
-                    }
-                    else {
-                        $('#zoomOutPic').css({'background-color':'black'});                     
-                        $('#zoomOutPic').css({'opacity':'.4'});                     
+                function () {
+                    var $zoomOutPic = $('#zoomOutPic');
+                    if (activeBtn[0] != this) {
+                        $zoomOutPic.css({
+                            'background-color' : 'transparent',
+                            'opacity'          : '1'
+                        });
+                    } else {
+                        $zoomOutPic.css({
+                            'background-color' : 'black',
+                            'opacity'          : '.4'
+                        });
                     }
                 }
-            ); 
+            );
 
-            // 
+            //
             // zoom to full extent button
-            // 
-            $("#btnZoomExtent").click(function() {
+            //
+            $("#btnZoomExtent").click(function () {
                 app.zoomToExtent(app.maxExtent);
-            });
-            $('#btnZoomExtent').hover(
-                function(){
-                    $("#zoomExtentPic").attr('src',  'icons/zoom-extent_over.png');
-                    $("#btnZoomExtent").attr('title', 'Full Extent');
+            }).hover(
+                function () {
+                    $("#zoomExtentPic").attr('src', 'icons/zoom-extent_over.png');
+                    $(this).attr('title', 'Full Extent');
                 },
-                function(){
-                    $("#zoomExtentPic").attr('src',  'icons/zoom-extent.png');
+                function () {
+                    $("#zoomExtentPic").attr('src', 'icons/zoom-extent.png');
                 }
-            ); 
-            
-            // 
+            );
+
+            //
             // identify button
-            // 
-            
-            $("#btnID").click(function() {
+            //
+            $("#btnID").click(function () {
                 activateIdentifyTool();
-                $('#idPic').css({'background-color':'black'});                      
-                $('#idPic').css({'opacity':'.4'});
-                activeBtn = $("#btnID");                
-            });
-            
-            $('#btnID').hover(
-                function(){
-                    if (activeBtn[0]!=this) {
-                        $('#idPic').css({'background-color':'black'});                      
-                        $('#idPic').css({'opacity':'.4'});
+                $('#idPic').css({
+                    'background-color' : 'black',
+                    'opacity'          : '.4'
+                });
+                activeBtn = $(this);
+            }).hover(
+                function () {
+                    var $idPic = $('#idPic');
+                    if (activeBtn[0] != this) {
+                        $idPic.css({
+                            'background-color' : 'black',
+                            'opacity'          : '.4'
+                        });
+                    } else {
+                        $idPic.css({
+                            'background-color' : 'black',
+                            'opacity'          : '.75'
+                        });
                     }
-                    else {
-                        $('#idPic').css({'background-color':'black'});                      
-                        $('#idPic').css({'opacity':'.75'});
-                    }               
-                    $("#btnID").attr('title', 'Identify');
+                    $(this).attr('title', 'Identify');
                 },
-                function(){
-                    if (activeBtn[0]!=this) {
-                        $('#idPic').css({'background-color':'transparent'});                        
-                        $('#idPic').css({'opacity':'1'});
-                    }
-                    else {
-                        $('#idPic').css({'background-color':'black'});                      
-                        $('#idPic').css({'opacity':'.4'});                      
+                function () {
+                    var $idPic = $('#idPic');
+                    if (activeBtn[0] != this) {
+                        $idPic.css({
+                            'background-color' : 'transparent',
+                            'opacity'          : '1'
+                        });
+                    } else {
+                        $idPic.css({
+                            'background-color' : 'black',
+                            'opacity'          : '.4'
+                        });
                     }
                 }
-            ); 
-            
-            // 
+            );
+
+            //
             // about button
-            // 
-            $("#btnAbout").click(function() {
+            //
+            $("#btnAbout").click(function () {
                 deactivateActiveOpenLayersControls();
                 showSplashScreen();
-                $('#aboutPic').css({'background-color':'black'});                       
-                $('#aboutPic').css({'opacity':'.4'});               
-                activeBtn = $("#btnAbout");
-            });
-            $('#btnAbout').hover(
-                function(){
-                    if (activeBtn[0]!=this) {
-                        $('#aboutPic').css({'background-color':'black'});                       
-                        $('#aboutPic').css({'opacity':'.4'});
+                $('#aboutPic').css({
+                    'background-color' : 'black',
+                    'opacity'          : '.4'
+                });
+                activeBtn = $(this);
+            }).hover(
+                function () {
+                    var $aboutPic = $('#aboutPic');
+                    if (activeBtn[0] != this) {
+                        $('#aboutPic').css({
+                            'background-color' : 'black',
+                            'opacity'          : '.4'
+                        });
+                    } else {
+                        $aboutPic.css({
+                            'background-color' : 'black',
+                            'opacity'          : '.75'
+                        });
                     }
-                    else {
-                        $('#aboutPic').css({'background-color':'black'});                       
-                        $('#aboutPic').css({'opacity':'.75'});
-                    }
-                    $("#btnAbout").attr('title', 'About');
+                    $(this).attr('title', 'About');
                 },
-                function(){
-                    if (activeBtn[0]!=this) {
-                        $('#aboutPic').css({'background-color':'transparent'});                     
-                        $('#aboutPic').css({'opacity':'1'});
-                    }
-                    else {
-                        $('#aboutPic').css({'background-color':'black'});                       
-                        $('#aboutPic').css({'opacity':'.4'});                       
+                function () {
+                    var $aboutPic = $('#aboutPic');
+                    if (activeBtn[0] != this) {
+                        $aboutPic.css({
+                            'background-color' : 'transparent',
+                            'opacity'          : '1'
+                        });
+                    } else {
+                        $('#aboutPic').css({
+                            'background-color' : 'black',
+                            'opacity'          : '.4'
+                        });
                     }
                 }
-            ); 
+            );
 
-            // 
+            //
             // previous extent button
-            // 
-            $("#btnPrev").click(function() {
+            //
+            $("#btnPrev").click(function () {
                 app.zoomToPreviousExtent();
-            });
-            $('#btnPrev').hover(
-                function(){
-                    $('#prevPic').css({'background-color':'black'});                        
-                    $('#prevPic').css({'opacity':'.4'});
+            }).hover(
+                function () {
+                    $('#prevPic').css({
+                        'background-color' : 'black',
+                        'opacity'          : '.4'
+                    });
                 },
-                function(){
-                    $('#prevPic').css({'background-color':'transparent'});                      
-                    $('#prevPic').css({'opacity':'1'});
+                function () {
+                    $('#prevPic').css({
+                        'background-color' : 'transparent',
+                        'opacity'          : '1'
+                    });
                 }
-            ); 
+            );
 
-            
-
-            // 
+            //
             // next extent button
-            // 
-            $("#btnNext").click(function() {
+            //
+            $("#btnNext").click(function () {
                 app.zoomToNextExtent();
-            });
-            $('#btnNext').hover(
-                function(){
-                    $('#nextPic').css({'background-color':'black'});                        
-                    $('#nextPic').css({'opacity':'.4'});
+            }).hover(
+                function () {
+                    $('#nextPic').css({
+                        'background-color' : 'black',
+                        'opacity'          : '.4'
+                    });
                 },
-                function(){
-                    $('#nextPic').css({'background-color':'transparent'});                      
-                    $('#nextPic').css({'opacity':'1'});
+                function () {
+                    $('#nextPic').css({
+                        'background-color' : 'transparent',
+                        'opacity'          : '1'
+                    });
                 }
-            );             
+            );
 
 
-            // 
-            // identify button
-            // 
-            
-            $("#btnMultiGraph").click(function() {
+            //
+            // multigraph button
+            //
+            $("#btnMultiGraph").click(function () {
                 activateMultigraphTool();
             }).hover(
-                function(){
-                    $("#multiGraphPic").attr('src',  'icons/multigraph_over.png');
-                    $("#btnMultiGraph").attr('title', 'Graph NDVI');
+                function () {
+                    $("#multiGraphPic").attr('src', 'icons/multigraph_over.png');
+                    $(this).attr('title', 'Graph NDVI');
                 },
-                function(){
-                    $("#multiGraphPic").attr('src',  'icons/multigraph.png');
+                function () {
+                    $("#multiGraphPic").attr('src', 'icons/multigraph.png');
                 }
-            ); 
-            
-            //Find Area 
-            $('#findArea').findArea();
-            areasList = $('#findArea').findArea('getAreasList');
-            $("#findArea").autocomplete({
+            );
+
+            //Find Area
+            var $findArea = $('#findArea');
+            $findArea.findArea();
+            areasList = $findArea.findArea('getAreasList');
+            $findArea.autocomplete({
                 source: areasList
-            });  
-            $("#findArea").keypress(function(e) {
-                if(e.which == 13) {
-                    var areaExtent = $('#findArea').findArea('getAreaExtent',$("#findArea").val(),areasList);
+            });
+            $findArea.keypress(function (e) {
+                if (e.which == 13) {
+                    var areaExtent = $findArea.findArea('getAreaExtent', $findArea.val(), areasList);
                     app.zoomToExtent(areaExtent);
                 }
-            });            
-            
-            
-
-            /*        
-             // 
-             // multigraph button
-             // 
-             $("#btnMultiGraph").click(function() {
-             //http://openlayers.org/dev/examples/click.html
-             //http://dev.openlayers.org/releases/OpenLayers-2.12/doc/apidocs/files/OpenLayers/Handler/Click-js.html
-             //http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,-11915561.548108513,4714792.352997124
-             deactivateActiveOpenLayersControls();
-             map.addControl(clickTool);
-             clickTool.activate();        
-             });
-             $('#btnMultiGraph').hover(
-             function(){
-             document.getElementById("multiGraphPic").src = 'icons/multigraph_over.png';
-             $("#btnMultiGraph").attr('title', 'MultiGraph tool');
-             },
-             function(){
-             document.getElementById("multiGraphPic").src = 'icons/multigraph.png';
-             }
-             ); 
-
-             */
+            });
         };
 
-        this.parseConfig = function(configXML, shareUrlInfo) {
-            //console.log("start parseConfig: "+Date());
-			var app = this;
-            var $configXML = $(configXML),
+        this.parseConfig = function (configXML, shareUrlInfo) {
+            var app = this,
+                $configXML = $(configXML),
                 initialBaseLayer,
                 initialTheme,
                 shareUrlLayerAlpha,
-                themeOptions = {};
+                themeOptions = {},
+                i, j, k,
+                l, ll, lll;
 
             if (shareUrlInfo !== undefined) {
                 shareUrlLayerAlpha = {};
-                $.each(shareUrlInfo.layerLids, function(i) {
+                for (i = 0, l = shareUrlInfo.layerLids.length; i < l; i++) {
                     shareUrlLayerAlpha[shareUrlInfo.layerLids[i]] = shareUrlInfo.layerAlphas[i];
-                });
+                }
             }
 
             // parse and store max map extent from config file
@@ -806,63 +835,81 @@
             }
 
             // parse base layers and populate combo box
-            $configXML.find("images image").each(function(i) {
-                var $image    = $(this),
-                    selected  = $image.attr('selected'),
-                    baseLayer = new BaseLayer({
-                        name     : $image.attr('name'),
-                        label    : $image.attr('label'),
-                        url      : $image.attr('url'),
-                        index    : i
-                    });
+            var $baseCombo = $("#baseCombo"),
+                $images = $configXML.find("images image"),
+                $image,
+                selected,
+                baseLayer;
+
+            for (i = 0, l = $images.length; i < l; i++) {
+                $image = $($images[i]);
+                selected  = $image.attr('selected');
+                baseLayer = new BaseLayer({
+                    name     : $image.attr('name'),
+                    label    : $image.attr('label'),
+                    url      : $image.attr('url'),
+                    index    : i
+                });
                 app.baseLayers.push(baseLayer);
-                $('#baseCombo').append($('<option value="'+i+'">'+baseLayer.label+'</option>'));
-                if ((  shareUrlInfo  &&   (shareUrlInfo.baseLayerName===baseLayer.name))
-                    ||
-                    ( !shareUrlInfo  &&   ($image.attr('selected')                    ))) {
+                $baseCombo.append($(document.createElement("option")).attr("value", i).text(baseLayer.label));
+                if ((  shareUrlInfo  &&   (shareUrlInfo.baseLayerName === baseLayer.name)) ||
+                    ( !shareUrlInfo  &&   selected                                    )) {
                     initialBaseLayer = baseLayer;
                 }
-            });
+            }
+
             if (initialBaseLayer === undefined) {
                 initialBaseLayer = app.baseLayers[0];
             }
 
             // parse layer groups and layers
-            var accordionGroupsByName = {}, index=0;
-            $configXML.find("wmsGroup").each(function(i) {
-                var $wmsGroup      = $(this), // each <wmsGroup> corresponds to a (potential) layerPicker accordion group
-                    accordionGroup = new AccordionGroup({
-                        gid              : $wmsGroup.attr('gid'),
-                        name             : $wmsGroup.attr('name'),
-                        label            : $wmsGroup.attr('label'),
-                        selectedInConfig : ($wmsGroup.attr('selected') === "true")
-                    });
+            var $wmsGroups = $configXML.find("wmsGroup"),
+                $wmsGroup,
+                $wmsSubgroups,
+                $wmsSubgroup,
+                $wmsLayers,
+                $wmsLayer,
+                accordionGroupsByName = {},
+                accordionGroup,
+                sublist,
+                layer,
+                index = 0;
+            for (i = 0, l = $wmsGroups.length; i < l; i++) {
+                $wmsGroup = $($wmsGroups[i]); // each <wmsGroup> corresponds to a (potential) layerPicker accordion group
+                accordionGroup = new AccordionGroup({
+                    gid              : $wmsGroup.attr('gid'),
+                    name             : $wmsGroup.attr('name'),
+                    label            : $wmsGroup.attr('label'),
+                    selectedInConfig : ($wmsGroup.attr('selected') === "true")
+                });
                 app.accordionGroups.push(accordionGroup);
                 accordionGroupsByName[accordionGroup.name] = accordionGroup;
                 if (shareUrlInfo && (shareUrlInfo.accordionGroupGid === accordionGroup.gid)) {
                     themeOptions.accordionGroup = accordionGroup;
                 }
-                $wmsGroup.find("wmsSubgroup").each(function() {
-                    var $wmsSubgroup = $(this), // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
-                        sublist      = new AccordionGroupSublist({
-                            label : $wmsSubgroup.attr('label')
-                        });
+                $wmsSubgroups = $wmsGroup.find("wmsSubgroup");
+                for (j = 0, ll = $wmsSubgroups.length; j < ll; j++) {
+                    $wmsSubgroup = $($wmsSubgroups[j]); // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
+                    sublist      = new AccordionGroupSublist({
+                        label : $wmsSubgroup.attr('label')
+                    });
                     accordionGroup.sublists.push(sublist);
-                    $wmsSubgroup.find("wmsLayer").each(function() {
-                        var $wmsLayer = $(this),
-                            layer = new Layer({
-                                lid              : $wmsLayer.attr('lid'),
-                                visible          : $wmsLayer.attr('visible'),
-                                url              : $wmsLayer.attr('url'),
-                                srs              : $wmsLayer.attr('srs'),
-                                layers           : $wmsLayer.attr('layers'),
-                                styles           : $wmsLayer.attr('styles'),
-                                identify         : $wmsLayer.attr('identify'),
-                                name             : $wmsLayer.attr('name'),
-                                legend           : $wmsLayer.attr('legend'),
-                                mask             : $wmsLayer.attr('mask'),
-                                selectedInConfig : ($wmsLayer.attr('selected') === "true")
-                            });
+                    $wmsLayers = $wmsSubgroup.find("wmsLayer");
+                    for (k = 0, lll = $wmsLayers.length; k < lll; k++) {
+                        $wmsLayer = $($wmsLayers[k]);
+                        layer = new Layer({
+                            lid              : $wmsLayer.attr('lid'),
+                            visible          : $wmsLayer.attr('visible'),
+                            url              : $wmsLayer.attr('url'),
+                            srs              : $wmsLayer.attr('srs'),
+                            layers           : $wmsLayer.attr('layers'),
+                            styles           : $wmsLayer.attr('styles'),
+                            identify         : $wmsLayer.attr('identify'),
+                            name             : $wmsLayer.attr('name'),
+                            legend           : $wmsLayer.attr('legend'),
+                            mask             : $wmsLayer.attr('mask'),
+                            selectedInConfig : ($wmsLayer.attr('selected') === "true")
+                        });
                         layer.index = index;
                         sublist.layers.push(layer);
                         if (shareUrlInfo && (shareUrlLayerAlpha[layer.lid] !== undefined)) {
@@ -872,37 +919,45 @@
                             themeOptions.layers.push(layer);
                             layer.setTransparency(100*(1-shareUrlLayerAlpha[layer.lid]));
                         }
-                        index = index+1;
-                    });
-                });
-            });
+                        index = index + 1;
+                    }
+                }
+            }
 
             // parse themes
-            $configXML.find("mapviews view").each(function(i) {
-                var $view = $(this),
-                    theme = new Theme({
-                        name  : $view.attr('name'),
-                        label : $view.attr('label'),
-                        index : i
-                    });
+            var $themeCombo = $("#themeCombo"),
+                $views      = $configXML.find("mapviews view"),
+                $view,
+            $viewGroups,
+                $viewGroup,
+                theme,
+                name;
+            for (i = 0, l = $views.length; i < l; i++) {
+                $view = $($views[i]);
+                theme = new Theme({
+                    name  : $view.attr('name'),
+                    label : $view.attr('label'),
+                    index : i
+                });
                 app.themes.push(theme);
-                $('#themeCombo').append($('<option value="'+i+'">'+theme.label+'</option>'));
-                $view.find("viewGroup").each(function() {
-                    var $viewGroup     = $(this),
-                        name           = $viewGroup.attr('name'),
-                        accordionGroup = accordionGroupsByName[name];
+                $themeCombo.append($(document.createElement("option")).attr("value", i).text(theme.label));
+                $viewGroups = $view.find("viewGroup");
+                for (j = 0, ll = $viewGroups.length; j < ll; j++) {
+                    $viewGroup     = $($viewGroups[j]);
+                    name           = $viewGroup.attr('name');
+                    accordionGroup = accordionGroupsByName[name];
                     if (accordionGroup) {
                         theme.accordionGroups.push(accordionGroup);
                     } else {
                         displayError("Unknown accordion group name '" + name + "' found in theme '" + theme.name + "'");
                     }
-                });
-                if ((  shareUrlInfo  &&   (shareUrlInfo.themeName===theme.name))
-                    ||
+                }
+                if ((  shareUrlInfo  &&   (shareUrlInfo.themeName === theme.name)) ||
                     ( !shareUrlInfo  &&   ($view.attr('selected')                    ))) {
                     initialTheme = theme;
                 }
-            });
+            }
+
             if (initialTheme === undefined) {
                 initialTheme = app.themes[0];
             }
@@ -918,19 +973,17 @@
             app.identifyTool   = createIdentifyTool();
             app.multigraphTool = createMultigraphTool();
 
-            var initialExtent = undefined;
+            var initialExtent;
 
             if (shareUrlInfo) {
                 initialExtent = shareUrlInfo.extent;
             }
 
-            //Hardcoded service information here for faster loading
-			//Now assuming street maps is always init base layer
-			//comes from: initialBaseLayer.url + '?f=json&pretty=true'
-			var baseLayerInfo = new Object({"currentVersion":10.01,"serviceDescription":"This worldwide street map presents highway-level data for the world. Street-level data includes the United States; much of Canada; Japan; most countries in Europe; Australia and New Zealand; India; parts of South America including Argentina, Brazil, Chile, Colombia, and Venezuela; and parts of southern Africa including Botswana, Lesotho, Namibia, South Africa, and Swaziland.\nThis comprehensive street map includes highways, major roads, minor roads, one-way arrow indicators, railways, water features, administrative boundaries, cities, parks, and landmarks, overlaid on shaded relief imagery for added context. The map also includes building footprints for selected areas in the United States and Europe. Coverage is provided down to ~1:4k with ~1:1k and ~1:2k data available in select urban areas.\nThe street map was developed by Esri using Esri basemap data, DeLorme basemap layers, U.S. Geological Survey (USGS) elevation data, Intact Forest Landscape (IFL) data for the world; NAVTEQ data for Europe, Australia and New Zealand, India, North America, South America (Argentina, Brazil, Chile, Colombia, and Venezuela), and parts of southern Africa (Botswana, Lesotho, Namibia, South Africa, and Swaziland).\n\nFor more information on this map, including our terms of use, visit us \u003ca href=\"http://goto.arcgisonline.com/maps/World_Street_Map \" target=\"_new\"\u003eonline\u003c/a\u003e.","mapName":"Layers","description":"This worldwide street map presents highway-level data for the world. Street-level data includes the United States; much of Canada; Japan; most countries in Europe; Australia and New Zealand; India; parts of South America including Argentina, Brazil, Chile, Colombia, and Venezuela; and parts of southern Africa including Botswana, Lesotho, Namibia, South Africa, and Swaziland.\nThis comprehensive street map includes highways, major roads, minor roads, one-way arrow indicators, railways, water features, administrative boundaries, cities, parks, and landmarks, overlaid on shaded relief imagery for added context. The map also includes building footprints for selected areas in the United States and Europe. Coverage is provided down to ~1:4k with ~1:1k and ~1:2k data available in select urban areas.\nThe street map was developed by Esri using Esri basemap data, DeLorme basemap layers, U.S. Geological Survey (USGS) elevation data, Intact Forest Landscape (IFL) data for the world; NAVTEQ data for Europe, Australia and New Zealand, India, North America, South America (Argentina, Brazil, Chile, Colombia, and Venezuela), and parts of southern Africa (Botswana, Lesotho, Namibia, South Africa, and Swaziland).\n\nFor more information on this map, including the terms of use, visit us online at http://goto.arcgisonline.com/maps/World_Street_Map","copyrightText":"Sources: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012","layers":[{"id":0,"name":"World Street Map","parentLayerId":-1,"defaultVisibility":true,"subLayerIds":null,"minScale":0,"maxScale":0}],"tables":[],"spatialReference":{"wkid":102100},"singleFusedMapCache":true,"tileInfo":{"rows":256,"cols":256,"dpi":96,"format":"JPEG","compressionQuality":90,"origin":{"x":-20037508.342787,"y":20037508.342787},"spatialReference":{"wkid":102100},"lods":[{"level":0,"resolution":156543.033928,"scale":591657527.591555},{"level":1,"resolution":78271.5169639999,"scale":295828763.795777},{"level":2,"resolution":39135.7584820001,"scale":147914381.897889},{"level":3,"resolution":19567.8792409999,"scale":73957190.948944},{"level":4,"resolution":9783.93962049996,"scale":36978595.474472},{"level":5,"resolution":4891.96981024998,"scale":18489297.737236},{"level":6,"resolution":2445.98490512499,"scale":9244648.868618},{"level":7,"resolution":1222.99245256249,"scale":4622324.434309},{"level":8,"resolution":611.49622628138,"scale":2311162.217155},{"level":9,"resolution":305.748113140558,"scale":1155581.108577},{"level":10,"resolution":152.874056570411,"scale":577790.554289},{"level":11,"resolution":76.4370282850732,"scale":288895.277144},{"level":12,"resolution":38.2185141425366,"scale":144447.638572},{"level":13,"resolution":19.1092570712683,"scale":72223.819286},{"level":14,"resolution":9.55462853563415,"scale":36111.909643},{"level":15,"resolution":4.77731426794937,"scale":18055.954822},{"level":16,"resolution":2.38865713397468,"scale":9027.977411},{"level":17,"resolution":1.19432856685505,"scale":4513.988705},{"level":18,"resolution":0.597164283559817,"scale":2256.994353},{"level":19,"resolution":0.298582141647617,"scale":1128.497176}]},"initialExtent":{"xmin":-28872328.0888923,"ymin":-11237732.4896886,"xmax":28872328.0888923,"ymax":11237732.4896886,"spatialReference":{"wkid":102100}},"fullExtent":{"xmin":-20037507.0671618,"ymin":-19971868.8804086,"xmax":20037507.0671618,"ymax":19971868.8804086,"spatialReference":{"wkid":102100}},"units":"esriMeters","supportedImageFormatTypes":"PNG24,PNG,JPG,DIB,TIFF,EMF,PS,PDF,GIF,SVG,SVGZ,AI,BMP","documentInfo":{"Title":"World Street Map","Author":"Esri","Comments":"","Subject":"streets, highways, major roads, railways, water features, administrative boundaries, cities, parks, protected areas, landmarks ","Category":"transportation(Transportation Networks) ","Keywords":"World, Global, Europe, Japan, Hong Kong, North America, United States, Canada, Mexico, Southern Africa, Asia, South America, Australia, New Zealand, India, Argentina, Brazil, Chile, Venezuela, Andorra, Austria, Belgium, Czech Republic, Denmark, France, Germany, Great Britain, Greece, Hungary, Ireland, Italy, Luxembourg, Netherlands, Norway, Poland, Portugal, San Marino, Slovakia, Spain, Sweden, Switzerland, Russia, Thailand, Turkey, 2012","Credits":"Sources: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012"},"capabilities":"Map"});
-			//console.log("end parseConfig: "+Date());
-			app.initOpenLayers(baseLayerInfo, initialBaseLayer, initialTheme, themeOptions, initialExtent);
-	
+            // Hardcoded service information here for faster loading
+            // Now assuming street maps is always init base layer
+            // comes from: initialBaseLayer.url + '?f=json&pretty=true'
+            var baseLayerInfo = {"currentVersion":10.01,"serviceDescription":"This worldwide street map presents highway-level data for the world. Street-level data includes the United States; much of Canada; Japan; most countries in Europe; Australia and New Zealand; India; parts of South America including Argentina, Brazil, Chile, Colombia, and Venezuela; and parts of southern Africa including Botswana, Lesotho, Namibia, South Africa, and Swaziland.\nThis comprehensive street map includes highways, major roads, minor roads, one-way arrow indicators, railways, water features, administrative boundaries, cities, parks, and landmarks, overlaid on shaded relief imagery for added context. The map also includes building footprints for selected areas in the United States and Europe. Coverage is provided down to ~1:4k with ~1:1k and ~1:2k data available in select urban areas.\nThe street map was developed by Esri using Esri basemap data, DeLorme basemap layers, U.S. Geological Survey (USGS) elevation data, Intact Forest Landscape (IFL) data for the world; NAVTEQ data for Europe, Australia and New Zealand, India, North America, South America (Argentina, Brazil, Chile, Colombia, and Venezuela), and parts of southern Africa (Botswana, Lesotho, Namibia, South Africa, and Swaziland).\n\nFor more information on this map, including our terms of use, visit us \u003ca href=\"http://goto.arcgisonline.com/maps/World_Street_Map \" target=\"_new\"\u003eonline\u003c/a\u003e.","mapName":"Layers","description":"This worldwide street map presents highway-level data for the world. Street-level data includes the United States; much of Canada; Japan; most countries in Europe; Australia and New Zealand; India; parts of South America including Argentina, Brazil, Chile, Colombia, and Venezuela; and parts of southern Africa including Botswana, Lesotho, Namibia, South Africa, and Swaziland.\nThis comprehensive street map includes highways, major roads, minor roads, one-way arrow indicators, railways, water features, administrative boundaries, cities, parks, and landmarks, overlaid on shaded relief imagery for added context. The map also includes building footprints for selected areas in the United States and Europe. Coverage is provided down to ~1:4k with ~1:1k and ~1:2k data available in select urban areas.\nThe street map was developed by Esri using Esri basemap data, DeLorme basemap layers, U.S. Geological Survey (USGS) elevation data, Intact Forest Landscape (IFL) data for the world; NAVTEQ data for Europe, Australia and New Zealand, India, North America, South America (Argentina, Brazil, Chile, Colombia, and Venezuela), and parts of southern Africa (Botswana, Lesotho, Namibia, South Africa, and Swaziland).\n\nFor more information on this map, including the terms of use, visit us online at http://goto.arcgisonline.com/maps/World_Street_Map","copyrightText":"Sources: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012","layers":[{"id":0,"name":"World Street Map","parentLayerId":-1,"defaultVisibility":true,"subLayerIds":null,"minScale":0,"maxScale":0}],"tables":[],"spatialReference":{"wkid":102100},"singleFusedMapCache":true,"tileInfo":{"rows":256,"cols":256,"dpi":96,"format":"JPEG","compressionQuality":90,"origin":{"x":-20037508.342787,"y":20037508.342787},"spatialReference":{"wkid":102100},"lods":[{"level":0,"resolution":156543.033928,"scale":591657527.591555},{"level":1,"resolution":78271.5169639999,"scale":295828763.795777},{"level":2,"resolution":39135.7584820001,"scale":147914381.897889},{"level":3,"resolution":19567.8792409999,"scale":73957190.948944},{"level":4,"resolution":9783.93962049996,"scale":36978595.474472},{"level":5,"resolution":4891.96981024998,"scale":18489297.737236},{"level":6,"resolution":2445.98490512499,"scale":9244648.868618},{"level":7,"resolution":1222.99245256249,"scale":4622324.434309},{"level":8,"resolution":611.49622628138,"scale":2311162.217155},{"level":9,"resolution":305.748113140558,"scale":1155581.108577},{"level":10,"resolution":152.874056570411,"scale":577790.554289},{"level":11,"resolution":76.4370282850732,"scale":288895.277144},{"level":12,"resolution":38.2185141425366,"scale":144447.638572},{"level":13,"resolution":19.1092570712683,"scale":72223.819286},{"level":14,"resolution":9.55462853563415,"scale":36111.909643},{"level":15,"resolution":4.77731426794937,"scale":18055.954822},{"level":16,"resolution":2.38865713397468,"scale":9027.977411},{"level":17,"resolution":1.19432856685505,"scale":4513.988705},{"level":18,"resolution":0.597164283559817,"scale":2256.994353},{"level":19,"resolution":0.298582141647617,"scale":1128.497176}]},"initialExtent":{"xmin":-28872328.0888923,"ymin":-11237732.4896886,"xmax":28872328.0888923,"ymax":11237732.4896886,"spatialReference":{"wkid":102100}},"fullExtent":{"xmin":-20037507.0671618,"ymin":-19971868.8804086,"xmax":20037507.0671618,"ymax":19971868.8804086,"spatialReference":{"wkid":102100}},"units":"esriMeters","supportedImageFormatTypes":"PNG24,PNG,JPG,DIB,TIFF,EMF,PS,PDF,GIF,SVG,SVGZ,AI,BMP","documentInfo":{"Title":"World Street Map","Author":"Esri","Comments":"","Subject":"streets, highways, major roads, railways, water features, administrative boundaries, cities, parks, protected areas, landmarks ","Category":"transportation(Transportation Networks) ","Keywords":"World, Global, Europe, Japan, Hong Kong, North America, United States, Canada, Mexico, Southern Africa, Asia, South America, Australia, New Zealand, India, Argentina, Brazil, Chile, Venezuela, Andorra, Austria, Belgium, Czech Republic, Denmark, France, Germany, Great Britain, Greece, Hungary, Ireland, Italy, Luxembourg, Netherlands, Norway, Poland, Portugal, San Marino, Slovakia, Spain, Sweden, Switzerland, Russia, Thailand, Turkey, 2012","Credits":"Sources: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012"},"capabilities":"Map"};
+            app.initOpenLayers(baseLayerInfo, initialBaseLayer, initialTheme, themeOptions, initialExtent);
         };
 
         this.initOpenLayers = function(baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
@@ -938,7 +991,7 @@
 			var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
                 layerInfo: baseLayerInfo
             });
-            
+
             var maxExtentBounds = new OpenLayers.Bounds(app.maxExtent.left, app.maxExtent.bottom,
                                                         app.maxExtent.right, app.maxExtent.top);
             if (initialExtent === undefined) {
@@ -962,14 +1015,14 @@
                     app.identifyTool,
                     app.multigraphTool
                 ],
-                eventListeners: 
+                eventListeners:
                 {
                     "moveend": function() { app.emit("extentchange"); },
                     "zoomend": function() { app.emit("extentchange"); }
-                },               
+                },
                 zoom: 1,
                 projection: new OpenLayers.Projection(fcav.projection)
-            });  
+            });
 
             // set the base layer, but bypass setBaseLayer() here, because that function initiates an ajax request
             // to fetch the layerInfo, which in this case we already have
@@ -989,20 +1042,20 @@
                 OpenLayers.Util.getElement("latLonTracker").innerHTML = "Lat: " + sprintf("%.5f", lonlat.lat) + " Lon: " + sprintf("%.5f", lonlat.lon) + "";
             });
 			app.map.addControl(new OpenLayers.Control.PanZoomBar());
-			//console.log("end initOpenLayers: "+Date());
         };
 
     };
     EventEmitter.declare(fcav.App);
 
-    function BaseLayer(settings) {
+    function BaseLayer (settings) {
         if (!settings) { return; }
         this.name  = settings.name;
         this.label = settings.label;
         this.url   = settings.url;
         this.index = settings.index;
     }
-    function AccordionGroup(settings) {
+
+    function AccordionGroup (settings) {
         this.sublists = [];
         if (!settings) { return; }
         this.gid              = settings.gid;
@@ -1010,12 +1063,14 @@
         this.label            = settings.label;
         this.selectedInConfig = settings.selectedInConfig;
     }
-    function AccordionGroupSublist(settings) {
+
+    function AccordionGroupSublist (settings) {
         this.layers = [];
         if (!settings) { return; }
         this.label  = settings.label;
     }
-    function Layer(settings) {
+
+    function Layer (settings) {
         EventEmitter.call(this);
         if (!settings) { return; }
         this.lid                = settings.lid;
@@ -1032,12 +1087,12 @@
         this.index              = 0;
         this.selectedInConfig   = settings.selectedInConfig;
         this.openLayersLayer    = undefined;
-        this.createOpenLayersLayer = function() {
+        this.createOpenLayersLayer = function () {
             if (this.openLayersLayer !== undefined) {
                 return this.openLayersLayer;
             }
             var options = {
-                isBaseLayer      : false, 
+                isBaseLayer      : false,
                 transitionEffect : 'resize'
             };
 
@@ -1053,9 +1108,9 @@
                 new OpenLayers.Layer.WMS(this.name,
                                          this.url,
                                          {
-                                             projection  : new OpenLayers.Projection("EPSG:900913"), 
-                                             units       : "m", 
-                                             layers      : this.layers, 
+                                             projection  : new OpenLayers.Projection("EPSG:900913"),
+                                             units       : "m",
+                                             layers      : this.layers,
                                              maxExtent   : new OpenLayers.Bounds(app.maxExtent),
                                              transparent : true
                                          },
@@ -1065,41 +1120,56 @@
             this.openLayersLayer.fcavLayer = this;
             return this.openLayersLayer;
         };
-        this.activate = function(suppressCheckboxUpdate) {
-            app.map.addLayer(this.createOpenLayersLayer());
-            this.addToLegend();
-            this.emit("activate");
-            //reorder maps layers based on the current layer index
-            var lyrJustAdded = app.map.layers[app.map.getNumLayers()-1];
-            for (var i = app.map.getNumLayers()-2; i > 0; i--) {
-                var nextLayerDown = app.map.layers[i]; //use app.map.layers[2].fcavLayer.index
-				if (this.index>nextLayerDown.fcavLayer.index){
-                    app.map.setLayerIndex(lyrJustAdded, i);
-                }
-            }
-			app.map.updateSize();
+        this.activate = function (suppressCheckboxUpdate) {
+			if (!this.checkForExistingLayer(this.name))	{
+				app.map.addLayer(this.createOpenLayersLayer());
+				this.addToLegend();
+				this.emit("activate");
+				//reorder maps layers based on the current layer index
+				var lyrJustAdded = app.map.layers[app.map.getNumLayers()-1];
+				for (var i = app.map.getNumLayers()-2; i > 0; i--) {
+					var nextLayerDown = app.map.layers[i]; //use app.map.layers[2].fcavLayer.index
+					if (this.index>nextLayerDown.fcavLayer.index) {
+						app.map.setLayerIndex(lyrJustAdded, i);
+					}
+				}
+				app.map.updateSize();
+			}
         };
-        this.deactivate = function(suppressCheckboxUpdate) {
+        
+		this.checkForExistingLayer = function(layerName) {
+			var isLayerActive = false;
+            for (var i = app.map.getNumLayers()-1; i > 0; i--) {
+                var currLayer = app.map.layers[i]; 
+				if (layerName==currLayer.name){
+                    isMaskActive = true;
+                }
+            }			
+			return isLayerActive;
+		};		
+		
+		this.deactivate = function (suppressCheckboxUpdate) {
             if (this.openLayersLayer) {
                 app.map.removeLayer(this.openLayersLayer);
                 this.removeFromLegend();
             }
             this.emit("deactivate");
         };
-        this.addToLegend = function() {
+        this.addToLegend = function () {
             var that = this;
-            this.$legendItem = $('<div id="lgd'+this.lid+'"><img src="'+this.legend+'"/></div>') .
-                appendTo($('#legend')) .
-                click(function() {
+            this.$legendItem = $(document.createElement("div")).attr("id", "lgd" + this.lid)
+                .append($(document.createElement("img")).attr("src", this.legend))
+                .appendTo($('#legend'))
+                .click(function () {
                     that.deactivate();
                 });
         };
-        this.removeFromLegend = function() {
+        this.removeFromLegend = function () {
             if (this.$legendItem) {
                 this.$legendItem.remove();
             }
         };
-        this.setTransparency = function(transparency) {
+        this.setTransparency = function (transparency) {
             if (this.openLayersLayer) {
                 this.openLayersLayer.setOpacity(1-parseFloat(transparency)/100.0);
             }
@@ -1124,7 +1194,7 @@
                 //now we need to activate the mask
                 //this should be a function on the layer, activateMask(maskName)
                 //reason being that the same legend and identify values should exist
-                //it is really a conceptually also on the same layer object/function
+                //it is really he same layer object/function
                 this.activateMask(maskLayerName);
             }
             else {
@@ -1145,41 +1215,60 @@
             }
         };  
         this.activateMask = function(maskLayerName) {
-            //maskLayerName.replace("/","").substring(0,(maskLayerName.length-1)-this.lid.lengt
-            var maskLayer = new Layer({
-                    visible          : this.visible,
-                    url              : this.url,
-                    srs              : this.srs,
-                    layers           : this.layers+maskLayerName.replace("/","").substring(0,(maskLayerName.length-1)-this.lid.length),
-                    identify         : this.identify,
-                    name             : maskLayerName.replace("/",""),
-                    legend           : this.legend,
-            });
-            maskLayer.activate();
-        };     
-        this.deactivateMask = function(maskLayerName) {
+ 			if (!this.checkForExistingMask(maskLayerName)) {
+				var maskLayer = new Layer({
+						lid          	 : this.layers+maskLayerName.replace("/","").substring(0,(maskLayerName.length)-this.lid.length),
+						visible          : this.visible,
+						url              : this.url,
+						srs              : this.srs,
+						layers           : this.layers+maskLayerName.replace("/","").substring(0,(maskLayerName.length)-this.lid.length),
+						identify         : this.identify,
+						name             : maskLayerName.replace("/",""),
+						legend           : this.legend,
+				});
+				maskLayer.activate();
+                $('#mask-status'+ this.lid).text("(m)"); //"mask-status" + layer.lid);
+			}
+		};     
+        
+		this.checkForExistingMask = function(maskLayerName) {
+			var isMaskActive = false;
+            for (var i = app.map.getNumLayers()-1; i > 0; i--) {
+                var currLayer = app.map.layers[i]; 
+				if (maskLayerName.replace("/","")==currLayer.name){
+                    isMaskActive = true;
+                }
+            }			
+			return isMaskActive;
+		};
+		
+		this.deactivateMask = function(maskLayerName) {
             for (var i = app.map.getNumLayers()-1; i > 0; i--) {
                 var currLayer = app.map.layers[i]; 
 				if (maskLayerName.replace("/","")==currLayer.name){
                     app.map.layers[i].fcavLayer.removeFromLegend();
-                    app.map.removeLayer(app.map.layers[i]);
+					app.map.removeLayer(app.map.layers[i]);
                 }
             }
+            //turn off mask
+            //this needs to be more robust accounting for all mask possible being
+            //off, but for now i am going to leave it like this.
+            $('#mask-status'+ this.lid).text(""); 
         };           
     }
     EventEmitter.declare(Layer);
 
-    function Theme(settings) {
+    function Theme (settings) {
         this.accordionGroups = [];
         if (!settings) { return; }
         this.name  = settings.name;
         this.label = settings.label;
         this.index = settings.index;
-        this.getAccordionGroupIndex = function(accordionGroup) {
+        this.getAccordionGroupIndex = function (accordionGroup) {
             // return the index of a given AccordionGroup in this theme's list,
             // or -1 if it is not in the list
             var i;
-            for (i=0; i<this.accordionGroups.length; ++i) {
+            for (i = 0; i < this.accordionGroups.length; ++i) {
                 if (this.accordionGroups[i] === accordionGroup) {
                     return i;
                 }
@@ -1188,39 +1277,44 @@
         };
     }
 
-    function displayError(message) {
+    function displayError (message) {
         //console.log(message);
     }
 
     fcav.init = function(config,projection,gisServerType) {
         app = new fcav.App();
         var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
-		app.launch(config, shareUrlInfo);
+        app.launch(config, shareUrlInfo);
         fcav.app = app;
-		fcav.projection = projection;
-		fcav.gisServerType = gisServerType;
+        fcav.projection = projection;
+        fcav.gisServerType = gisServerType;
     };
 
     function deactivateActiveOpenLayersControls() {
-        for (var i = 0; i < app.map.controls.length; i++) {
-            if ((app.map.controls[i].active==true)
-                &&
-                ((app.map.controls[i].displayClass=="olControlZoomBox")
-                 ||
-                 (app.map.controls[i].displayClass=="olControlWMSGetFeatureInfo")
-                 ||
-                 (app.map.controls[i].displayClass=="ClickTool"))) {
-                    app.map.controls[i].deactivate();
-                    if (activeBtn.length>0){ //weve already activated a three-state button
-                        $('#'+activeBtn[0].children[0].id).css({'background-color':'transparent'});                     
-                        $('#'+activeBtn[0].children[0].id).css({'opacity':'1'});
-                        activeBtn = [];
-                    }
+        var controls,
+            i;
+        for (i = 0; i < app.map.controls.length; i++) {
+            controls = app.map.controls[i];
+            if ((controls.active === true) &&
+                (
+                 (controls.displayClass === "olControlZoomBox")           ||
+                 (controls.displayClass === "olControlWMSGetFeatureInfo") ||
+                 (controls.displayClass === "ClickTool")
+                )) {
+
+                controls.deactivate();
+                if (activeBtn.length > 0){ //weve already activated a three-state button
+                    $('#'+activeBtn[0].children[0].id).css({
+                        'background-color' : 'transparent',
+                        'opacity'          : '1'
+                    });
+                    activeBtn = [];
+                }
             }
         }
     }
 
-    function ShareUrlInfo(settings) {
+    function ShareUrlInfo (settings) {
         if (settings === undefined) {
             settings = {};
         }
@@ -1240,7 +1334,8 @@
             this.layerAlphas = [];
         }
     }
-    ShareUrlInfo.parseUrl = function(url) {
+
+    ShareUrlInfo.parseUrl = function (url) {
         var info = new ShareUrlInfo(),
             vars = [],
             hash,
@@ -1294,7 +1389,8 @@
         }
         return undefined;
     };
-    ShareUrlInfo.prototype.urlArgs = function() {
+
+    ShareUrlInfo.prototype.urlArgs = function () {
         return Mustache.render(
             (''
              + 'theme={{{theme}}}'
@@ -1312,17 +1408,22 @@
                 basemap : this.baseLayerName,
                 extent  : this.extent
             });
-    };                    
+    };
 
-    function createLayerToggleCheckbox(layer) {
+    function createLayerToggleCheckbox (layer) {
         // create the checkbox
-        var $checkbox = $('<input type="checkbox" id="chk'+layer.lid+'"></input>').click(function() {
+        var checkbox = document.createElement("input"),
+            $checkbox;
+        checkbox.type = "checkbox";
+        checkbox.id = "chk" + layer.lid;
+        checkbox.onclick = function () {
             if ($(this).is(':checked')) {
                 layer.activate(true);
             } else {
                 layer.deactivate(true);
             }
-        });
+        };
+        $checkbox = $(checkbox);
         // listen for activate/deactivate events from the layer, and update the checkbox accordingly
         layer.addListener("activate", function () {
             $checkbox.attr('checked', true);
@@ -1330,20 +1431,27 @@
         layer.addListener("deactivate", function () {
             $checkbox.attr('checked', false);
         });
-        // return the new checkbox jQuery object
-        return $checkbox;
+        // return the new checkbox DOM element
+        return checkbox;
     }
 
-    function createLayerPropertiesIcon(layer) {
-        return $('<img class="layerPropertiesIcon" id="'+layer.lid+'" src="icons/settings.png"/>').click(function() {
+    function createLayerPropertiesIcon (layer) {
+        var img = document.createElement("img");
+        img.id = layer.lid;
+        img.src = "icons/settings.png";
+        img.className = "layerPropertiesIcon";
+        img.onclick = function () {
             createLayerPropertiesDialog(layer);
-        });
+        };
+        return img;
     }
 
-    function showSplashScreen() {
-        var windowWidth = Math.round($(document).width()/2);
-        var windowHeight = Math.round($(document).height()/2);    
-        var $html = $(''
+    function showSplashScreen () {
+        var $splashScreenContainer = $("#splashScreenContainer"),
+            $document    = $(document),
+            windowWidth  = Math.round($document.width()/2),
+            windowHeight = Math.round($document.height()/2),
+            $html = $(''
                       + '<div class="splash-screen-dialog" align="center">'
                       +   '<table>'
                       +     '<tr>'
@@ -1358,28 +1466,30 @@
                       +   '</table>'
                       + '</div>'
                      );
-        $('#splashScreenContainer').dialog({
-            zIndex    : 10051, 
+        $splashScreenContainer.dialog({
+            zIndex    : 10051,
             position  : "center",
             height:windowHeight,
             width:windowWidth,
-            dialogClass: 'splashScreenStyle',            
+            dialogClass: 'splashScreenStyle',
             autoOpen  : true,
             hide      : "explode",
             title     : "U.S. Forest Change Assesment Viewer",
             close     : function() {
                 $(this).dialog('destroy');
                 $html.remove();
-                $('#aboutPic').css({'background-color':'transparent'});                     
-                $('#aboutPic').css({'opacity':'1'});
+                $('#aboutPic').css({
+                    'background-color' : 'transparent',
+                    'opacity'          : '1'
+                });
                 activeBtn = [];
             }
         });
-        $('#splashScreenContainer').append($($html));
+        $splashScreenContainer.append($($html));
     }
-    
-    function createLayerPropertiesDialog(layer) {
 
+    //This function gets called every time the layer properties icon gets clicked
+    function createLayerPropertiesDialog (layer) {
         if (createLayerPropertiesDialog.$html[layer.lid]) {
             createLayerPropertiesDialog.$html[layer.lid].dialog('destroy');
             createLayerPropertiesDialog.$html[layer.lid].remove();
@@ -1419,15 +1529,31 @@
                           +     '</tr>'
                          );
             $testForMask = $testForMask.split(',');
+            
+            
+            //Loop through checking to see if any mask are active
+            //if so set flag because we will want the perspective checkbox to be on
+            var checkForCurrentActiveMask = false;
+            var activeMask = [];
+            for (var i = app.map.getNumLayers()-1; i > 0; i--) {
+                var currLayer = app.map.layers[i]; 
+                if (currLayer.name.indexOf("Mask") !== -1) {
+                    activeMask.push(currLayer.name);
+                }
+            }            
             for(var i=0; i<$testForMask.length; ++i){
+                var isChecked = "";
+                if ($.inArray($testForMask[i]+layer.lid, activeMask) !== -1) {
+                    isChecked = "checked";
+                }
                 $html.append(''
                           +     '<tr>'
-                          +       '<td>Filter By:</td>'
+                          +       '<td>Show Only:</td>'
                           +       '<td>'
                           +         '<div class="mask-description">'+$testForMask[i].replace("MaskFor","")+'</div>'
                           +       '</td>'
                           +       '<td>'
-                          +        '<input class="mask-toggle" type="checkbox" size="2" value='+$testForMask[i]+layer.lid+'/>'
+                          +        '<input class="mask-toggle" type="checkbox" size="2" value='+$testForMask[i]+layer.lid+'  '+isChecked+'/>'
                           +       '</td>'
                           +     '</tr>'  
                         ); 
@@ -1448,13 +1574,14 @@
         layer.addListener("transparency", function (e) {
             $html.find('.transparency-slider').slider("value", e.value);
         });
-        $html.find('input.transparency-text').change(function() {
-            var newValueFloat = parseFloat($(this).val());
+        $html.find('input.transparency-text').change(function () {
+            var $this = $(this),
+                newValueFloat = parseFloat($this.val());
             if (isNaN(newValueFloat) || newValueFloat < 0 || newValueFloat > 100) {
-                $(this).val(layer.transparency);
+                $this.val(layer.transparency);
                 return;
             }
-            layer.setTransparency($(this).val());
+            layer.setTransparency($this.val());
         });
         
         layer.addListener("transparency", function (e) {
@@ -1478,7 +1605,7 @@
          });
         
         $html.dialog({
-            zIndex    : 10050, 
+            zIndex    : 10050,
             position  : "left",
             autoOpen  : true,
             hide      : "explode",
@@ -1491,20 +1618,19 @@
             }
         });
         createLayerPropertiesDialog.$html[layer.lid] = $html;
-    }
+    } //end function createLayerPropertiesDialog (layer) 
+    
     // Object to be used as hash for tracking the $html objects created by createLayerPropertiesDialog;
     // keys are layer lids:
     createLayerPropertiesDialog.$html = {};
 
 
-    function activateIdentifyTool()
-    {
+    function activateIdentifyTool () {
         deactivateActiveOpenLayersControls();
         app.identifyTool.activate();
     }
 
-    function activateMultigraphTool()
-    {
+    function activateMultigraphTool () {
         deactivateActiveOpenLayersControls();
         app.multigraphTool.activate();
     }
@@ -1513,11 +1639,11 @@
     // which calls a function whenever the user clicks in the map.  Each
     // instance of ClickTool corresponds to a specific callback function.
     // To create an instance of ClickTool:
-    // 
+    //
     //   tool = new ClickTool(function (e) {
     //       // this is the click callback function
     //   });
-    // 
+    //
     var ClickTool = OpenLayers.Class(OpenLayers.Control, {
         defaultHandlerOptions: {
             'single'          : true,
@@ -1533,7 +1659,7 @@
             );
             OpenLayers.Control.prototype.initialize.apply(
                 this, arguments
-            ); 
+            );
             this.displayClass = 'ClickTool';
             this.handler = new OpenLayers.Handler.Click(
                 this, {
@@ -1541,7 +1667,6 @@
                 }, this.handlerOptions
             );
         }
-
     });
 
     // Return a string representing a GetFeatureInfo request URL for the current map,
@@ -1552,12 +1677,12 @@
     //   srs: the SRS of the layers
     //   (x,y): (pixel) coordinates of query point
     //
-    function createWMSGetFeatureInfoRequestURL(serviceUrl, layers, srs, x, y) {
+    function createWMSGetFeatureInfoRequestURL (serviceUrl, layers, srs, x, y) {
         var extent = app.map.getExtent();
-		if (fcav.gisServerType=="ArcGIS"){		
-			extent = extent.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
-		}
-		return Mustache.render(
+        if (fcav.gisServerType === "ArcGIS"){
+            extent = extent.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
+        }
+        return Mustache.render(
             (''
              + serviceUrl
              + '{{{c}}}LAYERS={{layers}}'
@@ -1592,7 +1717,7 @@
         );
     }
 
-    function createIdentifyTool() {
+    function createIdentifyTool () {
         return new ClickTool(
             function (e) {
                 // This function gets called when the user clicks a point in the map while the
@@ -1604,7 +1729,7 @@
 
                 // First remove any exiting popup window left over from a previous identify
                 $('#identify_popup').remove();
-                
+
                 // Then loop over all the current (non-base) layers in the map to construct the
                 // GetFeatureInfo requests. There will be one request for each unique WMS layer
                 // service URL and SRS combination. (Typically, and in all cases I know of that
@@ -1643,7 +1768,7 @@
                     }
                 });
                 html = html + "</table>";
-                
+
                 // Display the popup window; we'll populate the results later, asynchronously,
                 // as they arrive.
                 app.map.addPopup(new OpenLayers.Popup.FramedCloud(
@@ -1655,10 +1780,10 @@
                     true,                               // closeBox
                     null                                // closeBoxCallback
                 ));
-                
-				// Now loop over each item in the `services` object, generating the GetFeatureInfo request for it
+
+                // Now loop over each item in the `services` object, generating the GetFeatureInfo request for it
                 for (urlsrs in services) {
-					var firstResultsYet=0;
+                    var firstResultsYet = 0;
                     (function () {
                         var service = services[urlsrs],
                             //NOTE: the correct coords to use in the request are (e.xy.y,e.xy.y), which are NOT the same as (e.x,e.y).
@@ -1667,50 +1792,50 @@
                         $.ajax({
                             url: requestUrl,
                             dataType: "text",
-                            success: function(response) {
-                                var $gml = $($.parseXML(response));
+                            success: function (response) {
+                                var $gml = $($.parseXML(response)),
+                                    $identify_results = $("#identify_results");
                                 // For each layer that this request was for, parse the GML for the results
                                 // for that layer, and populate the corresponding result in the popup
                                 // created above.
-								if (firstResultsYet<1){
-									$("#identify_results").empty(); //first clear out orginal
-									firstResultsYet = firstResultsYet+1;
-								}
-								var layerIDCount=0,
-									newTableContents = '',
-									lastURL='';
-								$.each(service.layers, function () {
-                                    //jdm: Check to see if we are using ArcGIS
-									//if so handle the xml that comes back differently
-									//on a related note ArcGIS WMS Raster layers do not support
-									//GetFeatureInfo
-									if (fcav.gisServerType=="ArcGIS"){
-										var result = getLayerResultsFromArcXML($gml, this);
-									}
-									else { //assuming MapServer at this point
-										var result = getLayerResultsFromGML($gml, this);
-									}
-									//jdm: with this list back from getLayerResultsFromGML
-									//loop through and build up new table structure
-									newTableContents = (''
-									                    + '<tr>'
-									                    +	'<td><b>'+service.layers[layerIDCount]+'</b></td>'
-									                    +   '<td>&nbsp</td>'
-									                    + '</tr>'
+                                if (firstResultsYet < 1){
+                                    $identify_results.empty(); //first clear out orginal
+                                    firstResultsYet = firstResultsYet+1;
+                                }
+                                var layerIDCount     = 0,
+                                    newTableContents = '',
+                                    lastURL          = '';
+                                $.each(service.layers, function () {
+                                    // jdm: Check to see if we are using ArcGIS
+                                    // if so handle the xml that comes back differently
+                                    // on a related note ArcGIS WMS Raster layers do not support
+                                    // GetFeatureInfo
+                                    if (fcav.gisServerType=="ArcGIS"){
+                                        var result = getLayerResultsFromArcXML($gml, this);
+                                    } else { //assuming MapServer at this point
+                                        var result = getLayerResultsFromGML($gml, this);
+                                    }
+                                    //jdm: with this list back from getLayerResultsFromGML
+                                    //loop through and build up new table structure
+                                    newTableContents = (''
+                                                        + '<tr>'
+                                                        +	'<td><b>'+service.layers[layerIDCount]+'</b></td>'
+                                                        +   '<td>&nbsp</td>'
+                                                        + '</tr>'
                                                         );
-									$("#identify_results").append(newTableContents);
-									var i=0;
-									for (i=1; i<result.length; ++i) {
-										newTableContents = (''
-										                    + '<tr>'
+                                    $identify_results.append(newTableContents);
+                                    var i;
+                                    for (i = 1; i < result.length; ++i) {
+                                        newTableContents = (''
+                                                            + '<tr>'
                                                             +	'<td align="right">'+String(result[i][0]).replace("_0","")+':&nbsp&nbsp</td>'
-										                    +   '<td>'+result[i][1]+'</td>'
-										                    + '</tr>'
+                                                            +   '<td>'+result[i][1]+'</td>'
+                                                            + '</tr>'
                                                             );
-										$("#identify_results").append(newTableContents);
-									}
-									layerIDCount++;
-									//$("#identify_results").append(newTableContents);
+                                        $identify_results.append(newTableContents);
+                                    }
+                                    layerIDCount++;
+                                    //$("#identify_results").append(newTableContents);
                                 });
                             },
                             error: function(jqXHR, textStatus, errorThrown) {
@@ -1720,62 +1845,63 @@
                         });
                     }());
                 }
-				//jdm: last thing make the popup bigger
-				//this doesn't work for some reason
-				//app.map.popups[0].updateSize(new OpenLayers.Size(500, 500));
+                //jdm: last thing make the popup bigger
+                //this doesn't work for some reason
+                //app.map.popups[0].updateSize(new OpenLayers.Size(500, 500));
             }
         );
     }
 
-    function stringStartsWith(string, prefix) {
+    function stringStartsWith (string, prefix) {
         return (string.substring(0, prefix.length) === prefix);
     }
 
-	function getLayerResultsFromArcXML($xml, layerName) {
-		var returnVals = [];	
-		try {
-			var i;
-			var fields = $xml.find( "FIELDS" );
-			for (i=0; i<fields[0].attributes.length; ++i) {
-				returnVals[i] = [fields[0].attributes[i].name, fields[0].attributes[i].value];
-			}
-		}
-		catch(err){
-			returnVals[0] = ["Error description:", err.message];
-		}
-		return returnVals;
-	}
-	
-    function getLayerResultsFromGML($gml, layerName) {
-        var i,
-            children = $gml.find(layerName + '_feature').first().children();
-		var returnVals = [];	
+    function getLayerResultsFromArcXML ($xml, layerName) {
+        var returnVals = [];
+        try {
+            var fields     = $xml.find( "FIELDS" ),
+                attributes = fields[0].attributes,
+                i;
+            for (i = 0; i < attributes.length; ++i) {
+                returnVals[i] = [attributes[i].name, attributes[i].value];
+            }
+        }
+        catch(err){
+            returnVals[0] = ["Error description:", err.message];
+        }
+        return returnVals;
+    }
 
-		// Scan the children of the first <layerName_feature> element, looking for the first
+    function getLayerResultsFromGML ($gml, layerName) {
+        var children = $gml.find(layerName + '_feature').first().children(),
+            returnVals = [],
+            i;
+
+        // Scan the children of the first <layerName_feature> element, looking for the first
         // child which is an element whose name is something other than `gml:boundedBy`; take
         // the text content of that child as the result for this layer.
-        for (i=0; i<children.length; ++i) {
+        for (i = 0; i < children.length; ++i) {
             if (children[i].nodeName !== 'gml:boundedBy') {
                 var value;
                 if ( $.browser.msie ) { //jdm: IE doesn't have textContent on children[i], but Chrome and FireFox do
                     value = children[i].text;
-				} else {
+                } else {
                     value = children[i].textContent;
                 }
-                if ((stringStartsWith(layerName,"EFETAC-NASA") || stringStartsWith(layerName,"RSAC-FHTET"))
-                    && (children[i].nodeName === "value_0")) {
+                if ((stringStartsWith(layerName,"EFETAC-NASA") || stringStartsWith(layerName,"RSAC-FHTET")) &&
+                    (children[i].nodeName === "value_0")) {
                     value = value + sprintf(" (%.2f %%)", parseFloat(value,10) * 200.0 / 255.0 - 100);
                 }
-				returnVals[i] = [children[i].nodeName, value];
+                returnVals[i] = [children[i].nodeName, value];
             }
         }
         return returnVals;
-		//return undefined;
+        //return undefined;
     }
 
     var lastPopup;
 
-    function createMultigraphTool() {
+    function createMultigraphTool () {
         return new ClickTool(
             function (e) {
                 // This function gets called when the user clicks a point in the map while the
@@ -1784,7 +1910,7 @@
 
                 // This coords object is not really in lon/lat; it's in the display projection of the map,
                 // which is EPSG:900913.
-                var coords = app.map.getLonLatFromPixel(e.xy); 
+                var coords = app.map.getLonLatFromPixel(e.xy);
 
                 // Here we convert it to actual lon/lat:
                 var lonlat = app.map.getLonLatFromPixel(e.xy);
@@ -1796,57 +1922,58 @@
                 }
                 app.map.addPopup(lastPopup =
                                  new OpenLayers.Popup.FramedCloud(
-                                     "fcavMultigraphPopup", 
+                                     "fcavMultigraphPopup",
                                      coords,
                                      null,
                                      '<div id="fcavMultigraphMessage"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="fcavMultigraph" style="width: 600px; height: 300px;"></div>',
                                      null,
                                      true));
-                var promise = window.multigraph.jQuery('#fcavMultigraph').multigraph({
+                var fcavMultigraph = window.multigraph.jQuery('#fcavMultigraph'),
+                    promise = fcavMultigraph.multigraph({
                     //NOTE: coords.lon and coords.lat on the next line are really x,y coords in EPSG:900913, not lon/lat:
-                    'mugl'   : "http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+coords.lon+","+coords.lat
-                });
-                window.multigraph.jQuery('#fcavMultigraph').multigraph('done', function() {
-                    $('#fcavMultigraphMessage').empty();
-                    $('#fcavMultigraphMessage').text(Mustache.render('MODIS NDVI for Lat: {{{lat}}} Lon: {{{lon}}}',
-                                                                     { lat : sprintf("%.4f", lonlat.lat),
-                                                                       lon : sprintf("%.4f", lonlat.lon) }));
+                        'mugl'   : "http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+coords.lon+","+coords.lat
+                    });
+                fcavMultigraph.multigraph('done', function () {
+                    var multigraphMessage = $('#fcavMultigraphMessage');
+                    multigraphMessage.empty();
+                    multigraphMessage.text(Mustache.render('MODIS NDVI for Lat: {{{lat}}} Lon: {{{lon}}}',
+                                                           { lat : sprintf("%.4f", lonlat.lat),
+                                                             lon : sprintf("%.4f", lonlat.lon) }));
                 });
             });
     }
 
-    function stringContainsChar(string, c) {
+    function stringContainsChar (string, c) {
         return (string.indexOf(c) >= 0);
     }
 
-    function arrayContainsElement(array, element) {
+    function arrayContainsElement (array, element) {
         var i;
         if (array === undefined) {
             return false;
         }
-        for (i=0; i<array.length; ++i) {
+        for (i = 0; i < array.length; ++i) {
             if (array[i] === element) {
                 return true;
             }
         }
         return false;
     }
-            
 
 
     // Accepts an array of strings, and returns a JavaScript object containing a property corresponding
     // to each element in the array; the value of each property is 'true'.
-    function arrayToBooleanHash(a) {
+    function arrayToBooleanHash (a) {
         var h = {}, i;
-        for (i=0; i<a.length; ++i) {
+        for (i = 0; i < a.length; ++i) {
             h[a[i]] = true;
         }
         return h;
     }
 
-    function parseExtent(extent) {
-        var vals = extent.split(',');
-        var bounds = new OpenLayers.Bounds(parseFloat(vals[0]), parseFloat(vals[1]), parseFloat(vals[2]), parseFloat(vals[3]));
+    function parseExtent (extent) {
+        var vals   = extent.split(','),
+            bounds = new OpenLayers.Bounds(parseFloat(vals[0]), parseFloat(vals[1]), parseFloat(vals[2]), parseFloat(vals[3]));
         return bounds;
     }
 
@@ -1870,5 +1997,5 @@
     fcav.stringContainsChar                = stringContainsChar;
     fcav.ShareUrlInfo                      = ShareUrlInfo;
     window.fcav                            = fcav;
-    
+
 }(jQuery));
