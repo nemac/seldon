@@ -1142,7 +1142,7 @@
             for (var i = app.map.getNumLayers()-1; i > 0; i--) {
                 var currLayer = app.map.layers[i]; 
 				if (layerName==currLayer.name){
-                    isMaskActive = true;
+                    isLayerActive = true;
                 }
             }			
 			return isLayerActive;
