@@ -1450,42 +1450,27 @@
         var $splashScreenContainer = $("#splashScreenContainer"),
             $document    = $(document),
             windowWidth  = Math.round($document.width()/2),
-            windowHeight = Math.round($document.height()/2),
-            $html = $(''
-                      + '<div class="splash-screen-dialog" align="center">'
-                      +   '<table>'
-                      +     '<tr>'
-                      +       '<td align="center"><img src="icons/logos.png"/></td>'
-                      +     '</tr>'
-                      +     '<tr>'
-                      +       '<td align="center"><p><a href="http://forwarn.forestthreats.org/fcav/assets/FCAV_Users_Guide_4.2.2012.pdf">FCAV Users Guide</a></p></td>'
-                      +     '</tr>'
-                      +     '<tr>'
-                      +       '<td align="center"><p>For information on this viewer, contact support at ews-support@nemac.org</p></td>'
-                      +     '</tr>'
-                      +   '</table>'
-                      + '</div>'
-                     );
-        $splashScreenContainer.dialog({
-            zIndex    : 10051,
-            position  : "center",
-            height:windowHeight,
-            width:windowWidth,
-            dialogClass: 'splashScreenStyle',
-            autoOpen  : true,
-            hide      : "explode",
-            title     : "U.S. Forest Change Assesment Viewer",
-            close     : function() {
-                $(this).dialog('destroy');
-                $html.remove();
-                $('#aboutPic').css({
-                    'background-color' : 'transparent',
-                    'opacity'          : '1'
-                });
-                activeBtn = [];
-            }
-        });
-        $splashScreenContainer.append($($html));
+            windowHeight = Math.round($document.height()/2);
+            $('#splashScreenContent').load('splashScreen.html');
+            $splashScreenContainer.dialog({
+                zIndex    : 10051,
+                position  : "center",
+                height:windowHeight,
+                width:windowWidth,
+                dialogClass: 'splashScreenStyle',
+                autoOpen  : true,
+                hide      : "explode",
+                title     : "NEMAC GIS Viewer",
+                close     : function() {
+                    $(this).dialog('destroy');
+                    $('#aboutPic').css({
+                        'background-color' : 'transparent',
+                        'opacity'          : '1'
+                    });
+                    activeBtn = [];
+                }
+            });
+            $splashScreenContainer.append($($('#splashScreenContent')));
     }
 
     //This function gets called every time the layer properties icon gets clicked
