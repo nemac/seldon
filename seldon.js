@@ -338,6 +338,7 @@
             url   = window.location.toString();
             url = url.replace(/\?.*$/, '');
             url = url.replace(/\/$/, '');
+            url = url.replace("#", '');
             return url + '?' + (new ShareUrlInfo({
                 themeName         : this.currentTheme.name,
                 layerLids         : layerLids,
