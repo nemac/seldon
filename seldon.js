@@ -155,7 +155,8 @@
                 labelElem,
                 textElem,
                 maskLabelElem, 
-                maskTextElem;
+                maskTextElem,
+                activeMaskLayers = [];
 
             if ($layerPickerAccordion.length === 0) {
                 flag = true;
@@ -258,6 +259,18 @@
                             ((options.layers === undefined) && layer.selectedInConfig)) {
                             layer.activate();
                         }
+                        
+                        //jdm 6/28/13: do a check to see if there is a corresponding active mask in options.shareUrlMasks
+                        //can be multiple mask per a parent layer
+                        if (options.shareUrlMasks !== undefined) {
+                            for (var m=0;m<options.shareUrlMasks.length;m++) {
+                                if(options.shareUrlMasksLIDs[m].indexOf(layer.lid) !== -1) { 
+                                    layer.activate();
+                                    layer.setMask(true, options.shareUrlMasks[m]);
+                                    activeMaskLayers.push(layer.lid);
+                                }                         
+                            }
+                        }
                     }
                 }
             }
@@ -279,6 +292,12 @@
             $('#layerPickerDialog').scrollTop(0);
             $('#mapToolsDialog').scrollTop(0);
             app.emit("themechange");
+            
+            //Go through the layers that currently have mask active and 
+            //update the status accordingly
+            for (var n=0;n<activeMaskLayers.length;n++) {
+                 $('#mask-status'+activeMaskLayers[n]).text("(m)");
+            }
         };
 
         this.shareUrl = function() {
@@ -289,6 +308,7 @@
             var extent      = this.map.getExtent(),
                 layerLids   = [],
                 layerAlphas = [],
+                layerMask   = [],
                 url;
 
             if (!extent) { return undefined; }
@@ -303,8 +323,15 @@
                     } else {
                         op = sprintf("%.2f", this.opacity);
                     }
-                    layerLids.push(this.fcavLayer.lid);
-                    layerAlphas.push(op);
+                    if (stringContainsChar(this.name, 'MaskFor')) {
+                        //if is a mask add to layerMask
+                        layerMask.push(this.fcavLayer.lid);
+                    } else { 
+                        //otherwise add to layerLids
+                        layerLids.push(this.fcavLayer.lid);
+                        layerAlphas.push(op);
+                    } //end 
+                    
                 }
             });
 
@@ -314,6 +341,7 @@
             return url + '?' + (new ShareUrlInfo({
                 themeName         : this.currentTheme.name,
                 layerLids         : layerLids,
+                layerMask         : layerMask,
                 layerAlphas       : layerAlphas,
                 accordionGroupGid : this.currentAccordionGroup.gid,
                 baseLayerName     : this.currentBaseLayer.name,
@@ -923,6 +951,22 @@
                     }
                 }
             }
+            
+            //jdm: add to list of mask for checking later in this function
+            //put the mask from the share url onto the themeOptions for later processing 
+            //within the setTheme() function
+            if (shareUrlInfo !== undefined) {
+                if (themeOptions.shareUrlMasks === undefined) {
+                    themeOptions.shareUrlMasks = [];
+                }
+                if (themeOptions.shareUrlMasksLIDs === undefined) {
+                    themeOptions.shareUrlMasksLIDs = [];
+                }                
+                for (i = 0, l = shareUrlInfo.layerMask.length; i < l; i++) {
+                    themeOptions.shareUrlMasks[i]=shareUrlInfo.layerMask[i];
+                    themeOptions.shareUrlMasksLIDs[i]=shareUrlInfo.layerMask[i].substr(0,shareUrlInfo.layerMask[i].indexOf("Mask"));
+                }
+            }               
 
             // parse themes
             var $themeCombo = $("#themeCombo"),
@@ -1120,7 +1164,7 @@
             this.openLayersLayer.fcavLayer = this;
             return this.openLayersLayer;
         };
-        this.activate = function (suppressCheckboxUpdate) {
+        this.activate = function (isMask) {
 			if (!this.checkForExistingLayer(this.name))	{
 				app.map.addLayer(this.createOpenLayersLayer());
 				this.addToLegend();
@@ -1148,7 +1192,7 @@
 			return isLayerActive;
 		};		
 		
-		this.deactivate = function (suppressCheckboxUpdate) {
+		this.deactivate = function (isMask) {
             if (this.openLayersLayer) {
                 app.map.removeLayer(this.openLayersLayer);
                 this.removeFromLegend();
@@ -1217,16 +1261,17 @@
         this.activateMask = function(maskLayerName) {
  			if (!this.checkForExistingMask(maskLayerName)) {
 				var maskLayer = new Layer({
-						lid          	 : this.layers+maskLayerName.replace("/","").substring(0,(maskLayerName.length)-this.lid.length),
+						lid          	 : maskLayerName.replace("/",""),
 						visible          : this.visible,
 						url              : this.url,
 						srs              : this.srs,
-						layers           : this.layers+maskLayerName.replace("/","").substring(0,(maskLayerName.length)-this.lid.length),
+						layers           : this.layers+maskLayerName.replace("/","").replace(this.lid,""),
 						identify         : this.identify,
 						name             : maskLayerName.replace("/",""),
 						legend           : this.legend,
 				});
 				maskLayer.activate();
+                app.updateShareMapUrl();
                 $('#mask-status'+ this.lid).text("(m)"); //"mask-status" + layer.lid);
 			}
 		};     
@@ -1253,6 +1298,7 @@
             //turn off mask
             //this needs to be more robust accounting for all mask possible being
             //off, but for now i am going to leave it like this.
+            app.updateShareMapUrl();
             $('#mask-status'+ this.lid).text(""); 
         };           
     }
@@ -1323,6 +1369,7 @@
         this.baseLayerName     = settings.baseLayerName;
         this.extent            = settings.extent;
         this.layerLids         = settings.layerLids;
+        this.layerMask         = settings.layerMask;
         this.layerAlphas       = settings.layerAlphas;
         if (this.extent === undefined) {
             this.extent = {};
@@ -1330,6 +1377,9 @@
         if (this.layerLids === undefined) {
             this.layerLids = [];
         }
+        if (this.layerMask === undefined) {
+            this.layerMask = [];
+        }        
         if (this.layerAlphas === undefined) {
             this.layerAlphas = [];
         }
@@ -1379,6 +1429,11 @@
                 info.layerLids.push(this);
             });
         }
+        if (vars.mask) {
+            $.each(vars.mask.split(','), function () {
+                info.layerMask.push(this);
+            });
+        }        
         if (vars.alphas) {
             $.each(vars.alphas.split(','), function () {
                 info.layerAlphas.push(this);
@@ -1395,6 +1450,7 @@
             (''
              + 'theme={{{theme}}}'
              + '&layers={{{layers}}}'
+             + '&mask={{{mask}}}'
              + '&alphas={{{alphas}}}'
              + '&accgp={{{accgp}}}'
              + '&basemap={{{basemap}}}'
@@ -1403,6 +1459,7 @@
             {
                 theme   : this.themeName,
                 layers  : this.layerLids.join(','),
+                mask    : this.layerMask.join(','),
                 alphas  : this.layerAlphas.join(','),
                 accgp   : this.accordionGroupGid,
                 basemap : this.baseLayerName,
@@ -1528,7 +1585,7 @@
             }            
             for(var i=0; i<$testForMask.length; ++i){
                 var isChecked = "";
-                if ($.inArray($testForMask[i]+layer.lid, activeMask) !== -1) {
+                if ($.inArray(layer.lid+$testForMask[i], activeMask) !== -1) {
                     isChecked = "checked";
                 }
                 $html.append(''
@@ -1538,7 +1595,7 @@
                           +         '<div class="mask-description">'+$testForMask[i].replace("MaskFor","")+'</div>'
                           +       '</td>'
                           +       '<td>'
-                          +        '<input class="mask-toggle" type="checkbox" size="2" value='+$testForMask[i]+layer.lid+'  '+isChecked+'/>'
+                          +        '<input class="mask-toggle" type="checkbox" size="2" value='+layer.lid+$testForMask[i]+'  '+isChecked+'/>'
                           +       '</td>'
                           +     '</tr>'  
                         ); 
@@ -1577,7 +1634,7 @@
         //for every mask checkbox we check we getting a click event
         $(function(){
               $('.mask-toggle').live('click', function(){
-                  if (layer.lid == this.value.replace("/","").slice(-layer.lid.length)) { 
+                  if (layer.lid == this.value.substring(0,layer.lid.length)) { 
                   //check to make sure the layer matches the mask being requested
                       if($(this).is(':checked')){
                         layer.setMask(true, this.value);
