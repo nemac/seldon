@@ -1166,7 +1166,7 @@
             return this.openLayersLayer;
         };
         this.activate = function (isMask) {
-			if (!this.checkForExistingLayer(this.name))	{
+			//if (!this.checkForExistingLayer(this.name))	{
 				app.map.addLayer(this.createOpenLayersLayer());
 				this.addToLegend();
 				this.emit("activate");
@@ -1179,7 +1179,7 @@
 					}
 				}
 				app.map.updateSize();
-			}
+			//}
         };
         
 		this.checkForExistingLayer = function(layerName) {
