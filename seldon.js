@@ -882,6 +882,12 @@
                         }   
                         currLayer.fcavLayer.activateMask(maskName);  //activate mask at the layer level
                     }
+                    else { //we still need to keep track of active mask
+                        //if not already in the active mask list add to keep track            
+                        if (this.activeMask.indexOf(maskName.replace("MaskFor","")) == -1) {
+                            this.activeMask.push(maskName.replace("MaskFor",""));
+                        }
+                    }
                 }
                 //verify that the checkbox for the mask is checked
                 //this catches cases where a mask is done via share url
@@ -902,7 +908,6 @@
                     //roll back to parent layer only if there are no other mask 
                     //currently active for the parent layer
                     if (maskLayerName==currLayer.name.substring(currLayer.name.indexOf("MaskFor"),currLayer.name.length)){
-                        //if (app.activeMaskParents.indexOf(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor")))==-1) {
                         if (getCount(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor")), app.activeMaskParents)==1) {
                             var parentLayer = new Layer({
                                     lid          	 : currLayer.name.substring(0,currLayer.name.indexOf("MaskFor")),
@@ -917,9 +922,10 @@
                             });                        
                             app.map.layers[i].fcavLayer.removeFromLegend();
                             app.map.removeLayer(app.map.layers[i]);
-                            parentLayer.activate();
+                            app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")),1);
                             app.activeMaskParents.splice(app.activeMaskParents.indexOf(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))), 1)
                             $('#mask-status'+ currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))).text("");
+                            parentLayer.activate();
                             app.updateShareMapUrl();                        
                         }
                         else { //there are still active mask for the parent layer in question
@@ -931,10 +937,13 @@
                                     app.map.removeLayer(currLayer.fcavLayer.openLayersLayer);
                                 }
                             }                            
+                            app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")),1);
                             app.activeMaskParents.splice(app.activeMaskParents.indexOf(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))), 1)
                         }
                     }
                 }
+                //be sure to remove from active mask
+                app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")),1);
             }
             //turn off mask
             //this needs to be more robust accounting for all mask possible being
@@ -948,9 +957,11 @@
                 var currLayer = app.map.layers[i]; 
 				if (currLayer.fcavLayer.mask) {
                     if (lid==currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))){
-                        app.map.layers[i].fcavLayer.removeFromLegend();
-                        app.map.removeLayer(app.map.layers[i]);
-                        app.updateShareMapUrl();                        
+                        this.map.layers[i].fcavLayer.removeFromLegend();
+                        this.map.removeLayer(app.map.layers[i]);
+                        this.updateShareMapUrl();
+                        //this.deactivateMask(currLayer.name.substring(lid.length,currLayer.name.length));
+                        $('#mask-status'+ currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))).text("");
                     }
                 }
             }
@@ -1293,6 +1304,7 @@
         };
         this.activate = function (isMask) {
 			//if (!this.checkForExistingLayer(this.name))	{
+            //this.checkForActiveMask();
             app.map.addLayer(this.createOpenLayersLayer());
             this.addToLegend();
             this.emit("activate");
@@ -1304,9 +1316,39 @@
                     app.map.setLayerIndex(lyrJustAdded, i);
                 }
             }
+            //If there is currently any active mask
+            //then activate mask on this layer if it hasn't already been activated
+            //Because we will fly through here again we need to use both activeMask
+            //and activeMaskParents to verify that we don't get into a recursive loop
+            //&& (app.activeMaskParents.indexOf(this.lid) > -1)
+            if ((app.activeMask.length>0) 
+                && (this.mask) 
+                    && (this.lid.indexOf("MaskFor") == -1)) {
+                        //Here we have a parent layer that has been activated
+                        //after mask have already been turned on.
+                        //So we need to loop through the activeMask and turn on
+                        //the mask accordingly.
+                        //this.activateMask("MaskForDeciduousForest");
+                        for (var i = 0; i < app.activeMask.length; i++) {
+                            this.activateMask("MaskFor"+app.activeMask[i]);
+                        }
+            }
             app.map.updateSize();
 			//}
         };
+        
+		// this.checkForActiveMask = function() {
+			// var isMaskActive = false;
+            // for (var i = app.map.getNumLayers()-1; i > 0; i--) {
+                // var currLayer = app.map.layers[i]; 
+                // //First, check i
+				// var x = app.activeMask;
+                // // if (maskLayerName.replace("/","")==currLayer.name){
+                    // // isMaskActive = true;
+                // // }
+            // }			
+			// return isMaskActive;
+		// };                
         
 		this.checkForExistingLayer = function(layerName) {
 			var isLayerActive = false;
@@ -1324,15 +1366,17 @@
                 try {
                     if (app.activeMaskParents.indexOf(this.lid) > -1) {
                         //this layer is the parent to a currently active mask
-                        //therefore it technically has already been removed
+                        //therefore it technically has already been deactivated
                         //but we really need to turn off the relevent mask
                         app.deactivateMaskParent(this.lid);
-                        //need to remove from activeMaskParents
-                        app.activeMaskParents.splice(app.activeMaskParents.indexOf(this.lid), 1);
+                        //Need to remove from activeMaskParents??
+                        //Or, once a parent always a parent 
+                        //app.activeMaskParents.splice(app.activeMaskParents.indexOf(this.lid), 1);
                         //need to remove mask-status too...
                         $('#mask-status'+ this.lid).text(""); 
                     }
                     else {
+                        $('#mask-status'+ this.lid).text(""); 
                         app.map.removeLayer(this.openLayersLayer);
                     }
                 }
@@ -1341,7 +1385,8 @@
                     for (var i = app.map.getNumLayers()-1; i > 0; i--) {
                         var currLayer = app.map.layers[i]; 
                         //alert(currLayer.name);
-                        if (currLayer.name==this.lid+"MaskParent"){
+                        //if (currLayer.name==this.lid+"MaskParent"){
+                        if (currLayer.name.substring(0,this.lid.length)==this.lid) {
                             app.map.removeLayer(currLayer.fcavLayer.openLayersLayer);
                         }
                     }	                    
@@ -1424,6 +1469,8 @@
                         mask             : 'true',
                         legend           : this.legend
                 });
+                //add to activeMaskParents
+                //app.activeMaskParents.push(this.lid);
             }
             else { //applying additional mask
                  var maskLayer = new Layer({
@@ -1446,18 +1493,6 @@
             app.updateShareMapUrl();
             $('#mask-status'+ this.lid).text("(m)"); //"mask-status" + layer.lid);
 		};     
-        
-		// this.checkForExistingMask = function(maskLayerName) {
-			// var isMaskActive = false;
-            // for (var i = app.map.getNumLayers()-1; i > 0; i--) {
-                // var currLayer = app.map.layers[i]; 
-				// if (maskLayerName.replace("/","")==currLayer.name){
-                    // isMaskActive = true;
-                // }
-            // }			
-			// return isMaskActive;
-		// };
-         
     }
     EventEmitter.declare(Layer);
 
