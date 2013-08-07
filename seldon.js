@@ -1699,12 +1699,8 @@
         // the text content of that child as the result for this layer.
         for (i = 0; i < children.length; ++i) {
             if (children[i].nodeName !== 'gml:boundedBy') {
-                var value;
-                if ( $.browser.msie ) { //jdm: IE doesn't have textContent on children[i], but Chrome and FireFox do
-                    value = children[i].text;
-                } else {
-                    value = children[i].textContent;
-                }
+                // jdm: IE doesn't have textContent on children[i], but Chrome and FireFox do
+                var value = (children[i].textContent) ? children[i].textContent : children[i].text;
                 if ((stringStartsWith(layerName,"EFETAC-NASA") || stringStartsWith(layerName,"RSAC-FHTET")) &&
                     (children[i].nodeName === "value_0")) {
                     value = value + sprintf(" (%.2f %%)", parseFloat(value,10) * 200.0 / 255.0 - 100);
