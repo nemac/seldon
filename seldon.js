@@ -570,9 +570,28 @@
                     if ($(this).is(':checked')) {
                         app.setMask(true, this.value);
                     } else {
-                          app.setMask(false, this.value);
+                        app.setMask(false, this.value);
                     }
                 });
+            });
+
+            $('textarea').focus(function () {
+                var $this = $(this);
+
+                $this.select();
+
+                // webkit issue
+                window.setTimeout(function () {
+                    $this.select();
+                }, 1);
+
+                function mouseUpHandler () {
+                    // Prevent further mouseup intervention
+                    $this.off("mouseup", mouseUpHandler);
+                    return false;
+                }
+
+                $this.mouseup(mouseUpHandler);
             });
 
         }; //end app.launch()
