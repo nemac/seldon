@@ -893,7 +893,7 @@
                     if (maskLayerName == currLayer.name.substring(currLayer.name.indexOf("MaskFor"),currLayer.name.length)) {
                         if (getCount(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor")), app.activeMaskParents) == 1) {
                             var parentLayer = new Layer({
-                                    lid                  : currLayer.name.substring(0,currLayer.name.indexOf("MaskFor")),
+                                    lid              : currLayer.name.substring(0,currLayer.name.indexOf("MaskFor")),
                                     visible          : currLayer.fcavLayer.visible,
                                     url              : currLayer.fcavLayer.url,
                                     srs              : currLayer.fcavLayer.srs,
@@ -1145,7 +1145,7 @@
             app.initOpenLayers(baseLayerInfo, initialBaseLayer, initialTheme, themeOptions, initialExtent);
         };
 
-        this.initOpenLayers = function(baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
+        this.initOpenLayers = function (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
             var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
                 layerInfo: baseLayerInfo
             });
@@ -1193,13 +1193,13 @@
             this.map.setLayerIndex(layer, 0);
             this.setTheme(theme, themeOptions);
             this.zoomToExtent(initialExtent);
-            this.map.events.register("mousemove", app.map, function(e) {
+            this.map.events.register("mousemove", app.map, function (e) {
                 var pixel = app.map.events.getMousePosition(e);
                 var lonlat = app.map.getLonLatFromPixel(pixel);
                 lonlat = lonlat.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
                 OpenLayers.Util.getElement("latLonTracker").innerHTML = "Lat: " + sprintf("%.5f", lonlat.lat) + " Lon: " + sprintf("%.5f", lonlat.lon) + "";
             });
-                        app.map.addControl(new OpenLayers.Control.PanZoomBar());
+            app.map.addControl(new OpenLayers.Control.PanZoomBar());
         };
 
     };
@@ -1703,7 +1703,7 @@
             hide      : "explode",
             title     : layer.name,
             width     : 'auto',
-            close     : function() {
+            close     : function () {
                 $(this).dialog('destroy');
                 $html.remove();
                 createLayerPropertiesDialog.$html[layer.lid] = undefined;
@@ -1715,7 +1715,6 @@
     // Object to be used as hash for tracking the $html objects created by createLayerPropertiesDialog;
     // keys are layer lids:
     createLayerPropertiesDialog.$html = {};
-
 
     function activateIdentifyTool () {
         deactivateActiveOpenLayersControls();
@@ -2078,7 +2077,9 @@
     function getCounts (arr) {
         var i = arr.length, // var to loop over
             obj = {}; // obj to store results
-        while (i) obj[arr[--i]] = (obj[arr[i]] || 0) + 1; // count occurrences
+        while (i) {
+            obj[arr[--i]] = (obj[arr[i]] || 0) + 1; // count occurrences
+        }
         return obj;
     }
 
@@ -2086,7 +2087,6 @@
     function getCount (word, arr) {
         return getCounts(arr)[word] || 0;
     }
-    
 
     //
     // exports, for testing:
