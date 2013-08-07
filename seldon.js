@@ -380,50 +380,10 @@
                 var $layerPickerDialog = $("#layerPickerDialog");
                 if ($layerPickerDialog.dialog('isOpen')) {
                     $layerPickerDialog.dialog('close');
-                    $('#tglLyrPickPic').css({
-                        'background-color' : 'black',
-                        'opacity'          : '.4'
-                    });
-                    activeBtn = $(this);
                 } else {
                     $layerPickerDialog.dialog('open');
-                    $('#'+activeBtn[0].children[0].id).css({
-                        'background-color' : 'transparent',
-                        'opacity'          : '1'
-                    });
-                    activeBtn = [];
                 }
-            }).hover(
-                function () {
-                    var $tglLyrPickPic = $('#tglLyrPickPic');
-                    if (activeBtn[0] != this) {
-                        $tglLyrPickPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    } else {
-                        $tglLyrPickPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.75'
-                        });
-                    }
-                    $(this).attr('title', 'Toggle Map Layers');
-                },
-                function () {
-                    var $tglLyrPickPic = $('#tglLyrPickPic');
-                    if (activeBtn[0] != this) {
-                        $tglLyrPickPic.css({
-                            'background-color' : 'transparent',
-                            'opacity'          : '1'
-                        });
-                    } else {
-                        $tglLyrPickPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    }
-                }
-            );
+            });
 
             //
             // turn layerPickerDialog div into a jQuery UI dialog:
@@ -446,50 +406,10 @@
                 var $mapToolsDialog = $("#mapToolsDialog");
                 if ($mapToolsDialog.dialog('isOpen')) {
                     $mapToolsDialog.dialog('close');
-                    $('#tglLegendPic').css({
-                        'background-color' : 'black',
-                        'opacity'          : '.4'
-                    });
-                    activeBtn = $("#btnTglMapTools");
                 } else {
                     $mapToolsDialog.dialog('open');
-                    $('#'+activeBtn[0].children[0].id).css({
-                        'background-color' : 'transparent',
-                        'opacity'          : '1'
-                    });
-                    activeBtn = [];
                 }
-            }).hover(
-                function () {
-                    var $tglLegendPic = $('#tglLegendPic');
-                    if (activeBtn[0] != this) {
-                        $tglLegendPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    } else {
-                        $tglLegendPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.75'
-                        });
-                    }
-                    $(this).attr('title', 'Toggle Map Tools');
-                },
-                function () {
-                    var $tglLegendPic = $('#tglLegendPic');
-                    if (activeBtn[0] != this) {
-                        $tglLegendPic.css({
-                            'background-color' : 'transparent',
-                            'opacity'          : '1'
-                        });
-                    } else {
-                        $tglLegendPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    }
-                }
-            );
+            });
 
             //
             // turn mapToolsDialog div into a jQuery UI dialog:
@@ -562,15 +482,7 @@
             $("#btnPan").click(function () {
                 deactivateActiveOpenLayersControls();
                 app.dragPanTool.activate();
-            }).hover(
-                function () {
-                    $('#panPic').attr('src', 'icons/pan_over.png');
-                    $(this).attr('title', 'Pan');
-                },
-                function () {
-                    $('#panPic').attr('src', 'icons/pan.png');
-                }
-            );
+            });
 
             //
             // zoom in button
@@ -578,42 +490,9 @@
             $("#btnZoomIn").click(function () {
                 deactivateActiveOpenLayersControls();
                 app.zoomInTool.activate();
-                $('#zoomInPic').css({
-                    'background-color' : 'black',
-                    'opacity'          : '.4'
-                });
                 activeBtn = $(this);
-            }).hover(
-                function () {
-                    var $zoomInPic = $('#zoomInPic');
-                    if (activeBtn[0] != this) {
-                        $zoomInPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    } else {
-                        $zoomInPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.75'
-                        });
-                    }
-                    $(this).attr('title', 'Zoom In');
-                },
-                function () {
-                    var $zoomInPic = $('#zoomInPic');
-                    if (activeBtn[0] != this) {
-                        $zoomInPic.css({
-                            'background-color' : 'transparent',
-                            'opacity'          : '1'
-                        });
-                    } else {
-                        $zoomInPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    }
-                }
-            );
+                activeBtn.children().addClass('icon-active');
+            });
 
             //
             // zoom out button
@@ -621,99 +500,25 @@
             $("#btnZoomOut").click(function () {
                 deactivateActiveOpenLayersControls();
                 app.zoomOutTool.activate();
-                $('#zoomOutPic').css({
-                    'background-color' : 'black',
-                    'opacity'          : '.4'
-                });
                 activeBtn = $(this);
-            }).hover(
-                function () {
-                    var $zoomOutPic = $('#zoomOutPic');
-                    if (activeBtn[0] != this) {
-                        $zoomOutPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    } else {
-                        $zoomOutPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.75'
-                        });
-                    }
-                    $(this).attr('title', 'Zoom Out');
-                },
-                function () {
-                    var $zoomOutPic = $('#zoomOutPic');
-                    if (activeBtn[0] != this) {
-                        $zoomOutPic.css({
-                            'background-color' : 'transparent',
-                            'opacity'          : '1'
-                        });
-                    } else {
-                        $zoomOutPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    }
-                }
-            );
+                activeBtn.children().addClass('icon-active');
+            });
 
             //
             // zoom to full extent button
             //
             $("#btnZoomExtent").click(function () {
                 app.zoomToExtent(app.maxExtent);
-            }).hover(
-                function () {
-                    $("#zoomExtentPic").attr('src', 'icons/zoom-extent_over.png');
-                    $(this).attr('title', 'Full Extent');
-                },
-                function () {
-                    $("#zoomExtentPic").attr('src', 'icons/zoom-extent.png');
-                }
-            );
+            });
 
             //
             // identify button
             //
             $("#btnID").click(function () {
                 activateIdentifyTool();
-                $('#idPic').css({
-                    'background-color' : 'black',
-                    'opacity'          : '.4'
-                });
                 activeBtn = $(this);
-            }).hover(
-                function () {
-                    var $idPic = $('#idPic');
-                    if (activeBtn[0] != this) {
-                        $idPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    } else {
-                        $idPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.75'
-                        });
-                    }
-                    $(this).attr('title', 'Identify');
-                },
-                function () {
-                    var $idPic = $('#idPic');
-                    if (activeBtn[0] != this) {
-                        $idPic.css({
-                            'background-color' : 'transparent',
-                            'opacity'          : '1'
-                        });
-                    } else {
-                        $idPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    }
-                }
-            );
+                activeBtn.children().addClass('icon-active');
+            });
 
             //
             // about button
@@ -721,98 +526,29 @@
             $("#btnAbout").click(function () {
                 deactivateActiveOpenLayersControls();
                 showSplashScreen();
-                $('#aboutPic').css({
-                    'background-color' : 'black',
-                    'opacity'          : '.4'
-                });
-                activeBtn = $(this);
-            }).hover(
-                function () {
-                    var $aboutPic = $('#aboutPic');
-                    if (activeBtn[0] != this) {
-                        $('#aboutPic').css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    } else {
-                        $aboutPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.75'
-                        });
-                    }
-                    $(this).attr('title', 'About');
-                },
-                function () {
-                    var $aboutPic = $('#aboutPic');
-                    if (activeBtn[0] != this) {
-                        $aboutPic.css({
-                            'background-color' : 'transparent',
-                            'opacity'          : '1'
-                        });
-                    } else {
-                        $('#aboutPic').css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    }
-                }
-            );
+            });
 
             //
             // previous extent button
             //
             $("#btnPrev").click(function () {
                 app.zoomToPreviousExtent();
-            }).hover(
-                function () {
-                    $('#prevPic').css({
-                        'background-color' : 'black',
-                        'opacity'          : '.4'
-                    });
-                },
-                function () {
-                    $('#prevPic').css({
-                        'background-color' : 'transparent',
-                        'opacity'          : '1'
-                    });
-                }
-            );
+            });
 
             //
             // next extent button
             //
             $("#btnNext").click(function () {
                 app.zoomToNextExtent();
-            }).hover(
-                function () {
-                    $('#nextPic').css({
-                        'background-color' : 'black',
-                        'opacity'          : '.4'
-                    });
-                },
-                function () {
-                    $('#nextPic').css({
-                        'background-color' : 'transparent',
-                        'opacity'          : '1'
-                    });
-                }
-            );
-
+            });
 
             //
             // multigraph button
             //
             $("#btnMultiGraph").click(function () {
                 activateMultigraphTool();
-            }).hover(
-                function () {
-                    $("#multiGraphPic").attr('src', 'icons/multigraph_over.png');
-                    $(this).attr('title', 'Graph NDVI');
-                },
-                function () {
-                    $("#multiGraphPic").attr('src', 'icons/multigraph.png');
-                }
-            );
+                activeBtn.children().addClass('icon-active');
+            });
 
             //Find Area
             var $findArea = $('#findArea');
@@ -1460,10 +1196,7 @@
 
                 controls.deactivate();
                 if (activeBtn.length > 0){ //weve already activated a three-state button
-                    $('#'+activeBtn[0].children[0].id).css({
-                        'background-color' : 'transparent',
-                        'opacity'          : '1'
-                    });
+                    activeBtn.children().removeClass('icon-active');
                     activeBtn = [];
                 }
             }
@@ -1630,11 +1363,7 @@
             title     : "NEMAC GIS Viewer",
             close     : function() {
                 $(this).dialog('destroy');
-                $('#aboutPic').css({
-                    'background-color' : 'transparent',
-                    'opacity'          : '1'
-                    });
-                activeBtn = [];
+                $(this).children().removeClass('icon-active');
             }
         });
         $splashScreenContainer.append($($('#splashScreenContent')));
