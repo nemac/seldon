@@ -1192,7 +1192,29 @@
         //console.log(message);
     }
 
-    fcav.init = function(config,projection,gisServerType) {
+    fcav.init = function (config, projection, gisServerType) {
+        // jrf: Overrides OpenLayers.Map.getCurrentSize since by default it does not
+        //      account for padding, and seldon requires padding on the top and bottom
+        //      for its layout.
+        OpenLayers.Map.prototype.getCurrentSize = function () {
+            var size = new OpenLayers.Size(this.div.clientWidth, 
+                                           this.div.clientHeight);
+
+            if (size.w == 0 && size.h == 0 || isNaN(size.w) && isNaN(size.h)) {
+                size.w = this.div.offsetWidth;
+                size.h = this.div.offsetHeight;
+            }
+            if (size.w == 0 && size.h == 0 || isNaN(size.w) && isNaN(size.h)) {
+                size.w = parseInt(this.div.style.width, 10);
+                size.h = parseInt(this.div.style.height, 10);
+            }
+
+            // getCurrentSize now accounts for padding
+            size.h = size.h - parseInt($(this.div).css("padding-top"), 10) - parseInt($(this.div).css("padding-bottom"), 10);
+
+            return size;
+        };
+
         app = new fcav.App();
         var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
         app.launch(config, shareUrlInfo);
