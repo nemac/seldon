@@ -2,12 +2,12 @@
     "use strict";
 
     var EventEmitter = window.EventEmitter,
-        fcav = {},
+        seldon = {},
         activeBtn = [],
         areasList = [],
         app;
 
-    fcav.App = function () {
+    seldon.App = function () {
         EventEmitter.call(this);
         this.map         = undefined; // OpenLayers map object
         this.projection  = undefined; // OpenLayers map projection
@@ -318,8 +318,8 @@
                     }
                     if (stringContainsChar(this.name, 'MaskFor')) {
                         //if this layer is a mask add to layerMask list
-                        if (layerMask.indexOf(this.fcavLayer.lid.substring(this.fcavLayer.lid.indexOf("MaskFor"),this.fcavLayer.lid.length).replace("MaskFor","")) == -1) {
-                            layerMask.push(this.fcavLayer.lid.substring(this.fcavLayer.lid.indexOf("MaskFor"),this.fcavLayer.lid.length).replace("MaskFor",""));
+                        if (layerMask.indexOf(this.seldonLayer.lid.substring(this.seldonLayer.lid.indexOf("MaskFor"),this.seldonLayer.lid.length).replace("MaskFor","")) == -1) {
+                            layerMask.push(this.seldonLayer.lid.substring(this.seldonLayer.lid.indexOf("MaskFor"),this.seldonLayer.lid.length).replace("MaskFor",""));
                         }
                         //make sure the parent to the layerMask stays on the share map url
                         if (layerLids.indexOf(this.name.substring(0, this.name.indexOf("MaskFor"))) == -1) {
@@ -328,7 +328,7 @@
                         }
                     } else { 
                         //otherwise add to layerLids
-                        layerLids.push(this.fcavLayer.lid);
+                        layerLids.push(this.seldonLayer.lid);
                         layerAlphas.push(op);
                     } //end
 
@@ -603,7 +603,7 @@
                 //at the app level by loop through each currently active layer
                 for (var i = app.map.getNumLayers()-1; i > 0; i--) {
                     var currLayer = app.map.layers[i];
-                    if (currLayer.fcavLayer.mask) {
+                    if (currLayer.seldonLayer.mask) {
                         //if not already in the active mask list add to keep track
                         if (this.activeMask.indexOf(maskName.replace("MaskFor","")) == -1) {
                             this.activeMask.push(maskName.replace("MaskFor",""));
@@ -612,14 +612,14 @@
                         //handle the case in deactivateMask where there are multiple mask on
                         //and how to wait until the last mask is off to re-activate the parent.
                         //if not already in the active mask parent list add to keep track
-                        if (this.activeMaskParents.indexOf(currLayer.fcavLayer.lid) == -1) {
-                            if (currLayer.fcavLayer.lid.indexOf("MaskFor") > -1) {
-                                this.activeMaskParents.push(currLayer.fcavLayer.lid.substring(0,currLayer.fcavLayer.lid.indexOf("MaskFor")));
+                        if (this.activeMaskParents.indexOf(currLayer.seldonLayer.lid) == -1) {
+                            if (currLayer.seldonLayer.lid.indexOf("MaskFor") > -1) {
+                                this.activeMaskParents.push(currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("MaskFor")));
                             } else {
-                                this.activeMaskParents.push(currLayer.fcavLayer.lid);
+                                this.activeMaskParents.push(currLayer.seldonLayer.lid);
                             }
                         }
-                        currLayer.fcavLayer.activateMask(maskName);  //activate mask at the layer level
+                        currLayer.seldonLayer.activateMask(maskName);  //activate mask at the layer level
                     } else { //we still need to keep track of active mask
                         //if not already in the active mask list add to keep track
                         if (this.activeMask.indexOf(maskName.replace("MaskFor","")) == -1) {
@@ -642,23 +642,23 @@
         this.deactivateMask = function (maskLayerName) {
             for (var i = app.map.getNumLayers()-1; i > 0; i--) {
                 var currLayer = app.map.layers[i];
-                if (currLayer.fcavLayer.mask) {
+                if (currLayer.seldonLayer.mask) {
                     //roll back to parent layer only if there are no other mask
                     //currently active for the parent layer
                     if (maskLayerName == currLayer.name.substring(currLayer.name.indexOf("MaskFor"),currLayer.name.length)) {
                         if (getCount(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor")), app.activeMaskParents) == 1) {
                             var parentLayer = new Layer({
                                     lid              : currLayer.name.substring(0,currLayer.name.indexOf("MaskFor")),
-                                    visible          : currLayer.fcavLayer.visible,
-                                    url              : currLayer.fcavLayer.url,
-                                    srs              : currLayer.fcavLayer.srs,
-                                    layers           : currLayer.fcavLayer.layers.substring(0,currLayer.fcavLayer.layers.indexOf("MaskFor")),
-                                    identify         : currLayer.fcavLayer.identify,
+                                    visible          : currLayer.seldonLayer.visible,
+                                    url              : currLayer.seldonLayer.url,
+                                    srs              : currLayer.seldonLayer.srs,
+                                    layers           : currLayer.seldonLayer.layers.substring(0,currLayer.seldonLayer.layers.indexOf("MaskFor")),
+                                    identify         : currLayer.seldonLayer.identify,
                                     name             : currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))+"MaskParent",
                                     mask             : 'true',
-                                    legend           : currLayer.fcavLayer.legend
+                                    legend           : currLayer.seldonLayer.legend
                             });
-                            app.map.layers[i].fcavLayer.removeFromLegend();
+                            app.map.layers[i].seldonLayer.removeFromLegend();
                             app.map.removeLayer(app.map.layers[i]);
                             app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")), 1);
                             app.activeMaskParents.splice(app.activeMaskParents.indexOf(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))), 1);
@@ -670,7 +670,7 @@
                             for (var i = app.map.getNumLayers()-1; i > 0; i--) {
                                 var currLayer = app.map.layers[i];
                                 if (currLayer.name.indexOf(maskLayerName) > -1) {
-                                    app.map.removeLayer(currLayer.fcavLayer.openLayersLayer);
+                                    app.map.removeLayer(currLayer.seldonLayer.openLayersLayer);
                                 }
                             }
                             app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")), 1);
@@ -691,9 +691,9 @@
         this.deactivateMaskParent = function (lid) {
             for (var i = app.map.getNumLayers()-1; i > 0; i--) {
                 var currLayer = app.map.layers[i];
-                if (currLayer.fcavLayer.mask) {
+                if (currLayer.seldonLayer.mask) {
                     if (lid == currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))) {
-                        this.map.layers[i].fcavLayer.removeFromLegend();
+                        this.map.layers[i].seldonLayer.removeFromLegend();
                         this.map.removeLayer(app.map.layers[i]);
                         this.updateShareMapUrl();
                         //this.deactivateMask(currLayer.name.substring(lid.length,currLayer.name.length));
@@ -934,7 +934,7 @@
                     "zoomend": function() { app.emit("extentchange"); }
                 },
                 zoom: 1,
-                projection: new OpenLayers.Projection(fcav.projection)
+                projection: new OpenLayers.Projection(seldon.projection)
             });
 
             // set the base layer, but bypass setBaseLayer() here, because that function initiates an ajax request
@@ -958,7 +958,7 @@
         };
 
     };
-    EventEmitter.declare(fcav.App);
+    EventEmitter.declare(seldon.App);
 
     function BaseLayer (settings) {
         if (!settings) { return; }
@@ -1030,7 +1030,7 @@
                                          options
                                         );
             this.openLayersLayer.setOpacity(1-parseFloat(this.transparency)/100.0);
-            this.openLayersLayer.fcavLayer = this;
+            this.openLayersLayer.seldonLayer = this;
             return this.openLayersLayer;
         };
         this.activate = function (isMask) {
@@ -1040,8 +1040,8 @@
             //reorder maps layers based on the current layer index
             var lyrJustAdded = app.map.layers[app.map.getNumLayers()-1];
             for (var i = app.map.getNumLayers()-2; i > 0; i--) {
-                var nextLayerDown = app.map.layers[i]; //use app.map.layers[2].fcavLayer.index
-                if (this.index > nextLayerDown.fcavLayer.index) {
+                var nextLayerDown = app.map.layers[i]; //use app.map.layers[2].seldonLayer.index
+                if (this.index > nextLayerDown.seldonLayer.index) {
                     app.map.setLayerIndex(lyrJustAdded, i);
                 }
             }
@@ -1097,7 +1097,7 @@
                     for (var i = app.map.getNumLayers()-1; i > 0; i--) {
                         var currLayer = app.map.layers[i];
                         if (currLayer.name.substring(0,this.lid.length) == this.lid) {
-                            app.map.removeLayer(currLayer.fcavLayer.openLayersLayer);
+                            app.map.removeLayer(currLayer.seldonLayer.openLayersLayer);
                         }
                     }
                 }
@@ -1192,7 +1192,7 @@
         //console.log(message);
     }
 
-    fcav.init = function (config, projection, gisServerType) {
+    seldon.init = function (config, projection, gisServerType) {
         // jrf: Overrides OpenLayers.Map.getCurrentSize since by default it does not
         //      account for padding, and seldon requires padding on the top and bottom
         //      for its layout.
@@ -1215,12 +1215,12 @@
             return size;
         };
 
-        app = new fcav.App();
+        app = new seldon.App();
         var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
         app.launch(config, shareUrlInfo);
-        fcav.app = app;
-        fcav.projection = projection;
-        fcav.gisServerType = gisServerType;
+        seldon.app = app;
+        seldon.projection = projection;
+        seldon.gisServerType = gisServerType;
     };
 
     function deactivateActiveOpenLayersControls () {
@@ -1540,7 +1540,7 @@
     //
     function createWMSGetFeatureInfoRequestURL (serviceUrl, layers, srs, x, y) {
         var extent = app.map.getExtent();
-        if (fcav.gisServerType === "ArcGIS") {
+        if (seldon.gisServerType === "ArcGIS") {
             extent = extent.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
         }
         return Mustache.render(
@@ -1623,7 +1623,7 @@
                             ),
                             {
                                 name  : name,
-                                label : this.fcavLayer.name
+                                label : this.seldonLayer.name
                             }
                         );
                     }
@@ -1671,7 +1671,7 @@
                                     // if so handle the xml that comes back differently
                                     // on a related note ArcGIS WMS Raster layers do not support
                                     // GetFeatureInfo
-                                    if (fcav.gisServerType == "ArcGIS") {
+                                    if (seldon.gisServerType == "ArcGIS") {
                                         var result = getLayerResultsFromArcXML($gml, this);
                                     } else { //assuming MapServer at this point
                                         var result = getLayerResultsFromGML($gml, this);
@@ -1776,19 +1776,19 @@
                 }
                 app.map.addPopup(lastPopup =
                                  new OpenLayers.Popup.FramedCloud(
-                                     "fcavMultigraphPopup",
+                                     "seldonMultigraphPopup",
                                      coords,
                                      null,
-                                     '<div id="fcavMultigraphMessage"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="fcavMultigraph" style="width: 600px; height: 300px;"></div>',
+                                     '<div id="seldonMultigraphMessage"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="seldonMultigraph" style="width: 600px; height: 300px;"></div>',
                                      null,
                                      true));
-                var fcavMultigraph = window.multigraph.jQuery('#fcavMultigraph'),
-                    promise = fcavMultigraph.multigraph({
+                var seldonMultigraph = window.multigraph.jQuery('#seldonMultigraph'),
+                    promise = seldonMultigraph.multigraph({
                     //NOTE: coords.lon and coords.lat on the next line are really x,y coords in EPSG:900913, not lon/lat:
                         'mugl'   : "http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+coords.lon+","+coords.lat
                     });
-                fcavMultigraph.multigraph('done', function () {
-                    var multigraphMessage = $('#fcavMultigraphMessage');
+                seldonMultigraph.multigraph('done', function () {
+                    var multigraphMessage = $('#seldonMultigraphMessage');
                     multigraphMessage.empty();
                     multigraphMessage.text(Mustache.render('MODIS NDVI for Lat: {{{lat}}} Lon: {{{lon}}}',
                                                            { lat : sprintf("%.4f", lonlat.lat),
@@ -1857,14 +1857,14 @@
     //
     // exports, for testing:
     //
-    fcav.BaseLayer                         = BaseLayer;
-    fcav.AccordionGroup                    = AccordionGroup;
-    fcav.AccordionGroupSublist             = AccordionGroupSublist;
-    fcav.Layer                             = Layer;
-    fcav.Theme                             = Theme;
-    fcav.createWMSGetFeatureInfoRequestURL = createWMSGetFeatureInfoRequestURL;
-    fcav.stringContainsChar                = stringContainsChar;
-    fcav.ShareUrlInfo                      = ShareUrlInfo;
-    window.fcav                            = fcav;
+    seldon.BaseLayer                         = BaseLayer;
+    seldon.AccordionGroup                    = AccordionGroup;
+    seldon.AccordionGroupSublist             = AccordionGroupSublist;
+    seldon.Layer                             = Layer;
+    seldon.Theme                             = Theme;
+    seldon.createWMSGetFeatureInfoRequestURL = createWMSGetFeatureInfoRequestURL;
+    seldon.stringContainsChar                = stringContainsChar;
+    seldon.ShareUrlInfo                      = ShareUrlInfo;
+    window.seldon                            = seldon;
 
 }(jQuery));
