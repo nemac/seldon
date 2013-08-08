@@ -595,6 +595,27 @@
                 $this.mouseup(mouseUpHandler);
             });
 
+            // closes accordion tools by default on small browsers
+            if ($(window).width() < 650) {
+                $('#mapToolsDialog').dialog('close');
+                $('#layerPickerDialog').dialog('close');
+            }
+
+            // closes and reopens accordion tools on mobile devices. They tend to lose their proper
+            // position otherwise.
+            window.addEventListener("orientationchange", function () {
+                var $mapToolsDialog    = $('#mapToolsDialog'),
+                    $layerPickerDialog = $('#layerPickerDialog');
+
+                if ($mapToolsDialog.dialog('isOpen')) {
+                    $mapToolsDialog.dialog('close').dialog('open');
+                }
+
+                if ($layerPickerDialog.dialog('isOpen')) {
+                    $layerPickerDialog.dialog('close').dialog('open');
+                }
+            }, false);
+
         }; //end app.launch()
 
         //jdm: 7/9/12 - for global mask functionality at app level
