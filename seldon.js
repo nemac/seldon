@@ -1786,7 +1786,8 @@
                 var seldonMultigraph = window.multigraph.jQuery('#seldonMultigraph'),
                     promise = seldonMultigraph.multigraph({
                     //NOTE: coords.lon and coords.lat on the next line are really x,y coords in EPSG:900913, not lon/lat:
-                        'mugl'   : "http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+coords.lon+","+coords.lat
+                        'mugl'   : "http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+coords.lon+","+coords.lat,
+                        'swf'    : 'libs/Multigraph.swf'
                     });
                 seldonMultigraph.multigraph('done', function () {
                     var multigraphMessage = $('#seldonMultigraphMessage');
