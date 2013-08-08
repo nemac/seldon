@@ -547,6 +547,7 @@
             //
             $("#btnMultiGraph").click(function () {
                 activateMultigraphTool();
+                activeBtn = $(this);
                 activeBtn.children().addClass('icon-active');
             });
 
