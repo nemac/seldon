@@ -360,6 +360,10 @@ Phone Portrait
         display: none;
     }
 
+    #titlebar h2 {
+        font-size: 1em;
+    }
+
     #header {
         padding-bottom: 1px;
         text-align: center;
@@ -383,10 +387,6 @@ Phone Portrait
 
     .link {
         padding-right: 2px;
-    }
-
-    #titlebar h2 {
-        font-size: 1em;
     }
 
     #baseCombo,
