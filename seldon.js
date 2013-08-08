@@ -389,7 +389,7 @@
             // turn layerPickerDialog div into a jQuery UI dialog:
             //
             $("#layerPickerDialog").dialog({ zIndex   : 10050,
-                                             position : { my : "left top", at: "left top+100"},
+                                             position : { my : "left top", at: "left+5 top+100"},
                                              autoOpen : true,
                                              hide     : "fade"
                                            });
@@ -415,7 +415,7 @@
             // turn mapToolsDialog div into a jQuery UI dialog:
             //
             $("#mapToolsDialog").dialog({ zIndex   : 10050,
-                                          position : { my : "right top", at: "right top+100"},
+                                          position : { my : "right top", at: "right-5 top+100"},
                                           autoOpen : true,
                                           hide     : "fade"
                                         });
