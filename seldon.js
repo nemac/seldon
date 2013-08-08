@@ -603,18 +603,21 @@
 
             // closes and reopens accordion tools on mobile devices. They tend to lose their proper
             // position otherwise.
-            window.addEventListener("orientationchange", function () {
-                var $mapToolsDialog    = $('#mapToolsDialog'),
-                    $layerPickerDialog = $('#layerPickerDialog');
+            if (window.addEventListener) {
+                window.addEventListener("orientationchange", function () {
+                    var $mapToolsDialog    = $('#mapToolsDialog'),
+                        $layerPickerDialog = $('#layerPickerDialog');
 
-                if ($mapToolsDialog.dialog('isOpen')) {
-                    $mapToolsDialog.dialog('close').dialog('open');
-                }
+                    window.scroll(0, 0);
+                    if ($mapToolsDialog.dialog('isOpen')) {
+                        $mapToolsDialog.dialog('close').dialog('open');
+                    }
 
-                if ($layerPickerDialog.dialog('isOpen')) {
-                    $layerPickerDialog.dialog('close').dialog('open');
-                }
-            }, false);
+                    if ($layerPickerDialog.dialog('isOpen')) {
+                        $layerPickerDialog.dialog('close').dialog('open');
+                    }
+                }, false);
+            }
 
         }; //end app.launch()
 
