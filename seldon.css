@@ -387,7 +387,6 @@ Phone Portrait
 
     #titlebar h2 {
         font-size: 1em;
-        background: #f00;
     }
 
     #baseCombo,
@@ -400,10 +399,6 @@ Phone Portrait
 Phone Landscape
 */
 @media (min-width: 481px) and (max-width: 650px) {
-    h2 {
-        background: #0f0;
-    }
-
     .hidden-phone-landscape,
     .olControlScaleBar,
     .olControlPanZoomBar {
@@ -440,10 +435,6 @@ Phone Landscape
 Tablet Portrait
 */
 @media (min-width: 651px) and (max-width: 768px) {
-    h2 {
-        background: #ff0;
-    }
-
     .hidden-tablet-portait,
     .olControlPanZoomBar {
         display: none;
@@ -458,10 +449,6 @@ Tablet Portrait
 Tablet Landscape
 */
 @media (min-width: 769px) and (max-width: 1120px) {
-    h2 {
-        background: #00f;
-    }
-
     #header {
         padding-bottom: 1px;
     }
