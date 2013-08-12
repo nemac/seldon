@@ -1,0 +1,101 @@
+@charset "utf-8";
+/* CSS Document */
+
+/*
+Global Styles
+*/
+* html .gainlayout {
+    height: 1%;
+}
+
+body, td, th {
+    padding: 0;
+    margin: 0;
+    color: #222;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+}
+
+/*
+Header Styles
+*/
+#titleBar {
+    position: relative;
+    z-index: 1999;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    margin: 0;
+}
+
+h2 {
+    padding-bottom: 3px;
+    margin: 0 auto 0 auto;
+    color: #e6e4d8;
+    font-size: 1.25em;
+    font-weight: bold;
+    font-style: italic;
+    letter-spacing: -1px;
+}
+
+#header {
+    position: relative;
+    padding: 0;
+    padding-left: 3px;
+    border: 0;
+    border-bottom: #666 thin solid;
+    margin: 0;
+}
+
+.btn-large {
+    width: 31px;
+}
+
+#txtFindArea {
+    padding-top: 3px;
+}
+
+/*
+Map Styles
+*/
+#map {
+    bottom: 0px;
+    top: 0px;
+    left: 0px;
+    right: 0px;    
+    padding-top: 55px !important;
+    padding-bottom: 13px !important;
+}
+
+/*
+Footer Styles
+*/
+#footer {
+    position: absolute;
+    z-index: 2001;
+    bottom: 0px;
+    width: 100%;
+}
+
+/*
+Other Popup Styles
+*/
+#identify_results, td {
+    border-collapse: collapse;
+//	border: .05em solid #C0C0C0;
+}
+
+/*
+Deprecated and should be removed
+*/
+.leftbuttons {
+    text-align: left;
+    width: 20%;
+}
+
+#customZoom {
+    z-index: 1001;
+    position: absolute;
+    right: 100px;
+    top: 100px;
+}

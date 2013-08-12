@@ -1,0 +1,469 @@
+/*
+Global Styles
+*/
+body {
+    width: 100%;
+    height: 100%;
+}
+
+body, td, th {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    color: #222;
+}
+
+a {
+    color: #000000;
+    text-decoration: none;
+}
+
+.nonselectable {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/*
+Header Styles
+*/
+#titleBar {
+    position: relative;
+    z-index: 10;
+    display: block;
+    padding: 5px;
+    background: #665f45;
+    font-family: Verdana, Geneva, sans-serif;
+}
+
+#titlebar h2 {
+    margin: 0 auto 0 auto;
+    color: #e6e4d8;
+    font-size: 1.25em;
+    font-weight: bold;
+    font-style: italic;
+    letter-spacing: -1px;
+}
+
+#header {
+    position: relative;
+    z-index: 10;
+    display: block;
+    height: auto;
+    padding-left: 3px;
+    box-shadow: 0px 1px 2px #333;
+    background: #dfddd0;
+}
+
+.icon-active {
+    background-color: #000;
+    opacity: .75;
+}
+
+.icon:hover,
+.icon-active:hover {
+    background-color: #000;
+    opacity: .4;
+}
+
+.header-bar {
+    display: inline-block;
+}
+
+#btn-small-group {
+    vertical-align: top;
+    padding-top: 5px;
+}
+
+.btn-large {
+    position: relative;
+    top: 3px;
+    width: 35px;
+}
+
+.input {
+    vertical-align: top;
+}
+
+.input-select {
+    padding-top: 6px;
+}
+
+#txtFindArea {
+    display: inline-block;
+    vertical-align: top;
+}
+
+#findAreaLabel {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+}
+
+#findArea {
+    position: relative;
+    top: 2px;
+}
+
+#baseCombo,
+#themeCombo,
+#findArea {
+    margin-left: 2px;
+    margin-right: 2px;
+}
+/*
+Map Styles
+*/
+#map {
+    position: absolute;
+    z-index: 1;
+    top: 0px;
+    left: 0px;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    padding-top: 65px !important;
+    padding-bottom: 23px !important;
+}
+
+/*
+Footer Styles
+*/
+#footer {
+    position: absolute;
+    z-index: 10;
+    bottom: 0px;
+    left: 0px;
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    height: auto;
+    padding: 3px;
+    background: #dfddd0;
+    text-align: center;
+}
+
+#links {
+    float: left;
+}
+
+.link {
+    padding-right: 5px;
+    border-right: 1px solid #444;
+}
+
+#latLonTracker {
+    float: right;
+    overflow: hidden;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/*
+Map Layers & Map Tools Styles
+*/
+#mapToolsDialog {
+    position: relative;
+    z-index: 10003;
+    padding: 0px;
+}
+
+#mapToolsAccordion {
+    width: 100%;
+    height: 400px;
+    background: #fff;
+    font-size: .80em;
+}
+
+textarea.shareMapUrl {
+    width: 100%;
+    height: 120px;
+    resize: none;
+}
+
+#layerPickerDialog {
+    position: relative;
+    z-index: 10004;
+    padding: 0px;
+}
+
+#layerPickerAccordion {
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    font-size: .80em;
+}
+
+.layerPropertiesIcon {
+    margin-left: 5px;
+}
+
+.layer-properties-dialog table td{
+    border-collapse: collapse;
+}
+
+.layer-properties-dialog td {
+    white-space: nowrap;
+}
+
+.layer-properties-dialog .transparency-text {
+    border-color:transparent;
+}
+
+.layer-properties-dialog .transparency-slider {
+    width: 120px;
+    margin-left: 8px;
+    margin-right: 5px;
+}
+
+/*
+Other Popup Styles
+*/
+.splashScreenStyle {
+    opacity: 0.9 !important;
+}
+
+#identify_results {
+    border-collapse: collapse; 
+}
+
+#identify_results td {
+    border: .05em solid #c0c0c0;
+    border-collapse: collapse; 
+}
+
+#identify_results td.layer-results {
+    width: 200px;
+}
+
+#identify_results td.layer-label {
+    font-weight: bold;
+    text-align: right;
+}
+
+#seldonMultigraphMessage {
+    margin-bottom: 4px;
+    font-weight: bold;
+}
+
+/*
+Open Layers element Styles
+*/
+.olControlScaleBar {
+    bottom: 30px;
+    left: 15px;
+    color: black;
+    font-family: sans-serif;
+}
+
+.olControlScaleBarBar {
+    top: 12px;
+    height: 11px;
+    background-color: darkblue;
+    background-position: 0 0;
+    background-repeat: repeat-x;
+}
+
+.olControlScaleBarBarAlt {
+    top: 12px;
+    height: 11px;
+    background-color: darkblue;
+    background-position: 0 0;
+    background-repeat: repeat-x;
+}
+
+.olControlScaleBarMarkerMajor {
+    z-index: 5000;
+    top: 12px;
+    width: 13px;
+    height: 13px;
+    background-position: 0 0;
+    background-repeat: no-repeat;
+}
+
+.olControlScaleBarMarkerMinor {
+    z-index: 5000;
+    top: 12px;
+    width: 13px;
+    height: 13px;
+    background-position: 0 0;
+    background-repeat: no-repeat;
+}
+
+.olControlScaleBarNumbersBox {
+    top: 24px;
+    width: 40px;
+    height: 13px;
+    font-size: 9px;
+}
+
+.olControlScaleBarLabelBox {
+    top: -2px;
+    height: 15px;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+}
+
+.olControlScaleBarLabelBoxSingleLine {
+    top: 0px;
+    left: 10px;
+    width: 35px;
+    height: 15px;
+    font-size: 13px;
+}
+
+.olControlAttribution {
+    bottom: 5px;
+    font-size: 9px;
+}
+
+#layerPickerAccordion .baseLbl {
+    background: #cdcdcd;
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+#mapToolsAccordion .baseLayersDiv .labelSpan {
+    font-style: italic;
+    font-weight: bold;
+}
+
+/*
+jQuery element Styles
+*/
+.ui-autocomplete {
+    position: absolute;
+    z-index: 4000 !important;
+    cursor: default;
+}
+
+.ui-accordion .ui-accordion-content {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.ajax-loader-image {
+    display: inline;
+    width: 16px;
+    height: 16px;
+}
+
+/*
+Phone Portrait
+*/
+@media (max-width: 480px) {
+    .hidden-phone-portrait,
+    .olControlScaleBar,
+    .olControlPanZoomBar {
+        display: none;
+    }
+
+    #titlebar h2 {
+        font-size: 1em;
+    }
+
+    #header {
+        padding-bottom: 1px;
+        text-align: center;
+    }
+
+    .btn-large {
+        width: auto;
+    }
+
+    #map {
+        padding-bottom: 12px !important;
+    }
+
+    #footer {
+        font-size: 5.6pt;
+    }
+
+    #links {
+        float: none;
+    }
+
+    .link {
+        padding-right: 2px;
+    }
+
+    #baseCombo,
+    #themeCombo {
+        width: 85px;
+    }
+}
+
+/*
+Phone Landscape
+*/
+@media (min-width: 481px) and (max-width: 650px) {
+    .hidden-phone-landscape,
+    .olControlScaleBar,
+    .olControlPanZoomBar {
+        display: none;
+    }
+
+    #header {
+        padding-bottom: 1px;
+        text-align: center;
+    }
+
+    .btn-large {
+        width: auto;
+    }
+
+    #themeCombo {
+        width: 200px;
+    }
+
+    #map {
+        padding-bottom: 10px !important;
+    }
+
+    #footer {
+        font-size: 6pt;
+    }
+
+    .link {
+        padding-right: 2px;
+    }
+}
+
+/*
+Tablet Portrait
+*/
+@media (min-width: 651px) and (max-width: 768px) {
+    .hidden-tablet-portait,
+    .olControlPanZoomBar {
+        display: none;
+    }
+
+    #header {
+        padding-bottom: 1px;
+    }
+}
+
+/*
+Tablet Landscape
+*/
+@media (min-width: 769px) and (max-width: 1120px) {
+    #header {
+        padding-bottom: 1px;
+    }
+
+    #baseCombo,
+    #themeCombo {
+        width: 85px;
+    }
+}
+
+/*
+Narrow Browser
+*/
+@media (min-width: 1121px) and (max-width: 1180px) {
+    #themeCombo {
+        width: 260px;
+    }
+}
