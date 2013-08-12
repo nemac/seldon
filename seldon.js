@@ -2,12 +2,12 @@
     "use strict";
 
     var EventEmitter = window.EventEmitter,
-        fcav = {},
+        seldon = {},
         activeBtn = [],
         areasList = [],
         app;
 
-    fcav.App = function () {
+    seldon.App = function () {
         EventEmitter.call(this);
         this.map         = undefined; // OpenLayers map object
         this.projection  = undefined; // OpenLayers map projection
@@ -35,7 +35,7 @@
 
         // array of saved extent objects; each entry is a JavaScript object of the form
         //     { left : VALUE, bottom : VALUE, right : VALUE, top : VALUE }
-        this.savedExtents            = [];
+        this.savedExtents = [];
 
         // index of the "current" extent in the above array:
         this.currentSavedExtentIndex = -1;
@@ -45,7 +45,7 @@
         // current one, because sometimes OpenLayers fires multiple events when the extent
         // changes, causing this function to be called multiple times with the same
         // extent
-        this.saveCurrentExtent = function() {
+        this.saveCurrentExtent = function () {
             var newExtent,
                 currentSavedExtent,
                 newSavedExtents,
@@ -64,7 +64,7 @@
 
             // chop off the list after the current position
             newSavedExtents = [];
-            for (i=0; i<=this.currentSavedExtentIndex; ++i) {
+            for (i = 0; i <= this.currentSavedExtentIndex; ++i) {
                 newSavedExtents.push(this.savedExtents[i]);
             }
             this.savedExtents = newSavedExtents;
@@ -74,7 +74,7 @@
             ++this.currentSavedExtentIndex;
         };
 
-        this.zoomToExtent = function(extent, save) {
+        this.zoomToExtent = function (extent, save) {
             if (save === undefined) {
                 save = true;
             }
@@ -86,20 +86,21 @@
             //$('#extentOutput').empty().append($(this.printSavedExtents()));
         };
 
-        this.zoomToPreviousExtent = function() {
+        this.zoomToPreviousExtent = function () {
             if (this.currentSavedExtentIndex > 0) {
                 --this.currentSavedExtentIndex;
                 this.zoomToExtent(this.savedExtents[this.currentSavedExtentIndex], false);
             }
         };
-        this.zoomToNextExtent = function() {
+
+        this.zoomToNextExtent = function () {
             if (this.currentSavedExtentIndex < this.savedExtents.length-1) {
                 ++this.currentSavedExtentIndex;
                 this.zoomToExtent(this.savedExtents[this.currentSavedExtentIndex], false);
             }
         };
 
-        this.printSavedExtents = function() {
+        this.printSavedExtents = function () {
             // This function is for debugging only and is not normally used.  It returns an HTML
             // table showing the current savedExtents list, and the current position within the list.
             var html = "<table>";
@@ -122,7 +123,7 @@
             return html;
         };
 
-        this.setBaseLayer = function(baseLayer) {
+        this.setBaseLayer = function (baseLayer) {
             var app = this;
             $.ajax({
                 url: baseLayer.url + '?f=json&pretty=true',
@@ -156,7 +157,7 @@
                 accordionGroup,
                 labelElem,
                 textElem,
-                maskLabelElem, 
+                maskLabelElem,
                 maskTextElem,
                 activeMaskLayers = [];
 
@@ -174,7 +175,7 @@
 
             $layerPickerAccordion.listAccordion({
                 heightStyle : 'content',
-                change     : function(event, ui) {
+                change      : function (event, ui) {
                     var accordionGroupIndex = $layerPickerAccordion.accordion('option', 'active');
                     app.setAccordionGroup(theme.accordionGroups[accordionGroupIndex]);
                 }
@@ -221,38 +222,36 @@
                         layer.addListener("transparency", function () {
                             app.updateShareMapUrl();
                         });
-                        
+
                         labelElem = document.createElement("label");
                         textElem = document.createTextNode(layer.name);
                         labelElem.setAttribute("for", "chk" + layer.lid);
                         labelElem.appendChild(textElem);
 
-                        
-                        
-                        //jdm 5/28/13: if there is a mask for this layer then we will provide a status 
+
+                        //jdm 5/28/13: if there is a mask for this layer then we will provide a status
                         //as to when that mask is active
                         var $testForMask = layer.mask;
-                        if ($testForMask){                        
+                        if ($testForMask) {
                             maskLabelElem = document.createElement("label");
                             maskTextElem = document.createTextNode(""); //empty until active, if active then put (m)
                             maskLabelElem.setAttribute("id", "mask-status" + layer.lid);
-                            maskLabelElem.appendChild(maskTextElem);                        
+                            maskLabelElem.appendChild(maskTextElem);
                             // add the layer to the accordion group
                             $layerPickerAccordion.listAccordion('addSublistItem', s,
                                                                 [createLayerToggleCheckbox(layer),
                                                                  labelElem,
                                                                  createLayerPropertiesIcon(layer),
                                                                  maskLabelElem]);
-                        }
-                        else { //no mask for this layer
+                        } else { //no mask for this layer
                             // add the layer to the accordion group
                             $layerPickerAccordion.listAccordion('addSublistItem', s,
                                                                 [createLayerToggleCheckbox(layer),
                                                                  labelElem,
-                                                                 createLayerPropertiesIcon(layer)]);                        
+                                                                 createLayerPropertiesIcon(layer)]);
                         }
-                        
-                        
+
+
                         // Decide whether to activate the layer.  If we received a layer list in the
                         // options arg, active the layer only if it appears in that list.  If we
                         // received no layer list in the options arg, activate the layer if the layer's
@@ -266,7 +265,7 @@
             }
 
             $layerPickerAccordion.accordion("refresh");
-            
+
             // if page doesn't have layerPickerAccordion, insert it
             if (flag === true) {
                 $("#layerPickerDialog").append($layerPickerAccordion);
@@ -282,25 +281,19 @@
             $('#layerPickerDialog').scrollTop(0);
             $('#mapToolsDialog').scrollTop(0);
             app.emit("themechange");
-            
+
             //jdm 6/28/13: do a check to see if there is a corresponding active mask in options.shareUrlMasks
             //can be multiple mask per a parent layer
             if (options.shareUrlMasks !== undefined) {
-                for (var m=0;m<options.shareUrlMasks.length;m++) {
+                for (var m = 0; m < options.shareUrlMasks.length; m++) {
                     //we have already activated the respective parent layers
                     //so so we have to go through the masking process
-                    this.setMask(true, "MaskFor"+options.shareUrlMasks[m])
+                    this.setMask(true, "MaskFor"+options.shareUrlMasks[m]);
                 }
-            }                  
-            
-            //Go through the layers that currently have mask active and 
-            //update the status accordingly
-            // for (var n=0;n<activeMaskLayers.length;n++) {
-                 // $('#mask-status'+activeMaskLayers[n]).text("(m)");
-            // }
+            }
         };
 
-        this.shareUrl = function() {
+        this.shareUrl = function () {
             if (!this.currentTheme) { return undefined; }
             if (!this.currentAccordionGroup) { return undefined; }
             if (!this.currentBaseLayer) { return undefined; }
@@ -325,8 +318,8 @@
                     }
                     if (stringContainsChar(this.name, 'MaskFor')) {
                         //if this layer is a mask add to layerMask list
-                        if (layerMask.indexOf(this.fcavLayer.lid.substring(this.fcavLayer.lid.indexOf("MaskFor"),this.fcavLayer.lid.length).replace("MaskFor","")) == -1) {
-                            layerMask.push(this.fcavLayer.lid.substring(this.fcavLayer.lid.indexOf("MaskFor"),this.fcavLayer.lid.length).replace("MaskFor",""));
+                        if (layerMask.indexOf(this.seldonLayer.lid.substring(this.seldonLayer.lid.indexOf("MaskFor"),this.seldonLayer.lid.length).replace("MaskFor","")) == -1) {
+                            layerMask.push(this.seldonLayer.lid.substring(this.seldonLayer.lid.indexOf("MaskFor"),this.seldonLayer.lid.length).replace("MaskFor",""));
                         }
                         //make sure the parent to the layerMask stays on the share map url
                         if (layerLids.indexOf(this.name.substring(0, this.name.indexOf("MaskFor"))) == -1) {
@@ -335,14 +328,14 @@
                         }
                     } else { 
                         //otherwise add to layerLids
-                        layerLids.push(this.fcavLayer.lid);
+                        layerLids.push(this.seldonLayer.lid);
                         layerAlphas.push(op);
-                    } //end 
-                    
+                    } //end
+
                 }
             });
 
-            url   = window.location.toString();
+            url = window.location.toString();
             url = url.replace(/\?.*$/, '');
             url = url.replace(/\/$/, '');
             url = url.replace("#", '');
@@ -356,6 +349,7 @@
                 extent            : extent
             })).urlArgs();
         };
+
         this.updateShareMapUrl = function () {
             if (this.currentTheme) {
                 var url = this.shareUrl();
@@ -371,10 +365,10 @@
             $.ajax({
                 url: configFile,
                 dataType: "xml",
-                success: function(configXML) {
+                success: function (configXML) {
                     app.parseConfig(configXML, shareUrlInfo);
                 },
-                error: function(jqXHR, textStatus, errorThrown) {
+                error: function (jqXHR, textStatus, errorThrown) {
                     alert(textStatus);
                 }
             });
@@ -386,58 +380,16 @@
                 var $layerPickerDialog = $("#layerPickerDialog");
                 if ($layerPickerDialog.dialog('isOpen')) {
                     $layerPickerDialog.dialog('close');
-                    $('#tglLyrPickPic').css({
-                        'background-color' : 'black',
-                        'opacity'          : '.4'
-                    });
-                    activeBtn = $(this);
                 } else {
                     $layerPickerDialog.dialog('open');
-                    $('#'+activeBtn[0].children[0].id).css({
-                        'background-color' : 'transparent',
-                        'opacity'          : '1'
-                    });
-                    activeBtn = [];
                 }
-            }).hover(
-                function () {
-                    var $tglLyrPickPic = $('#tglLyrPickPic');
-                    if (activeBtn[0] != this) {
-                        $tglLyrPickPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    }
-                    else {
-                        $tglLyrPickPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.75'
-                        });
-                    }
-                    $(this).attr('title', 'Toggle Map Layers');
-                },
-                function () {
-                    var $tglLyrPickPic = $('#tglLyrPickPic');
-                    if (activeBtn[0] != this) {
-                        $tglLyrPickPic.css({
-                            'background-color' : 'transparent',
-                            'opacity'          : '1'
-                        });
-                    }
-                    else {
-                        $tglLyrPickPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    }
-                }
-            );
+            });
 
             //
             // turn layerPickerDialog div into a jQuery UI dialog:
             //
             $("#layerPickerDialog").dialog({ zIndex   : 10050,
-                                             position : { my : "left top", at: "left top+100"},
+                                             position : { my : "left top", at: "left+5 top+100"},
                                              autoOpen : true,
                                              hide     : "fade"
                                            });
@@ -454,57 +406,16 @@
                 var $mapToolsDialog = $("#mapToolsDialog");
                 if ($mapToolsDialog.dialog('isOpen')) {
                     $mapToolsDialog.dialog('close');
-                    $('#tglLegendPic').css({
-                        'background-color' : 'black',
-                        'opacity'          : '.4'
-                    });
-                    activeBtn = $("#btnTglMapTools");
                 } else {
                     $mapToolsDialog.dialog('open');
-                    $('#'+activeBtn[0].children[0].id).css({
-                        'background-color' : 'transparent',
-                        'opacity'          : '1'
-                    });
-                    activeBtn = [];
                 }
-            }).hover(
-                function () {
-                    var $tglLegendPic = $('#tglLegendPic');
-                    if (activeBtn[0] != this) {
-                        $tglLegendPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    } else {
-                        $tglLegendPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.75'
-                        });
-                    }
-                    $(this).attr('title', 'Toggle Map Tools');
-                },
-                function () {
-                    var $tglLegendPic = $('#tglLegendPic');
-                    if (activeBtn[0] != this) {
-                        $tglLegendPic.css({
-                            'background-color' : 'transparent',
-                            'opacity'          : '1'
-                        });
-                    }
-                    else {
-                        $tglLegendPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    }
-                }
-            );
+            });
 
             //
             // turn mapToolsDialog div into a jQuery UI dialog:
             //
             $("#mapToolsDialog").dialog({ zIndex   : 10050,
-                                          position : { my : "right top", at: "right top+100"},
+                                          position : { my : "right top", at: "right-5 top+100"},
                                           autoOpen : true,
                                           hide     : "fade"
                                         });
@@ -519,14 +430,12 @@
             });
             app.addListener("extentchange", function () {
                 app.saveCurrentExtent();
-                //$('#extentOutput').empty().append($(this.printSavedExtents()));
                 app.updateShareMapUrl();
             });
 
             //
             // mapTools accordion
             //
-
             var $mapToolsAccordion = $("#mapToolsAccordion"),
                 accordionGroupIndexToOpen = 0;
 
@@ -567,22 +476,13 @@
                 $('#themeCombo').val(app.currentTheme.index);
             });
 
-
             //
             // pan button
             //
             $("#btnPan").click(function () {
                 deactivateActiveOpenLayersControls();
                 app.dragPanTool.activate();
-            }).hover(
-                function () {
-                    $('#panPic').attr('src', 'icons/pan_over.png');
-                    $(this).attr('title', 'Pan');
-                },
-                function () {
-                    $('#panPic').attr('src', 'icons/pan.png');
-                }
-            );
+            });
 
             //
             // zoom in button
@@ -590,43 +490,9 @@
             $("#btnZoomIn").click(function () {
                 deactivateActiveOpenLayersControls();
                 app.zoomInTool.activate();
-                $('#zoomInPic').css({
-                    'background-color' : 'black',
-                    'opacity'          : '.4'
-                });
                 activeBtn = $(this);
-            }).hover(
-                function () {
-                    var $zoomInPic = $('#zoomInPic');
-                    if (activeBtn[0] != this) {
-                        $zoomInPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    } else {
-                        $zoomInPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.75'
-                        });
-                    }
-                    $(this).attr('title', 'Zoom In');
-                },
-                function () {
-                    var $zoomInPic = $('#zoomInPic');
-                    if (activeBtn[0] != this) {
-                        $zoomInPic.css({
-                            'background-color' : 'transparent',
-                            'opacity'          : '1'
-                        });
-                    }
-                    else {
-                        $zoomInPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    }
-                }
-            );
+                activeBtn.children().addClass('icon-active');
+            });
 
             //
             // zoom out button
@@ -634,99 +500,25 @@
             $("#btnZoomOut").click(function () {
                 deactivateActiveOpenLayersControls();
                 app.zoomOutTool.activate();
-                $('#zoomOutPic').css({
-                    'background-color' : 'black',
-                    'opacity'          : '.4'
-                });
                 activeBtn = $(this);
-            }).hover(
-                function () {
-                    var $zoomOutPic = $('#zoomOutPic');
-                    if (activeBtn[0] != this) {
-                        $zoomOutPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    } else {
-                        $zoomOutPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.75'
-                        });
-                    }
-                    $(this).attr('title', 'Zoom Out');
-                },
-                function () {
-                    var $zoomOutPic = $('#zoomOutPic');
-                    if (activeBtn[0] != this) {
-                        $zoomOutPic.css({
-                            'background-color' : 'transparent',
-                            'opacity'          : '1'
-                        });
-                    } else {
-                        $zoomOutPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    }
-                }
-            );
+                activeBtn.children().addClass('icon-active');
+            });
 
             //
             // zoom to full extent button
             //
             $("#btnZoomExtent").click(function () {
                 app.zoomToExtent(app.maxExtent);
-            }).hover(
-                function () {
-                    $("#zoomExtentPic").attr('src', 'icons/zoom-extent_over.png');
-                    $(this).attr('title', 'Full Extent');
-                },
-                function () {
-                    $("#zoomExtentPic").attr('src', 'icons/zoom-extent.png');
-                }
-            );
+            });
 
             //
             // identify button
             //
             $("#btnID").click(function () {
                 activateIdentifyTool();
-                $('#idPic').css({
-                    'background-color' : 'black',
-                    'opacity'          : '.4'
-                });
                 activeBtn = $(this);
-            }).hover(
-                function () {
-                    var $idPic = $('#idPic');
-                    if (activeBtn[0] != this) {
-                        $idPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    } else {
-                        $idPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.75'
-                        });
-                    }
-                    $(this).attr('title', 'Identify');
-                },
-                function () {
-                    var $idPic = $('#idPic');
-                    if (activeBtn[0] != this) {
-                        $idPic.css({
-                            'background-color' : 'transparent',
-                            'opacity'          : '1'
-                        });
-                    } else {
-                        $idPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    }
-                }
-            );
+                activeBtn.children().addClass('icon-active');
+            });
 
             //
             // about button
@@ -734,98 +526,30 @@
             $("#btnAbout").click(function () {
                 deactivateActiveOpenLayersControls();
                 showSplashScreen();
-                $('#aboutPic').css({
-                    'background-color' : 'black',
-                    'opacity'          : '.4'
-                });
-                activeBtn = $(this);
-            }).hover(
-                function () {
-                    var $aboutPic = $('#aboutPic');
-                    if (activeBtn[0] != this) {
-                        $('#aboutPic').css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    } else {
-                        $aboutPic.css({
-                            'background-color' : 'black',
-                            'opacity'          : '.75'
-                        });
-                    }
-                    $(this).attr('title', 'About');
-                },
-                function () {
-                    var $aboutPic = $('#aboutPic');
-                    if (activeBtn[0] != this) {
-                        $aboutPic.css({
-                            'background-color' : 'transparent',
-                            'opacity'          : '1'
-                        });
-                    } else {
-                        $('#aboutPic').css({
-                            'background-color' : 'black',
-                            'opacity'          : '.4'
-                        });
-                    }
-                }
-            );
+            });
 
             //
             // previous extent button
             //
             $("#btnPrev").click(function () {
                 app.zoomToPreviousExtent();
-            }).hover(
-                function () {
-                    $('#prevPic').css({
-                        'background-color' : 'black',
-                        'opacity'          : '.4'
-                    });
-                },
-                function () {
-                    $('#prevPic').css({
-                        'background-color' : 'transparent',
-                        'opacity'          : '1'
-                    });
-                }
-            );
+            });
 
             //
             // next extent button
             //
             $("#btnNext").click(function () {
                 app.zoomToNextExtent();
-            }).hover(
-                function () {
-                    $('#nextPic').css({
-                        'background-color' : 'black',
-                        'opacity'          : '.4'
-                    });
-                },
-                function () {
-                    $('#nextPic').css({
-                        'background-color' : 'transparent',
-                        'opacity'          : '1'
-                    });
-                }
-            );
-
+            });
 
             //
             // multigraph button
             //
             $("#btnMultiGraph").click(function () {
                 activateMultigraphTool();
-            }).hover(
-                function () {
-                    $("#multiGraphPic").attr('src', 'icons/multigraph_over.png');
-                    $(this).attr('title', 'Graph NDVI');
-                },
-                function () {
-                    $("#multiGraphPic").attr('src', 'icons/multigraph.png');
-                }
-            );
+                activeBtn = $(this);
+                activeBtn.children().addClass('icon-active');
+            });
 
             //Find Area
             var $findArea = $('#findArea');
@@ -840,21 +564,63 @@
                     app.zoomToExtent(areaExtent);
                 }
             });
-            
+
             //jdm: 7/9/12 - for global mask functionality
-            $(function(){
-                  $('.mask-toggle').on('click', function(){
-                    if($(this).is(':checked')){
+            $(function () {
+                $('.mask-toggle').on('click', function () {
+                    if ($(this).is(':checked')) {
                         app.setMask(true, this.value);
-                    }
-                    else {
+                    } else {
                         app.setMask(false, this.value);
-                    }                    
-                  });
-             });            
-            
+                    }
+                });
+            });
+
+            $('textarea').focus(function () {
+                var $this = $(this);
+
+                $this.select();
+
+                // webkit issue
+                window.setTimeout(function () {
+                    $this.select();
+                }, 1);
+
+                function mouseUpHandler () {
+                    // Prevent further mouseup intervention
+                    $this.off("mouseup", mouseUpHandler);
+                    return false;
+                }
+
+                $this.mouseup(mouseUpHandler);
+            });
+
+            // closes accordion tools by default on small browsers
+            if ($(window).width() < 650) {
+                $('#mapToolsDialog').dialog('close');
+                $('#layerPickerDialog').dialog('close');
+            }
+
+            // closes and reopens accordion tools on mobile devices. They tend to lose their proper
+            // position otherwise.
+            if (window.addEventListener) {
+                window.addEventListener("orientationchange", function () {
+                    var $mapToolsDialog    = $('#mapToolsDialog'),
+                        $layerPickerDialog = $('#layerPickerDialog');
+
+                    window.scroll(0, 0);
+                    if ($mapToolsDialog.dialog('isOpen')) {
+                        $mapToolsDialog.dialog('close').dialog('open');
+                    }
+
+                    if ($layerPickerDialog.dialog('isOpen')) {
+                        $layerPickerDialog.dialog('close').dialog('open');
+                    }
+                }, false);
+            }
+
         }; //end app.launch()
-        
+
         //jdm: 7/9/12 - for global mask functionality at app level
         this.setMask = function (toggle, maskName) {
             if (toggle) {
@@ -862,28 +628,25 @@
                 //at the app level by loop through each currently active layer
                 for (var i = app.map.getNumLayers()-1; i > 0; i--) {
                     var currLayer = app.map.layers[i];
-                    if (currLayer.fcavLayer.mask) {
-                        //if not already in the active mask list add to keep track            
+                    if (currLayer.seldonLayer.mask) {
+                        //if not already in the active mask list add to keep track
                         if (this.activeMask.indexOf(maskName.replace("MaskFor","")) == -1) {
                             this.activeMask.push(maskName.replace("MaskFor",""));
                         }
-                        //need to only add one lid to activeMaskParents but be able to 
-                        //handle the case in deactivateMask where there are multiple mask on 
+                        //need to only add one lid to activeMaskParents but be able to
+                        //handle the case in deactivateMask where there are multiple mask on
                         //and how to wait until the last mask is off to re-activate the parent.
-                        //if not already in the active mask parent list add to keep track            
-                        //if (this.activeMaskParents.indexOf(currLayer.fcavLayer.lid) == -1 && this.activeMaskParents.indexOf(currLayer.fcavLayer.lid.substring(0,currLayer.fcavLayer.lid.indexOf("MaskFor"))) == -1) {
-                        if (this.activeMaskParents.indexOf(currLayer.fcavLayer.lid) == -1) {
-                            if (currLayer.fcavLayer.lid.indexOf("MaskFor") > -1) {
-                                this.activeMaskParents.push(currLayer.fcavLayer.lid.substring(0,currLayer.fcavLayer.lid.indexOf("MaskFor")));
+                        //if not already in the active mask parent list add to keep track
+                        if (this.activeMaskParents.indexOf(currLayer.seldonLayer.lid) == -1) {
+                            if (currLayer.seldonLayer.lid.indexOf("MaskFor") > -1) {
+                                this.activeMaskParents.push(currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("MaskFor")));
+                            } else {
+                                this.activeMaskParents.push(currLayer.seldonLayer.lid);
                             }
-                            else {
-                                this.activeMaskParents.push(currLayer.fcavLayer.lid);
-                            }
-                        }   
-                        currLayer.fcavLayer.activateMask(maskName);  //activate mask at the layer level
-                    }
-                    else { //we still need to keep track of active mask
-                        //if not already in the active mask list add to keep track            
+                        }
+                        currLayer.seldonLayer.activateMask(maskName);  //activate mask at the layer level
+                    } else { //we still need to keep track of active mask
+                        //if not already in the active mask list add to keep track
                         if (this.activeMask.indexOf(maskName.replace("MaskFor","")) == -1) {
                             this.activeMask.push(maskName.replace("MaskFor",""));
                         }
@@ -901,44 +664,42 @@
             }
         }; //end app.setMask()
 
-		this.deactivateMask = function(maskLayerName) {
+        this.deactivateMask = function (maskLayerName) {
             for (var i = app.map.getNumLayers()-1; i > 0; i--) {
-                var currLayer = app.map.layers[i]; 
-				if (currLayer.fcavLayer.mask) {
-                    //roll back to parent layer only if there are no other mask 
+                var currLayer = app.map.layers[i];
+                if (currLayer.seldonLayer.mask) {
+                    //roll back to parent layer only if there are no other mask
                     //currently active for the parent layer
-                    if (maskLayerName==currLayer.name.substring(currLayer.name.indexOf("MaskFor"),currLayer.name.length)){
-                        if (getCount(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor")), app.activeMaskParents)==1) {
+                    if (maskLayerName == currLayer.name.substring(currLayer.name.indexOf("MaskFor"),currLayer.name.length)) {
+                        if (getCount(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor")), app.activeMaskParents) == 1) {
                             var parentLayer = new Layer({
-                                    lid          	 : currLayer.name.substring(0,currLayer.name.indexOf("MaskFor")),
-                                    visible          : currLayer.fcavLayer.visible,
-                                    url              : currLayer.fcavLayer.url,
-                                    srs              : currLayer.fcavLayer.srs,
-                                    layers           : currLayer.fcavLayer.layers.substring(0,currLayer.fcavLayer.layers.indexOf("MaskFor")),
-                                    identify         : currLayer.fcavLayer.identify,
+                                    lid              : currLayer.name.substring(0,currLayer.name.indexOf("MaskFor")),
+                                    visible          : currLayer.seldonLayer.visible,
+                                    url              : currLayer.seldonLayer.url,
+                                    srs              : currLayer.seldonLayer.srs,
+                                    layers           : currLayer.seldonLayer.layers.substring(0,currLayer.seldonLayer.layers.indexOf("MaskFor")),
+                                    identify         : currLayer.seldonLayer.identify,
                                     name             : currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))+"MaskParent",
                                     mask             : 'true',
-                                    legend           : currLayer.fcavLayer.legend
-                            });                        
-                            app.map.layers[i].fcavLayer.removeFromLegend();
+                                    legend           : currLayer.seldonLayer.legend
+                            });
+                            app.map.layers[i].seldonLayer.removeFromLegend();
                             app.map.removeLayer(app.map.layers[i]);
-                            app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")),1);
-                            app.activeMaskParents.splice(app.activeMaskParents.indexOf(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))), 1)
+                            app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")), 1);
+                            app.activeMaskParents.splice(app.activeMaskParents.indexOf(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))), 1);
                             $('#mask-status'+ currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))).text("");
                             parentLayer.activate();
-                            app.updateShareMapUrl();                        
-                        }
-                        else { //there are still active mask for the parent layer in question
+                            app.updateShareMapUrl();
+                        } else { //there are still active mask for the parent layer in question
                             //just removing a single mask currently
                             for (var i = app.map.getNumLayers()-1; i > 0; i--) {
-                                var currLayer = app.map.layers[i]; 
-                                //alert(currLayer.name);
-                                if (currLayer.name.indexOf(maskLayerName)>-1){
-                                    app.map.removeLayer(currLayer.fcavLayer.openLayersLayer);
+                                var currLayer = app.map.layers[i];
+                                if (currLayer.name.indexOf(maskLayerName) > -1) {
+                                    app.map.removeLayer(currLayer.seldonLayer.openLayersLayer);
                                 }
-                            }                            
-                            app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")),1);
-                            app.activeMaskParents.splice(app.activeMaskParents.indexOf(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))), 1)
+                            }
+                            app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")), 1);
+                            app.activeMaskParents.splice(app.activeMaskParents.indexOf(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))), 1);
                         }
                     }
                 }
@@ -949,15 +710,15 @@
             //this needs to be more robust accounting for all mask possible being
             //off, but for now i am going to leave it like this.
             app.updateShareMapUrl();
-            $('#mask-status'+ this.lid).text(""); 
-        };          
-        
-		this.deactivateMaskParent = function(lid) {
+            $('#mask-status'+ this.lid).text("");
+        };
+
+        this.deactivateMaskParent = function (lid) {
             for (var i = app.map.getNumLayers()-1; i > 0; i--) {
-                var currLayer = app.map.layers[i]; 
-				if (currLayer.fcavLayer.mask) {
-                    if (lid==currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))){
-                        this.map.layers[i].fcavLayer.removeFromLegend();
+                var currLayer = app.map.layers[i];
+                if (currLayer.seldonLayer.mask) {
+                    if (lid == currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))) {
+                        this.map.layers[i].seldonLayer.removeFromLegend();
                         this.map.removeLayer(app.map.layers[i]);
                         this.updateShareMapUrl();
                         //this.deactivateMask(currLayer.name.substring(lid.length,currLayer.name.length));
@@ -970,8 +731,8 @@
             //off, but for now i am going to leave it like this.
             app.updateShareMapUrl();
             $('#mask-status'+ this.lid).text(""); 
-        };          
-        
+        };
+
         this.parseConfig = function (configXML, shareUrlInfo) {
             var app = this,
                 $configXML = $(configXML),
@@ -1089,28 +850,24 @@
                     }
                 }
             }
-            
+
             //jdm: add to list of mask for checking later in this function
-            //put the mask from the share url onto the themeOptions for later processing 
+            //put the mask from the share url onto the themeOptions for later processing
             //within the setTheme() function
             if (shareUrlInfo !== undefined) {
                 if (themeOptions.shareUrlMasks === undefined) {
                     themeOptions.shareUrlMasks = [];
                 }
-                // if (themeOptions.shareUrlMasksLIDs === undefined) {
-                    // themeOptions.shareUrlMasksLIDs = [];
-                // }                
                 for (i = 0, l = shareUrlInfo.layerMask.length; i < l; i++) {
                     themeOptions.shareUrlMasks[i]=shareUrlInfo.layerMask[i];
-                    //themeOptions.shareUrlMasksLIDs[i]=shareUrlInfo.layerMask[i].substr(0,shareUrlInfo.layerMask[i].indexOf("Mask"));
                 }
-            }               
+            }
 
             // parse themes
             var $themeCombo = $("#themeCombo"),
                 $views      = $configXML.find("mapviews view"),
                 $view,
-            $viewGroups,
+                $viewGroups,
                 $viewGroup,
                 theme,
                 name;
@@ -1168,9 +925,8 @@
             app.initOpenLayers(baseLayerInfo, initialBaseLayer, initialTheme, themeOptions, initialExtent);
         };
 
-        this.initOpenLayers = function(baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
-            //console.log("start initOpenLayers: "+Date());
-			var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
+        this.initOpenLayers = function (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
+            var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
                 layerInfo: baseLayerInfo
             });
 
@@ -1203,7 +959,7 @@
                     "zoomend": function() { app.emit("extentchange"); }
                 },
                 zoom: 1,
-                projection: new OpenLayers.Projection(fcav.projection)
+                projection: new OpenLayers.Projection(seldon.projection)
             });
 
             // set the base layer, but bypass setBaseLayer() here, because that function initiates an ajax request
@@ -1217,17 +973,17 @@
             this.map.setLayerIndex(layer, 0);
             this.setTheme(theme, themeOptions);
             this.zoomToExtent(initialExtent);
-            this.map.events.register("mousemove", app.map, function(e) {
+            this.map.events.register("mousemove", app.map, function (e) {
                 var pixel = app.map.events.getMousePosition(e);
                 var lonlat = app.map.getLonLatFromPixel(pixel);
                 lonlat = lonlat.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
                 OpenLayers.Util.getElement("latLonTracker").innerHTML = "Lat: " + sprintf("%.5f", lonlat.lat) + " Lon: " + sprintf("%.5f", lonlat.lon) + "";
             });
-			app.map.addControl(new OpenLayers.Control.PanZoomBar());
+            app.map.addControl(new OpenLayers.Control.PanZoomBar());
         };
 
     };
-    EventEmitter.declare(fcav.App);
+    EventEmitter.declare(seldon.App);
 
     function BaseLayer (settings) {
         if (!settings) { return; }
@@ -1299,20 +1055,18 @@
                                          options
                                         );
             this.openLayersLayer.setOpacity(1-parseFloat(this.transparency)/100.0);
-            this.openLayersLayer.fcavLayer = this;
+            this.openLayersLayer.seldonLayer = this;
             return this.openLayersLayer;
         };
         this.activate = function (isMask) {
-			//if (!this.checkForExistingLayer(this.name))	{
-            //this.checkForActiveMask();
             app.map.addLayer(this.createOpenLayersLayer());
             this.addToLegend();
             this.emit("activate");
             //reorder maps layers based on the current layer index
             var lyrJustAdded = app.map.layers[app.map.getNumLayers()-1];
             for (var i = app.map.getNumLayers()-2; i > 0; i--) {
-                var nextLayerDown = app.map.layers[i]; //use app.map.layers[2].fcavLayer.index
-                if (this.index>nextLayerDown.fcavLayer.index) {
+                var nextLayerDown = app.map.layers[i]; //use app.map.layers[2].seldonLayer.index
+                if (this.index > nextLayerDown.seldonLayer.index) {
                     app.map.setLayerIndex(lyrJustAdded, i);
                 }
             }
@@ -1320,48 +1074,32 @@
             //then activate mask on this layer if it hasn't already been activated
             //Because we will fly through here again we need to use both activeMask
             //and activeMaskParents to verify that we don't get into a recursive loop
-            //&& (app.activeMaskParents.indexOf(this.lid) > -1)
-            if ((app.activeMask.length>0) 
-                && (this.mask) 
-                    && (this.lid.indexOf("MaskFor") == -1)) {
-                        //Here we have a parent layer that has been activated
-                        //after mask have already been turned on.
-                        //So we need to loop through the activeMask and turn on
-                        //the mask accordingly.
-                        //this.activateMask("MaskForDeciduousForest");
-                        for (var i = 0; i < app.activeMask.length; i++) {
-                            this.activateMask("MaskFor"+app.activeMask[i]);
-                        }
+            if ((app.activeMask.length > 0) &&
+                (this.mask) &&
+                (this.lid.indexOf("MaskFor") == -1)) {
+                //Here we have a parent layer that has been activated
+                //after mask have already been turned on.
+                //So we need to loop through the activeMask and turn on
+                //the mask accordingly.
+                for (var i = 0; i < app.activeMask.length; i++) {
+                    this.activateMask("MaskFor"+app.activeMask[i]);
+                }
             }
             app.map.updateSize();
-			//}
         };
-        
-		// this.checkForActiveMask = function() {
-			// var isMaskActive = false;
-            // for (var i = app.map.getNumLayers()-1; i > 0; i--) {
-                // var currLayer = app.map.layers[i]; 
-                // //First, check i
-				// var x = app.activeMask;
-                // // if (maskLayerName.replace("/","")==currLayer.name){
-                    // // isMaskActive = true;
-                // // }
-            // }			
-			// return isMaskActive;
-		// };                
-        
-		this.checkForExistingLayer = function(layerName) {
-			var isLayerActive = false;
+
+        this.checkForExistingLayer = function (layerName) {
+            var isLayerActive = false;
             for (var i = app.map.getNumLayers()-1; i > 0; i--) {
-                var currLayer = app.map.layers[i]; 
-				if (layerName==currLayer.name){
+                var currLayer = app.map.layers[i];
+                if (layerName == currLayer.name) {
                     isLayerActive = true;
                 }
-            }			
-			return isLayerActive;
-		};		
-		
-		this.deactivate = function (isMask) {
+            }
+            return isLayerActive;
+        };
+
+        this.deactivate = function (isMask) {
             if (this.openLayersLayer) {
                 try {
                     if (app.activeMaskParents.indexOf(this.lid) > -1) {
@@ -1373,28 +1111,26 @@
                         //Or, once a parent always a parent 
                         //app.activeMaskParents.splice(app.activeMaskParents.indexOf(this.lid), 1);
                         //need to remove mask-status too...
-                        $('#mask-status'+ this.lid).text(""); 
-                    }
-                    else {
-                        $('#mask-status'+ this.lid).text(""); 
+                        $('#mask-status'+ this.lid).text("");
+                    } else {
+                        $('#mask-status'+ this.lid).text("");
                         app.map.removeLayer(this.openLayersLayer);
                     }
                 }
                 catch(err) {
                     //we tried to remove a layer that was previously used as a mask parent
                     for (var i = app.map.getNumLayers()-1; i > 0; i--) {
-                        var currLayer = app.map.layers[i]; 
-                        //alert(currLayer.name);
-                        //if (currLayer.name==this.lid+"MaskParent"){
-                        if (currLayer.name.substring(0,this.lid.length)==this.lid) {
-                            app.map.removeLayer(currLayer.fcavLayer.openLayersLayer);
+                        var currLayer = app.map.layers[i];
+                        if (currLayer.name.substring(0,this.lid.length) == this.lid) {
+                            app.map.removeLayer(currLayer.seldonLayer.openLayersLayer);
                         }
-                    }	                    
+                    }
                 }
                 this.removeFromLegend();
             }
             this.emit("deactivate");
         };
+
         this.addToLegend = function () {
             var that = this;
             this.$legendItem = $(document.createElement("div")).attr("id", "lgd" + this.lid)
@@ -1404,11 +1140,13 @@
                     that.deactivate();
                 });
         };
+
         this.removeFromLegend = function () {
             if (this.$legendItem) {
                 this.$legendItem.remove();
             }
         };
+
         this.setTransparency = function (transparency) {
             if (this.openLayersLayer) {
                 this.openLayersLayer.setOpacity(1-parseFloat(transparency)/100.0);
@@ -1417,49 +1155,10 @@
             this.emit({type : 'transparency', value : this.transparency});
         };   
         
-        // this.setMask = function(toggle, maskLayerName) {
-            // //now we need to turn on the mask and turn off the lid layer
-            // //but still we need to be able to reactivate the lid layer when mask
-            // //is turned off.
-            // // alert(this.lid + toggle + maskLayerName); 
-            // if (toggle) { //mask is active
-                 // try {
-                 // //try catch here because when turning on multiple mask the 
-                 // //i get an error when trying to deactivate for a second time the 
-                 // //parent layer
-                    // this.deactivate();
-                 // }
-                 // catch(err) {
-                    // //console.log(err);
-                 // }
-                // //now we need to activate the mask
-                // //this should be a function on the layer, activateMask(maskName)
-                // //reason being that the same legend and identify values should exist
-                // //it is really he same layer object/function
-                // this.activateMask(maskLayerName);
-            // }
-            // else {
-                // var checkForOtherActiveMask = false;
-                // for (var i = app.map.getNumLayers()-1; i > 0; i--) {
-                    // var currLayer = app.map.layers[i]; 
-                    // if (maskLayerName.replace("/","")!=currLayer.name){
-                        // if (currLayer.name.indexOf("Mask") !== -1) {
-                            // checkForOtherActiveMask = true;
-                        // }
-                    // }
-                // }                
-                // if (!checkForOtherActiveMask) { 
-                // //only re-activate the parent layer if there are no other mask active
-                    // this.activate();
-                // }
-                // this.deactivateMask(maskLayerName);
-            // }
-        // };  
-        
-        this.activateMask = function(maskLayerName) {
+        this.activateMask = function (maskLayerName) {
             if (this.lid.indexOf("MaskFor") == -1) { //no mask applied yet
                 var maskLayer = new Layer({
-                        lid          	 : this.lid+maskLayerName.replace("/",""),
+                        lid              : this.lid+maskLayerName.replace("/",""),
                         visible          : this.visible,
                         url              : this.url,
                         srs              : this.srs,
@@ -1471,10 +1170,9 @@
                 });
                 //add to activeMaskParents
                 //app.activeMaskParents.push(this.lid);
-            }
-            else { //applying additional mask
+            } else { //applying additional mask
                  var maskLayer = new Layer({
-                        lid          	 : this.lid.replace(this.lid.substring(this.lid.indexOf("MaskFor"),this.lid.length), maskLayerName),
+                        lid              : this.lid.replace(this.lid.substring(this.lid.indexOf("MaskFor"),this.lid.length), maskLayerName),
                         visible          : this.visible,
                         url              : this.url,
                         srs              : this.srs,
@@ -1483,16 +1181,16 @@
                         name             : this.lid.replace(this.lid.substring(this.lid.indexOf("MaskFor"),this.lid.length), maskLayerName),
                         mask             : 'true',
                         legend           : this.legend
-                });           
+                });
             }
             maskLayer.activate();
             if (this.openLayersLayer && (this.lid.indexOf("MaskFor") == -1)) {
                 app.map.removeLayer(this.openLayersLayer);
                 this.removeFromLegend();
-            }                
+            }
             app.updateShareMapUrl();
-            $('#mask-status'+ this.lid).text("(m)"); //"mask-status" + layer.lid);
-		};     
+            $('#mask-status'+ this.lid).text("(m)");
+        };
     }
     EventEmitter.declare(Layer);
 
@@ -1519,16 +1217,38 @@
         //console.log(message);
     }
 
-    fcav.init = function(config,projection,gisServerType) {
-        app = new fcav.App();
+    seldon.init = function (config, projection, gisServerType) {
+        // jrf: Overrides OpenLayers.Map.getCurrentSize since by default it does not
+        //      account for padding, and seldon requires padding on the top and bottom
+        //      for its layout.
+        OpenLayers.Map.prototype.getCurrentSize = function () {
+            var size = new OpenLayers.Size(this.div.clientWidth, 
+                                           this.div.clientHeight);
+
+            if (size.w == 0 && size.h == 0 || isNaN(size.w) && isNaN(size.h)) {
+                size.w = this.div.offsetWidth;
+                size.h = this.div.offsetHeight;
+            }
+            if (size.w == 0 && size.h == 0 || isNaN(size.w) && isNaN(size.h)) {
+                size.w = parseInt(this.div.style.width, 10);
+                size.h = parseInt(this.div.style.height, 10);
+            }
+
+            // getCurrentSize now accounts for padding
+            size.h = size.h - parseInt($(this.div).css("padding-top"), 10) - parseInt($(this.div).css("padding-bottom"), 10);
+
+            return size;
+        };
+
+        app = new seldon.App();
         var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
         app.launch(config, shareUrlInfo);
-        fcav.app = app;
-        fcav.projection = projection;
-        fcav.gisServerType = gisServerType;
+        seldon.app = app;
+        seldon.projection = projection;
+        seldon.gisServerType = gisServerType;
     };
 
-    function deactivateActiveOpenLayersControls() {
+    function deactivateActiveOpenLayersControls () {
         var controls,
             i;
         for (i = 0; i < app.map.controls.length; i++) {
@@ -1542,10 +1262,7 @@
 
                 controls.deactivate();
                 if (activeBtn.length > 0){ //weve already activated a three-state button
-                    $('#'+activeBtn[0].children[0].id).css({
-                        'background-color' : 'transparent',
-                        'opacity'          : '1'
-                    });
+                    activeBtn.children().removeClass('icon-active');
                     activeBtn = [];
                 }
             }
@@ -1571,7 +1288,7 @@
         }
         if (this.layerMask === undefined) {
             this.layerMask = [];
-        }        
+        }
         if (this.layerAlphas === undefined) {
             this.layerAlphas = [];
         }
@@ -1625,7 +1342,7 @@
             $.each(vars.mask.split(','), function () {
                 info.layerMask.push(this);
             });
-        }        
+        }
         if (vars.alphas) {
             $.each(vars.alphas.split(','), function () {
                 info.layerAlphas.push(this);
@@ -1700,26 +1417,22 @@
             $document    = $(document),
             windowWidth  = Math.round($document.width()/2),
             windowHeight = Math.round($document.height()/2);
-            $('#splashScreenContent').load('splashScreen.html');
-            $splashScreenContainer.dialog({
-                zIndex    : 10051,
-                position  : "center",
-                height:windowHeight,
-                width:windowWidth,
-                dialogClass: 'splashScreenStyle',
-                autoOpen  : true,
-                hide      : "explode",
-                title     : "NEMAC GIS Viewer",
-                close     : function() {
-                    $(this).dialog('destroy');
-                    $('#aboutPic').css({
-                        'background-color' : 'transparent',
-                        'opacity'          : '1'
-                    });
-                    activeBtn = [];
-                }
-            });
-            $splashScreenContainer.append($($('#splashScreenContent')));
+        $('#splashScreenContent').load('splashScreen.html');
+        $splashScreenContainer.dialog({
+            zIndex    : 10051,
+            position  : "center",
+            height:windowHeight,
+            width:windowWidth,
+            dialogClass: 'splashScreenStyle',
+            autoOpen  : true,
+            hide      : "explode",
+            title     : "NEMAC GIS Viewer",
+            close     : function() {
+                $(this).dialog('destroy');
+                $(this).children().removeClass('icon-active');
+            }
+        });
+        $splashScreenContainer.append($($('#splashScreenContent')));
     }
 
     //This function gets called every time the layer properties icon gets clicked
@@ -1728,7 +1441,7 @@
             createLayerPropertiesDialog.$html[layer.lid].dialog('destroy');
             createLayerPropertiesDialog.$html[layer.lid].remove();
         }
-        
+
         var $html = $(''
                       + '<div class="layer-properties-dialog">'
                       +   '<table>'
@@ -1745,56 +1458,9 @@
                       + '</div>'
                      );
 
-		//jdm:5/13/13 need to check for mask on this layer, and if so
-		//adjust the htm accordingly to have the toggles for those mask.
-		// var $testForMask = layer.mask;
-        // if ($testForMask){
-            // var $html = $(''
-                          // + '<div class="layer-properties-dialog">'
-                          // +   '<table>'
-                          // +     '<tr>'
-                          // +       '<td>Transparency:</td>'
-                          // +       '<td>'
-                          // +         '<div class="transparency-slider"></div>'
-                          // +       '</td>'
-                          // +       '<td>'
-                          // +        '<input class="transparency-text" type="text" size="2"/>'
-                          // +       '</td>'
-                          // +     '</tr>'
-                         // );
-            // $testForMask = $testForMask.split(',');
-            
-            
-            // //Loop through checking to see if any mask are active
-            // //if so set flag because we will want the perspective checkbox to be on
-            // var checkForCurrentActiveMask = false;
-            // var activeMask = [];
-            // for (var i = app.map.getNumLayers()-1; i > 0; i--) {
-                // var currLayer = app.map.layers[i]; 
-                // if (currLayer.name.indexOf("Mask") !== -1) {
-                    // activeMask.push(currLayer.name);
-                // }
-            // }            
-            // for(var i=0; i<$testForMask.length; ++i){
-                // var isChecked = "";
-                // if ($.inArray(layer.lid+$testForMask[i], activeMask) !== -1) {
-                    // isChecked = "checked";
-                // }
-                // $html.append(''
-                          // +     '<tr>'
-                          // +       '<td>Show Only:</td>'
-                          // +       '<td>'
-                          // +         '<div class="mask-description">'+$testForMask[i].replace("MaskFor","")+'</div>'
-                          // +       '</td>'
-                          // +       '<td>'
-                          // +        '<input class="mask-toggle" type="checkbox" size="2" value='+layer.lid+$testForMask[i]+'  '+isChecked+'/>'
-                          // +       '</td>'
-                          // +     '</tr>'  
-                        // ); 
-            // }
-            // $html.append('</table></div>')
-        // } //end if $testForMask 
-        
+                //jdm:5/13/13 need to check for mask on this layer, and if so
+                //adjust the htm accordingly to have the toggles for those mask.
+
         $html.find('input.transparency-text').val(layer.transparency);
         $html.find('.transparency-slider').slider({
             min   : 0,
@@ -1817,27 +1483,14 @@
             }
             layer.setTransparency($this.val());
         });
-        
+
         layer.addListener("transparency", function (e) {
             $html.find('input.transparency-text').val(e.value);
         });
-        
+
         //jdm 5/14/13: add listener for mask functionality
         //for every mask checkbox we check we getting a click event
-        // $(function(){
-              // $('.mask-toggle').live('click', function(){
-                  // if (layer.lid == this.value.substring(0,layer.lid.length)) { 
-                  // //check to make sure the layer matches the mask being requested
-                      // if($(this).is(':checked')){
-                        // layer.setMask(true, this.value);
-                      // }
-                      // else {
-                        // layer.setMask(false, this.value);
-                      // }
-                  // }
-              // });
-         // });
-        
+
         $html.dialog({
             zIndex    : 10050,
             position  : "left",
@@ -1845,19 +1498,18 @@
             hide      : "explode",
             title     : layer.name,
             width     : 'auto',
-            close     : function() {
+            close     : function () {
                 $(this).dialog('destroy');
                 $html.remove();
                 createLayerPropertiesDialog.$html[layer.lid] = undefined;
             }
         });
         createLayerPropertiesDialog.$html[layer.lid] = $html;
-    } //end function createLayerPropertiesDialog (layer) 
-    
+    } //end function createLayerPropertiesDialog (layer)
+
     // Object to be used as hash for tracking the $html objects created by createLayerPropertiesDialog;
     // keys are layer lids:
     createLayerPropertiesDialog.$html = {};
-
 
     function activateIdentifyTool () {
         deactivateActiveOpenLayersControls();
@@ -1887,7 +1539,7 @@
             'stopDouble'      : false
         },
 
-        initialize: function(clickHandler) {
+        initialize: function (clickHandler) {
             this.handlerOptions = OpenLayers.Util.extend(
                 {}, this.defaultHandlerOptions
             );
@@ -1913,7 +1565,7 @@
     //
     function createWMSGetFeatureInfoRequestURL (serviceUrl, layers, srs, x, y) {
         var extent = app.map.getExtent();
-        if (fcav.gisServerType === "ArcGIS"){
+        if (seldon.gisServerType === "ArcGIS") {
             extent = extent.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
         }
         return Mustache.render(
@@ -1996,7 +1648,7 @@
                             ),
                             {
                                 name  : name,
-                                label : this.fcavLayer.name
+                                label : this.seldonLayer.name
                             }
                         );
                     }
@@ -2008,7 +1660,7 @@
                 app.map.addPopup(new OpenLayers.Popup.FramedCloud(
                     "identify_popup",                   // id
                     app.map.getLonLatFromPixel(e.xy),   // lonlat
-                    null,       						// contentSize
+                    null,                               // contentSize
                     html,                               // contentHTML
                     null,                               // anchor
                     true,                               // closeBox
@@ -2032,9 +1684,9 @@
                                 // For each layer that this request was for, parse the GML for the results
                                 // for that layer, and populate the corresponding result in the popup
                                 // created above.
-                                if (firstResultsYet < 1){
+                                if (firstResultsYet < 1) {
                                     $identify_results.empty(); //first clear out orginal
-                                    firstResultsYet = firstResultsYet+1;
+                                    firstResultsYet = firstResultsYet + 1;
                                 }
                                 var layerIDCount     = 0,
                                     newTableContents = '',
@@ -2044,7 +1696,7 @@
                                     // if so handle the xml that comes back differently
                                     // on a related note ArcGIS WMS Raster layers do not support
                                     // GetFeatureInfo
-                                    if (fcav.gisServerType=="ArcGIS"){
+                                    if (seldon.gisServerType == "ArcGIS") {
                                         var result = getLayerResultsFromArcXML($gml, this);
                                     } else { //assuming MapServer at this point
                                         var result = getLayerResultsFromGML($gml, this);
@@ -2053,7 +1705,7 @@
                                     //loop through and build up new table structure
                                     newTableContents = (''
                                                         + '<tr>'
-                                                        +	'<td><b>'+service.layers[layerIDCount]+'</b></td>'
+                                                        +       '<td><b>'+service.layers[layerIDCount]+'</b></td>'
                                                         +   '<td>&nbsp</td>'
                                                         + '</tr>'
                                                         );
@@ -2062,18 +1714,16 @@
                                     for (i = 1; i < result.length; ++i) {
                                         newTableContents = (''
                                                             + '<tr>'
-                                                            +	'<td align="right">'+String(result[i][0]).replace("_0","")+':&nbsp&nbsp</td>'
+                                                            +   '<td align="right">'+String(result[i][0]).replace("_0","")+':&nbsp&nbsp</td>'
                                                             +   '<td>'+result[i][1]+'</td>'
                                                             + '</tr>'
                                                             );
                                         $identify_results.append(newTableContents);
                                     }
                                     layerIDCount++;
-                                    //$("#identify_results").append(newTableContents);
                                 });
                             },
                             error: function(jqXHR, textStatus, errorThrown) {
-                                //console.log('got error');
                                 alert(textStatus);
                             }
                         });
@@ -2099,8 +1749,7 @@
             for (i = 0; i < attributes.length; ++i) {
                 returnVals[i] = [attributes[i].name, attributes[i].value];
             }
-        }
-        catch(err){
+        } catch(err){
             returnVals[0] = ["Error description:", err.message];
         }
         return returnVals;
@@ -2116,12 +1765,8 @@
         // the text content of that child as the result for this layer.
         for (i = 0; i < children.length; ++i) {
             if (children[i].nodeName !== 'gml:boundedBy') {
-                var value;
-                if ( $.browser.msie ) { //jdm: IE doesn't have textContent on children[i], but Chrome and FireFox do
-                    value = children[i].text;
-                } else {
-                    value = children[i].textContent;
-                }
+                // jdm: IE doesn't have textContent on children[i], but Chrome and FireFox do
+                var value = (children[i].textContent) ? children[i].textContent : children[i].text;
                 if ((stringStartsWith(layerName,"EFETAC-NASA") || stringStartsWith(layerName,"RSAC-FHTET")) &&
                     (children[i].nodeName === "value_0")) {
                     value = value + sprintf(" (%.2f %%)", parseFloat(value,10) * 200.0 / 255.0 - 100);
@@ -2156,19 +1801,20 @@
                 }
                 app.map.addPopup(lastPopup =
                                  new OpenLayers.Popup.FramedCloud(
-                                     "fcavMultigraphPopup",
+                                     "seldonMultigraphPopup",
                                      coords,
                                      null,
-                                     '<div id="fcavMultigraphMessage"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="fcavMultigraph" style="width: 600px; height: 300px;"></div>',
+                                     '<div id="seldonMultigraphMessage"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="seldonMultigraph" style="width: 600px; height: 300px;"></div>',
                                      null,
                                      true));
-                var fcavMultigraph = window.multigraph.jQuery('#fcavMultigraph'),
-                    promise = fcavMultigraph.multigraph({
+                var seldonMultigraph = window.multigraph.jQuery('#seldonMultigraph'),
+                    promise = seldonMultigraph.multigraph({
                     //NOTE: coords.lon and coords.lat on the next line are really x,y coords in EPSG:900913, not lon/lat:
-                        'mugl'   : "http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+coords.lon+","+coords.lat
+                        'mugl'   : "http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+coords.lon+","+coords.lat,
+                        'swf'    :  "libs/seldon/libs/Multigraph.swf"
                     });
-                fcavMultigraph.multigraph('done', function () {
-                    var multigraphMessage = $('#fcavMultigraphMessage');
+                seldonMultigraph.multigraph('done', function () {
+                    var multigraphMessage = $('#seldonMultigraphMessage');
                     multigraphMessage.empty();
                     multigraphMessage.text(Mustache.render('MODIS NDVI for Lat: {{{lat}}} Lon: {{{lon}}}',
                                                            { lat : sprintf("%.4f", lonlat.lat),
@@ -2211,7 +1857,7 @@
         return bounds;
     }
 
-    function extentsAreEqual(e1, e2) {
+    function extentsAreEqual (e1, e2) {
         var tolerance = 0.001;
         return ((Math.abs(e1.left - e2.left)        <= tolerance)
                 && (Math.abs(e1.bottom - e2.bottom) <= tolerance)
@@ -2220,30 +1866,31 @@
     }
     
     // count everything
-    function getCounts(arr) {
+    function getCounts (arr) {
         var i = arr.length, // var to loop over
             obj = {}; // obj to store results
-        while (i) obj[arr[--i]] = (obj[arr[i]] || 0) + 1; // count occurrences
+        while (i) {
+            obj[arr[--i]] = (obj[arr[i]] || 0) + 1; // count occurrences
+        }
         return obj;
     }
 
     // get specific from everything
-    function getCount(word, arr) {
+    function getCount (word, arr) {
         return getCounts(arr)[word] || 0;
     }
-    
 
     //
     // exports, for testing:
     //
-    fcav.BaseLayer                         = BaseLayer;
-    fcav.AccordionGroup                    = AccordionGroup;
-    fcav.AccordionGroupSublist             = AccordionGroupSublist;
-    fcav.Layer                             = Layer;
-    fcav.Theme                             = Theme;
-    fcav.createWMSGetFeatureInfoRequestURL = createWMSGetFeatureInfoRequestURL;
-    fcav.stringContainsChar                = stringContainsChar;
-    fcav.ShareUrlInfo                      = ShareUrlInfo;
-    window.fcav                            = fcav;
+    seldon.BaseLayer                         = BaseLayer;
+    seldon.AccordionGroup                    = AccordionGroup;
+    seldon.AccordionGroupSublist             = AccordionGroupSublist;
+    seldon.Layer                             = Layer;
+    seldon.Theme                             = Theme;
+    seldon.createWMSGetFeatureInfoRequestURL = createWMSGetFeatureInfoRequestURL;
+    seldon.stringContainsChar                = stringContainsChar;
+    seldon.ShareUrlInfo                      = ShareUrlInfo;
+    window.seldon                            = seldon;
 
 }(jQuery));

@@ -1,0 +1,11 @@
+html, body, div, span,
+h2, img,
+em, strong, b, i,
+dl, dt, dd, ol, ul, li,
+label,
+table, tbody, tr, td,
+canvas {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
