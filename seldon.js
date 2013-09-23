@@ -1063,6 +1063,7 @@
             this.addToLegend();
             this.emit("activate");
             //reorder maps layers based on the current layer index
+			//jdm 9/23: this needs to be revisited to deal with masking
             var lyrJustAdded = app.map.layers[app.map.getNumLayers()-1];
             for (var i = app.map.getNumLayers()-2; i > 0; i--) {
                 var nextLayerDown = app.map.layers[i]; //use app.map.layers[2].seldonLayer.index
