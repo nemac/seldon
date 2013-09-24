@@ -644,7 +644,7 @@
                                 this.activeMaskParents.push(currLayer.seldonLayer.lid);
                             }
                         }
-                        currLayer.seldonLayer.activateMask(maskName);  //activate mask at the layer level
+                        currLayer.seldonLayer.activateMask(maskName, currLayer.seldonLayer.index);  //activate mask at the layer level
                     } else { //we still need to keep track of active mask
                         //if not already in the active mask list add to keep track
                         if (this.activeMask.indexOf(maskName.replace("MaskFor","")) == -1) {
@@ -1062,12 +1062,6 @@
             app.map.addLayer(this.createOpenLayersLayer());
             this.addToLegend();
             this.emit("activate");
-            //reorder maps layers based on the current layer index
-			//jdm 9/23: this needs to be revisited to deal with masking
-            var lyrJustAdded = app.map.layers[app.map.getNumLayers()-1];
-            for (var i = app.map.getNumLayers()-2; i > 0; i--) {
-                var nextLayerDown = app.map.layers[i]; //use app.map.layers[2].seldonLayer.index
-            }
             //If there is currently any active mask
             //then activate mask on this layer if it hasn't already been activated
             //Because we will fly through here again we need to use both activeMask
@@ -1080,9 +1074,21 @@
                 //So we need to loop through the activeMask and turn on
                 //the mask accordingly.
                 for (var i = 0; i < app.activeMask.length; i++) {
-                    this.activateMask("MaskFor"+app.activeMask[i]);
+                    this.activateMask("MaskFor"+app.activeMask[i],this.index);
                 }
             }
+            //reorder maps layers based on the current layer index
+			//jdm 9/23: this needs to be revisited to deal with masking
+            if (app.map.getNumLayers()>1) {
+			var lyrJustAdded = app.map.layers[app.map.getNumLayers()-1];
+				for (var i = app.map.getNumLayers()-2; i > 0; i--) {
+					var nextLayerDown = app.map.layers[i];
+					if (nextLayerDown.seldonLayer.index < lyrJustAdded.seldonLayer.index) {
+						//move lyrJustAdded up one in the OL stack
+						app.map.setLayerIndex(lyrJustAdded, i);
+					}
+				}
+			}
             app.map.updateSize();
         };
 
@@ -1153,7 +1159,7 @@
             this.emit({type : 'transparency', value : this.transparency});
         };   
         
-        this.activateMask = function (maskLayerName) {
+        this.activateMask = function (maskLayerName, seldonIndex) {
             if (this.lid.indexOf("MaskFor") == -1) { //no mask applied yet
                 var maskLayer = new Layer({
                         lid              : this.lid+maskLayerName.replace("/",""),
@@ -1181,7 +1187,8 @@
                         legend           : this.legend
                 });
             }
-            maskLayer.activate();
+            maskLayer.index = seldonIndex;
+			maskLayer.activate();
             if (this.openLayersLayer && (this.lid.indexOf("MaskFor") == -1)) {
                 app.map.removeLayer(this.openLayersLayer);
                 this.removeFromLegend();
