@@ -38,7 +38,7 @@ Header Styles
     font-family: Verdana, Geneva, sans-serif;
 }
 
-#titlebar h2 {
+#titleBar h2 {
     margin: 0 auto 0 auto;
     color: #e6e4d8;
     font-size: 1.25em;
@@ -120,6 +120,7 @@ Map Styles
     z-index: 1;
     top: 0px;
     left: 0px;
+    -moz-box-sizing: border-box;
     box-sizing: border-box;
     width: 100%;
     height: 100%;
@@ -136,6 +137,7 @@ Footer Styles
     bottom: 0px;
     left: 0px;
     display: block;
+    -moz-box-sizing: border-box;
     box-sizing: border-box;
     width: 100%;
     height: auto;
