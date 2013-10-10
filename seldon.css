@@ -395,6 +395,11 @@ Phone Portrait
     #themeCombo {
         width: 85px;
     }
+
+    .splash-screen-header a,
+    .splash-screen-header img {
+	width: 290px !important;
+    }
 }
 
 /*
@@ -430,6 +435,11 @@ Phone Landscape
 
     .link {
         padding-right: 2px;
+    }
+
+    .splash-screen-header a,
+    .splash-screen-header img {
+	width: 290px !important;
     }
 }
 
