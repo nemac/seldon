@@ -391,7 +391,10 @@
             $("#layerPickerDialog").dialog({ zIndex   : 10050,
                                              position : { my : "left top", at: "left+5 top+100"},
                                              autoOpen : true,
-                                             hide     : "fade"
+                                             hide     : "fade",
+                                             open     : function () {
+                                                 $("a").focus().blur();
+                                             }
                                            });
             app.addListener("accordiongroupchange", function () {
                 if (app.currentTheme) {
@@ -417,7 +420,10 @@
             $("#mapToolsDialog").dialog({ zIndex   : 10050,
                                           position : { my : "right top", at: "right-5 top+100"},
                                           autoOpen : true,
-                                          hide     : "fade"
+                                          hide     : "fade",
+                                          open     : function () {
+                                              $("a").focus().blur();
+                                          }
                                         });
             app.addListener("themechange", function () {
                 app.updateShareMapUrl();
