@@ -423,7 +423,10 @@
             $("#layerPickerDialog").dialog({ zIndex   : 10050,
                                              position : { my : "left top", at: "left+5 top+100"},
                                              autoOpen : true,
-                                             hide     : "fade"
+                                             hide     : "fade",
+                                             open     : function () {
+                                                 $("a").focus().blur();
+                                             }
                                            });
             app.addListener("accordiongroupchange", function () {
                 if (app.currentTheme) {
@@ -449,7 +452,10 @@
             $("#mapToolsDialog").dialog({ zIndex   : 10050,
                                           position : { my : "right top", at: "right-5 top+100"},
                                           autoOpen : true,
-                                          hide     : "fade"
+                                          hide     : "fade",
+                                          open     : function () {
+                                              $("a").focus().blur();
+                                          }
                                         });
             app.addListener("themechange", function () {
                 app.updateShareMapUrl();
@@ -556,8 +562,15 @@
             // about button
             //
             $("#btnAbout").click(function () {
-                deactivateActiveOpenLayersControls();
-                showSplashScreen();
+                // I don't think the following line is needed. but am leaving it in
+                // just in case - jrf
+                //                deactivateActiveOpenLayersControls();
+                var splashScreen = $("#splashScreenContainer");
+                if (splashScreen.dialog("isOpen")) {
+                    splashScreen.dialog("close");
+                } else {
+                    splashScreen.dialog("open");
+                }
             });
 
             //
@@ -582,6 +595,11 @@
                 activeBtn = $(this);
                 activeBtn.children().addClass('icon-active');
             });
+
+	    //
+	    // splash screen
+	    //
+	    createSplashScreen();
 
             //Find Area
             var $findArea = $('#findArea');
@@ -1449,27 +1467,23 @@
         return img;
     }
 
-    function showSplashScreen () {
+    function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
             $document    = $(document),
-            windowWidth  = Math.round($document.width()/2),
-            windowHeight = Math.round($document.height()/2);
-        $('#splashScreenContent').load('splashScreen.html');
+            windowWidth  = Math.round($document.width()/2);
+	$('#splashScreenContent').load('splashScreen.html');
         $splashScreenContainer.dialog({
-            zIndex    : 10051,
-            position  : "center",
-            height:windowHeight,
-            width:windowWidth,
-            dialogClass: 'splashScreenStyle',
-            autoOpen  : true,
-            hide      : "explode",
-            title     : "NEMAC GIS Viewer",
-            close     : function() {
-                $(this).dialog('destroy');
-                $(this).children().removeClass('icon-active');
+            zIndex      : 10051,
+            maxHeight   : $document.height(),
+            width       : windowWidth,
+            minWidth    : 300,
+            dialogClass : 'splashScreenStyle',
+            hide        : "explode",
+            open        : function () {
+                $("a").focus().blur();
             }
         });
-        $splashScreenContainer.append($($('#splashScreenContent')));
+        $splashScreenContainer.dialog("close");
     }
 
     //This function gets called every time the layer properties icon gets clicked
