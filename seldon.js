@@ -151,6 +151,7 @@
         };
 
         this.setTheme = function (theme, options) {
+			
             var app = this,
                 $layerPickerAccordion = $("#layerPickerAccordion"),
                 flag,
@@ -161,7 +162,42 @@
                 maskTextElem,
                 activeMaskLayers = [];
 
-            if ($layerPickerAccordion.length === 0) {
+			//JDM (11/1/13): fix for changing themes and accounting for active layers
+			//we have changed a theme here, but we need to account for active layers.
+			//This accounts for active mask on theme change also.
+			if (options === undefined) {
+				options = {};
+				options.layers = [];
+				options.shareUrlMasks = [];
+                var shareUrlInfo = ShareUrlInfo.parseUrl(app.shareUrl());
+				//get previously active accordion group e.g. accgp=G04
+				var gid = shareUrlInfo.accordionGroupGid;
+				//get previously active layers e.g. layers=AD,AAB
+				var lids = shareUrlInfo.layerLids;
+				//loop through the accordion groups the active one accordingly
+				for (var a = 0, b = this.accordionGroups.length; a < b; a++) {
+					if (this.accordionGroups[a].gid==gid) {
+							options.accordionGroup = this.accordionGroups[a];
+					}
+				}
+				//options.layers = lids;
+				//loop through the layers active one accordingly
+				for (var i = app.map.getNumLayers()-1; i > 0; i--) {
+					var currLayer = app.map.layers[i];
+					if (lids.indexOf(currLayer.seldonLayer.lid) > -1) {
+						//alert(currLayer.lid);
+						options.layers.push(currLayer.seldonLayer);
+					}
+				}
+                for (var i = 0; i < app.activeMask.length; i++) {
+                    //this.activateMask("MaskFor"+app.activeMask[i],this.index);
+					options.shareUrlMasks.push(app.activeMask[i]);
+                }			
+				
+            }
+			
+
+			if ($layerPickerAccordion.length === 0) {
                 flag = true;
                 $layerPickerAccordion = $(document.createElement("div"))
                     .attr("id", "layerPickerAccordion")
@@ -182,10 +218,6 @@
             });
 
             $('#legend').empty();
-
-            if (options === undefined) {
-                options = {};
-            }
 
             //jdm: re-wrote loop using traditional for loops (more vintage-IE friendly)
             //vintage-IE does work with jquery each loops, but seems to be slower
