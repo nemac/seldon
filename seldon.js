@@ -679,33 +679,40 @@
                 for (var i = app.map.getNumLayers()-1; i > 0; i--) {
                     var currLayer = app.map.layers[i];
                     if (currLayer.seldonLayer.mask) {
-                        //if not already in the active mask list add to keep track
-                        if (this.activeMask.indexOf(maskName.replace("MaskFor","")) == -1) {
-                            this.activeMask.push(maskName.replace("MaskFor",""));
-                        }
                         //need to only add one lid to activeMaskParents but be able to
                         //handle the case in deactivateMask where there are multiple mask on
                         //and how to wait until the last mask is off to re-activate the parent.
                         //if not already in the active mask parent list add to keep track
-                        if (this.activeMaskParents.indexOf(currLayer.seldonLayer.lid) == -1) {
+						if (this.activeMaskParents.indexOf(currLayer.seldonLayer.lid) == -1) {
                             if (currLayer.seldonLayer.lid.indexOf("MaskFor") > -1) {
-                                this.activeMaskParents.push(currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("MaskFor")));
-                            } else {
+								if ((this.activeMaskParents.indexOf(currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("MaskFor"))) > -1) 
+									&& (app.activeMask.indexOf(maskName.replace("MaskFor",""))==-1)) {  //condition: Already in activeMaskParents but a new mask
+									this.activeMaskParents.push(currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("MaskFor")));
+									this.activeMask.push(maskName.replace("MaskFor",""));
+			                        currLayer.seldonLayer.activateMask(maskName, currLayer.seldonLayer.index);  //activate mask at the layer level
+									if ($("#"+maskName.replace("MaskFor","")).get(0)) {
+										$("#"+maskName.replace("MaskFor","")).get(0).checked = true;
+									}									
+								}
+								else { 
+									//if the parent layer checkbox and mask-toggle are not active make it so
+									if ($("#chk"+currLayer.seldonLayer.lid.replace(maskName,"")).get(0)) {
+										$("#chk"+currLayer.seldonLayer.lid.replace(maskName,"")).get(0).checked = true;
+									}
+									if ($("#"+maskName.replace("MaskFor","")).get(0)) {
+										$("#"+maskName.replace("MaskFor","")).get(0).checked = true;
+									}									
+								}
+							} else { //condition: First of a mask for parent layer
                                 this.activeMaskParents.push(currLayer.seldonLayer.lid);
+								this.activeMask.push(maskName.replace("MaskFor",""));
+		                        currLayer.seldonLayer.activateMask(maskName, currLayer.seldonLayer.index);  //activate mask at the layer level
+								if ($("#"+maskName.replace("MaskFor","")).get(0)) {
+									$("#"+maskName.replace("MaskFor","")).get(0).checked = true;
+								}									
                             }
                         }
-                        currLayer.seldonLayer.activateMask(maskName, currLayer.seldonLayer.index);  //activate mask at the layer level
-                    } else { //we still need to keep track of active mask
-                        //if not already in the active mask list add to keep track
-                        if (this.activeMask.indexOf(maskName.replace("MaskFor","")) == -1) {
-                            this.activeMask.push(maskName.replace("MaskFor",""));
-                        }
-                    }
-                }
-                //verify that the checkbox for the mask is checked
-                //this catches cases where a mask is done via share url
-                if ($("#"+maskName.replace("MaskFor","")).get(0)) {
-                    $("#"+maskName.replace("MaskFor","")).get(0).checked = true;
+                    } 
                 }
             }
             else { //we have just turned off a mask
@@ -754,7 +761,7 @@
                     }
                 }
                 //be sure to remove from active mask
-                app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")),1);
+                //app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")),1);
             }
             //turn off mask
             //this needs to be more robust accounting for all mask possible being
@@ -1159,7 +1166,7 @@
                     if (app.activeMaskParents.indexOf(this.lid) > -1) {
                         //this layer is the parent to a currently active mask
                         //therefore it technically has already been deactivated
-                        //but we really need to turn off the relevent mask
+                        //but we really need to turn off the relevant mask
                         app.deactivateMaskParent(this.lid);
                         //Need to remove from activeMaskParents??
                         //Or, once a parent always a parent 
@@ -1210,7 +1217,9 @@
         };   
         
         this.activateMask = function (maskLayerName, seldonIndex) {
-            if (this.lid.indexOf("MaskFor") == -1) { //no mask applied yet
+            //Need to do a check for existing mask
+			var checkForMaskLayerActive = this.checkForExistingLayer(this.lid);
+			if (this.lid.indexOf("MaskFor") == -1) { //no mask applied yet
                 var maskLayer = new Layer({
                         lid              : this.lid+maskLayerName.replace("/",""),
                         visible          : this.visible,
@@ -1237,14 +1246,22 @@
                         legend           : this.legend
                 });
             }
-            maskLayer.index = seldonIndex;
-			maskLayer.activate();
+            if (maskLayer != undefined) {
+				maskLayer.index = seldonIndex;
+				maskLayer.activate();
+			}
             if (this.openLayersLayer && (this.lid.indexOf("MaskFor") == -1)) {
                 app.map.removeLayer(this.openLayersLayer);
                 this.removeFromLegend();
             }
             app.updateShareMapUrl();
-            $('#mask-status'+ this.lid).text("(m)");
+			checkForMaskLayerActive = this.checkForExistingLayer(this.lid);
+            if (checkForMaskLayerActive) {
+				$('#mask-status'+ this.lid.substring(0,this.lid.indexOf("MaskFor"))).text("(m)");
+			}
+			else {
+				$('#mask-status'+ this.lid).text("(m)");
+			}
         };
     }
     EventEmitter.declare(Layer);
