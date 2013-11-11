@@ -698,6 +698,7 @@
 									//if the parent layer checkbox and mask-toggle are not active make it so
 									if ($("#chk"+currLayer.seldonLayer.lid.replace(maskName,"")).get(0)) {
 										$("#chk"+currLayer.seldonLayer.lid.replace(maskName,"")).get(0).checked = true;
+                                        $('#mask-status'+ currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("MaskFor"))).text("(m)");
 									}
 									if ($("#"+maskName.replace("MaskFor","")).get(0)) {
 										$("#"+maskName.replace("MaskFor","")).get(0).checked = true;
