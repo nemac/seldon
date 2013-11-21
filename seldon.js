@@ -430,7 +430,10 @@
                                            });
             app.addListener("accordiongroupchange", function () {
                 if (app.currentTheme) {
-                    $('#layerPickerAccordion').accordion('option', 'active', app.currentTheme.getAccordionGroupIndex(app.currentAccordionGroup));
+                    $('#layerPickerAccordion').accordion({
+                            active      : app.currentTheme.getAccordionGroupIndex(app.currentAccordionGroup),
+                            collapsible : true
+                    });
                 }
             });
 
@@ -479,7 +482,8 @@
 
             //    initialize
             $mapToolsAccordion.accordion({
-                heightStyle: 'content'
+                heightStyle : 'content',
+                collapsible : true
             });
 
             //    find the 'legend' layer in the mapTools accordion, and make sure it is initially turned on
