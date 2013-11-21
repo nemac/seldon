@@ -78,6 +78,13 @@ Footer Styles
 }
 
 /*
+jquery UI overrides
+*/
+.ui-dialog {
+    border: 1px solid #aaa;
+}
+
+/*
 Other Popup Styles
 */
 #identify_results, td {

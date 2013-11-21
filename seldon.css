@@ -40,7 +40,7 @@ Header Styles
 
 #titleBar h2 {
     margin: 0 auto 0 auto;
-    color: #e6e4d8;
+    color: #fff;
     font-size: 1.25em;
     font-weight: bold;
     font-style: italic;
@@ -220,6 +220,76 @@ textarea.shareMapUrl {
 }
 
 /*
+jquery UI overrides
+*/
+.ui-dialog {
+    box-shadow: 0px 0px 2px #333;
+}
+
+#layerPickerDialog,
+#mapToolsDialog {
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.ui-dialog-titlebar {
+    border: 0;
+    border-bottom: 1px solid #aaa;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    background: #dfddd0;
+}
+
+.ui-dialog-titlebar .ui-dialog-title {
+    font-size: 1em;
+}
+
+.ui-widget-header .ui-dialog-titlebar-close {
+    height: 21px;
+    background: #dfddd0;
+}
+
+.ui-widget-header .ui-dialog-titlebar-close .ui-icon {
+    left: 1px;
+    top: 1px;
+    margin-left: 0;
+    margin-top: 0;
+}
+
+.ui-widget-content {
+    border: 0;
+    padding: 0;
+}
+
+.ui-accordion .ui-accordion-header {
+    margin-top: 0;
+    border-left: 0;
+    border-right: 0;
+    border-top: 0;
+    border-radius: 0;
+    background: #f5f3e9;
+}
+
+.ui-accordion .ui-accordion-header-active {
+    border-bottom: 0;
+    background: #fff;
+}
+
+.ui-accordion .ui-accordion-content {
+    border-bottom: 1px solid #999;
+    border-radius: 0;
+    padding-top: 0;
+}
+
+.ui-accordion .ui-accordion-content div h4 {
+    color: #665f45;
+}
+
+.ui-accordion .ui-accordion-content > div:first-child h4 {
+    margin-top: 10px;
+}
+
+/*
 Other Popup Styles
 */
 .splashScreenStyle {
@@ -362,7 +432,7 @@ Phone Portrait
         display: none;
     }
 
-    #titlebar h2 {
+    #titleBar h2 {
         font-size: 1em;
     }
 
