@@ -1854,6 +1854,7 @@
     }
 
     var lastPopup;
+	var popCount=0;
 
     function createMultigraphTool () {
         return new ClickTool(
@@ -1870,34 +1871,50 @@
                 var lonlat = app.map.getLonLatFromPixel(e.xy);
                 lonlat.transform(app.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
 
-                $('#myMultigraph').remove();
-                if (lastPopup) {
-                    app.map.removePopup(lastPopup);
-                }
-                app.map.addPopup(lastPopup =
-                                 new OpenLayers.Popup.FramedCloud(
-                                     "seldonMultigraphPopup",
+				popCount=popCount+1;
+				var popup = new OpenLayers.Popup(
+                                     "seldonMultigraphPopup"+popCount+"",
                                      coords,
                                      null,
-                                     '<div id="seldonMultigraphMessage"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="seldonMultigraph" style="width: 600px; height: 300px;"></div>',
-                                     null,
-                                     true));
-                var seldonMultigraph = window.multigraph.jQuery('#seldonMultigraph'),
-                    promise = seldonMultigraph.multigraph({
-                    //NOTE: coords.lon and coords.lat on the next line are really x,y coords in EPSG:900913, not lon/lat:
-                        'mugl'   : "http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+coords.lon+","+coords.lat,
-                        'swf'    :  "libs/seldon/libs/Multigraph.swf"
-                    });
+                                     '<div id="seldonMultigraphMessage'+popCount+'"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="seldonMultigraph'+popCount+'" style="width: 600px; height: 300px;"></div>',
+                                     true);
+				popup.autoSize = true;
+				app.map.addPopup(popup);
+  			    //Apply jQuery draggable to the map container of the popup
+				if (jQuery.browser.msie) {
+					var dragPopup = new OpenLayers.Control.DragPopup(popup);
+					app.map.addControl(dragPopup);
+				}
+				var extent_px = app.map.getViewPortPxFromLonLat(app.map.getCenter())
+				if (popCount%2==0) {
+					if (jQuery.browser.msie) {
+						popup.moveTo(new OpenLayers.Pixel(0,0));
+					}
+					else {
+						popup.moveTo(new OpenLayers.Pixel(extent_px.y,extent_px.bottom+(extent_px.bottom*.1)));
+					}
+				}
+				else {
+					popup.moveTo(new OpenLayers.Pixel(extent_px.y,0));
+				}
+				var seldonMultigraph = window.multigraph.jQuery('#seldonMultigraph'+popCount+''),
+				promise = seldonMultigraph.multigraph({
+				//NOTE: coords.lon and coords.lat on the next line are really x,y coords in EPSG:900913, not lon/lat:
+					'mugl'   : "http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+coords.lon+","+coords.lat,
+					'swf'    :  "libs/seldon/libs/Multigraph.swf"
+				});
                 seldonMultigraph.multigraph('done', function () {
-                    var multigraphMessage = $('#seldonMultigraphMessage');
+                    var multigraphMessage = $('#seldonMultigraphMessage'+popCount+'');
                     multigraphMessage.empty();
                     multigraphMessage.text(Mustache.render('MODIS NDVI for Lat: {{{lat}}} Lon: {{{lon}}}',
                                                            { lat : sprintf("%.4f", lonlat.lat),
                                                              lon : sprintf("%.4f", lonlat.lon) }));
                 });
-            });
-    }
+			});
+	}
 
+
+	
     function stringContainsChar (string, c) {
         return (string.indexOf(c) >= 0);
     }
@@ -1967,5 +1984,95 @@
     seldon.stringContainsChar                = stringContainsChar;
     seldon.ShareUrlInfo                      = ShareUrlInfo;
     window.seldon                            = seldon;
+	
+	/*
+	 * This controls is used to make multigraph draggable
+	 * the original author is Matt Walker from http://aamirafridi.com/openlayers/openlayers-draggable-popups
+	 */
+	OpenLayers.Control.DragPopup = OpenLayers.Class(OpenLayers.Control, {
+		down: false,
+		popPnt: null,
+		mapPnt: null,
+		popup: null,
+		docMouseUpProxy: null,
+		/**
+		 * Constructor: OpenLayers.Control.DragPopup
+		 * Create a new control to drag a popup.
+		 *
+		 * Parameters:
+		 * @param {OpenLayers.Popup} popup
+		 * @param {Object} options
+		 */
+		initialize: function(popup, options) {
+			OpenLayers.Control.prototype.initialize.apply(this, [options]);
+			this.popup = popup;
+			this.popup.events.register('mousedown', this, this.mouseDown);
+			this.popup.events.register('mouseup', this, this.mouseUp);
+			this.popup.events.register('mousemove', this, this.mouseMove);
+			// Define a function bound to this used to listen for
+			// document mouseout events
+			this.docMouseUpProxy = OpenLayers.Function.bind(this.mouseUp, this);
+		},
+
+		/**
+		 * Method: setMap
+		 * Set the map property for the control.
+		 *
+		 * Parameters: 
+		 * map - {<openlayers.map>} The controls map.
+		 */
+		setMap: function(map) {
+			OpenLayers.Control.prototype.setMap.apply(this, [map]);
+			this.map.events.register('mousemove', this, this.mouseMove);
+		},
+		
+		mouseDown: function(evt) {
+			//console.log('mouseDown');
+			this.down = true;
+			this.popPnt = this.popup.events.getMousePosition(evt);
+			OpenLayers.Event.observe(document, 'mouseup', this.docMouseUpProxy);
+			OpenLayers.Event.stop(evt);
+		},
+
+		mouseUp: function(evt) {
+			//console.log('mouseUp');
+			this.down = false;
+			OpenLayers.Event.stopObserving(document, 'mouseup', this.docMouseUpProxy);
+			OpenLayers.Event.stop(evt);
+		},
+		
+		mouseOut: function(evt) {
+			//console.log('map.mouseOut');
+			this.down = false;
+			OpenLayers.Event.stop(evt);
+		},
+		
+		mouseMove: function(evt) {
+			//console.log('mouseMove');
+			if (this.down) {
+				var mapPntPx = this.map.events.getMousePosition(evt);
+				mapPntPx = mapPntPx.add((this.popPnt.x*-1), (this.popPnt.y*-1));
+				this.popup.lonlat = this.map.getLonLatFromViewPortPx(mapPntPx);
+				this.popup.updatePosition();
+			}
+			OpenLayers.Event.stop(evt);
+		},
+	   
+		destroy: function() {
+			// Remove listeners
+			this.popup.events.unregister('mousedown', this, this.mouseDown);
+			this.popup.events.unregister('mouseup', this, this.mouseUp);
+			this.popup.events.unregister('mousemove', this, this.mouseMove);
+			this.map.events.unregister('mousemove', this, this.mouseMove);
+			// Clear object references
+			this.popup = null;
+			this.popPnt = null;
+			// allow our superclass to tidy up
+			OpenLayers.Control.prototype.destroy.apply(this, []);
+		},
+
+		/** @final @type String */
+		CLASS_NAME: "OpenLayers.Control.DragPopup"
+	});	
 
 }(jQuery));
