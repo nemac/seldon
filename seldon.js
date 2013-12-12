@@ -1872,31 +1872,13 @@
                 lonlat.transform(app.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
 
 				popCount=popCount+1;
-				var popup = new OpenLayers.Popup(
-                                     "seldonMultigraphPopup"+popCount+"",
-                                     coords,
-                                     null,
-                                     '<div id="seldonMultigraphMessage'+popCount+'"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="seldonMultigraph'+popCount+'" style="width: 600px; height: 300px;"></div>',
-                                     true);
-				popup.autoSize = true;
-				app.map.addPopup(popup);
-  			    //Apply jQuery draggable to the map container of the popup
-				if (jQuery.browser.msie) {
-					var dragPopup = new OpenLayers.Control.DragPopup(popup);
-					app.map.addControl(dragPopup);
-				}
-				var extent_px = app.map.getViewPortPxFromLonLat(app.map.getCenter())
-				if (popCount%2==0) {
-					if (jQuery.browser.msie) {
-						popup.moveTo(new OpenLayers.Pixel(0,0));
-					}
-					else {
-						popup.moveTo(new OpenLayers.Pixel(extent_px.y,extent_px.bottom+(extent_px.bottom*.1)));
-					}
-				}
-				else {
-					popup.moveTo(new OpenLayers.Pixel(extent_px.y,0));
-				}
+
+				var popup = $(document.createElement('div')); 
+				popup.id = "#seldonMultigraphMessageDiv"+popCount+"";
+				popup.html('<div id="seldonMultigraphMessage'+popCount+'"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="seldonMultigraph'+popCount+'" style="width: 600px; height: 300px;"></div>');
+				popup.dialog({ width: 500 });		
+
+
 				var seldonMultigraph = window.multigraph.jQuery('#seldonMultigraph'+popCount+''),
 				promise = seldonMultigraph.multigraph({
 				//NOTE: coords.lon and coords.lat on the next line are really x,y coords in EPSG:900913, not lon/lat:
@@ -1910,6 +1892,8 @@
                                                            { lat : sprintf("%.4f", lonlat.lat),
                                                              lon : sprintf("%.4f", lonlat.lon) }));
                 });
+			
+			
 			});
 	}
 
