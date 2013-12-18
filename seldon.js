@@ -1853,8 +1853,7 @@
         //return undefined;
     }
 
-    var lastPopup;
-	var popCount=0;
+    seldon.graphCount = 0;
 
     function createMultigraphTool () {
         return new ClickTool(
@@ -1862,6 +1861,8 @@
                 // This function gets called when the user clicks a point in the map while the
                 // Multigraph tool is active.  The argument `e` is the click event; the coordinates
                 // of the clicked point are (e.x, e.y).
+                seldon.graphCount++;
+                var offset = 10 * (seldon.graphCount-1);
 
                 // This coords object is not really in lon/lat; it's in the display projection of the map,
                 // which is EPSG:900913.
@@ -1871,32 +1872,32 @@
                 var lonlat = app.map.getLonLatFromPixel(e.xy);
                 lonlat.transform(app.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
 
-                popCount=popCount+1;
-
                 var popup = $(document.createElement('div'));
-                popup.id = "#seldonMultigraphMessageDiv"+popCount+"";
-                popup.html('<div id="seldonMultigraphMessage'+popCount+'"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="seldonMultigraph'+popCount+'" style="width: 600px; height: 300px;"></div>');
+                popup.id = "#seldonMultigraphMessageDiv"+seldon.graphCount+"";
+                popup.html('<div class="multigraphLoader"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="seldonMultigraph'+seldon.graphCount+'" style="width: 600px; height: 300px;" ></div>');
                 popup.dialog({
                     width     : 600,
                     resizable : false,
+                    position  : { my: "center+" + offset + " center+" + offset, at: "center", of: window },
                     title     : Mustache.render('MODIS NDVI for Lat: {{{lat}}} Lon: {{{lon}}}',
                                                 {
                                                     lat : sprintf("%.4f", lonlat.lat),
                                                     lon : sprintf("%.4f", lonlat.lon)
                                                 }
-                    )
+                    ),
+                    close : function( event, ui ) {
+                        seldon.graphCount--;
+                    },
                 });
 
-                var seldonMultigraph = window.multigraph.jQuery('#seldonMultigraph'+popCount+''),
+                var seldonMultigraph = $('#seldonMultigraph'+seldon.graphCount+''),
                     promise = seldonMultigraph.multigraph({
                         //NOTE: coords.lon and coords.lat on the next line are really x,y coords in EPSG:900913, not lon/lat:
                         'mugl'   : "http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+coords.lon+","+coords.lat,
-                        'swf'    :  "libs/seldon/libs/Multigraph.swf"
+                        'swf'    : "libs/seldon/libs/Multigraph.swf"
                     });
-                seldonMultigraph.multigraph('done', function () {
-                    var multigraphMessage = $('#seldonMultigraphMessage'+popCount+'');
-                    multigraphMessage.empty();
-                    multigraphMessage.text();
+                seldonMultigraph.multigraph('done', function (m) {
+                    $(m.div()).parent().children(".multigraphLoader").remove();
                 });
             });
     }
