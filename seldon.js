@@ -1871,34 +1871,32 @@
                 var lonlat = app.map.getLonLatFromPixel(e.xy);
                 lonlat.transform(app.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
 
-				popCount=popCount+1;
+                popCount=popCount+1;
 
-				var popup = $(document.createElement('div')); 
-				popup.id = "#seldonMultigraphMessageDiv"+popCount+"";
-				popup.html('<div id="seldonMultigraphMessage'+popCount+'"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="seldonMultigraph'+popCount+'" style="width: 600px; height: 300px;"></div>');
-				popup.dialog({ width: 500 });		
+                var popup = $(document.createElement('div')); 
+                popup.id = "#seldonMultigraphMessageDiv"+popCount+"";
+                popup.html('<div id="seldonMultigraphMessage'+popCount+'"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="seldonMultigraph'+popCount+'" style="width: 600px; height: 300px;"></div>');
+                popup.dialog({ width: 500 });		
 
-
-				var seldonMultigraph = window.multigraph.jQuery('#seldonMultigraph'+popCount+''),
-				promise = seldonMultigraph.multigraph({
-				//NOTE: coords.lon and coords.lat on the next line are really x,y coords in EPSG:900913, not lon/lat:
-					'mugl'   : "http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+coords.lon+","+coords.lat,
-					'swf'    :  "libs/seldon/libs/Multigraph.swf"
-				});
+                var seldonMultigraph = window.multigraph.jQuery('#seldonMultigraph'+popCount+''),
+                    promise = seldonMultigraph.multigraph({
+                        //NOTE: coords.lon and coords.lat on the next line are really x,y coords in EPSG:900913, not lon/lat:
+                        'mugl'   : "http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+coords.lon+","+coords.lat,
+                        'swf'    :  "libs/seldon/libs/Multigraph.swf"
+                    });
                 seldonMultigraph.multigraph('done', function () {
                     var multigraphMessage = $('#seldonMultigraphMessage'+popCount+'');
                     multigraphMessage.empty();
                     multigraphMessage.text(Mustache.render('MODIS NDVI for Lat: {{{lat}}} Lon: {{{lon}}}',
-                                                           { lat : sprintf("%.4f", lonlat.lat),
-                                                             lon : sprintf("%.4f", lonlat.lon) }));
+                                                           {
+                                                               lat : sprintf("%.4f", lonlat.lat),
+                                                               lon : sprintf("%.4f", lonlat.lon)
+                                                           }
+                    ));
                 });
-			
-			
-			});
-	}
+            });
+    }
 
-
-	
     function stringContainsChar (string, c) {
         return (string.indexOf(c) >= 0);
     }
