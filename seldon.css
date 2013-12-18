@@ -289,6 +289,10 @@ jquery UI overrides
     margin-top: 10px;
 }
 
+.transparency-slider {
+    border: 1px solid #aaa;
+}
+
 /*
 Other Popup Styles
 */
