@@ -1876,7 +1876,16 @@
                 var popup = $(document.createElement('div'));
                 popup.id = "#seldonMultigraphMessageDiv"+popCount+"";
                 popup.html('<div id="seldonMultigraphMessage'+popCount+'"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="seldonMultigraph'+popCount+'" style="width: 600px; height: 300px;"></div>');
-                popup.dialog({ width: 500 });
+                popup.dialog({
+                    width     : 600,
+                    resizable : false,
+                    title     : Mustache.render('MODIS NDVI for Lat: {{{lat}}} Lon: {{{lon}}}',
+                                                {
+                                                    lat : sprintf("%.4f", lonlat.lat),
+                                                    lon : sprintf("%.4f", lonlat.lon)
+                                                }
+                    )
+                });
 
                 var seldonMultigraph = window.multigraph.jQuery('#seldonMultigraph'+popCount+''),
                     promise = seldonMultigraph.multigraph({
@@ -1887,12 +1896,7 @@
                 seldonMultigraph.multigraph('done', function () {
                     var multigraphMessage = $('#seldonMultigraphMessage'+popCount+'');
                     multigraphMessage.empty();
-                    multigraphMessage.text(Mustache.render('MODIS NDVI for Lat: {{{lat}}} Lon: {{{lon}}}',
-                                                           {
-                                                               lat : sprintf("%.4f", lonlat.lat),
-                                                               lon : sprintf("%.4f", lonlat.lon)
-                                                           }
-                    ));
+                    multigraphMessage.text();
                 });
             });
     }
