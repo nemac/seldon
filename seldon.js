@@ -691,7 +691,6 @@
                             if (currLayer.seldonLayer.lid.indexOf("MaskFor") > -1) {
 								if ((this.activeMaskParents.indexOf(currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("MaskFor"))) > -1) 
 									&& (app.activeMask.indexOf(maskName.replace("MaskFor",""))==-1)) {  //condition: Already in activeMaskParents but a new mask
-									this.activeMaskParents.push(currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("MaskFor")));
 									this.activeMask.push(maskName.replace("MaskFor",""));
 			                        currLayer.seldonLayer.activateMask(maskName, currLayer.seldonLayer.index);  //activate mask at the layer level
 									if ($("#"+maskName.replace("MaskFor","")).get(0)) {
@@ -709,7 +708,6 @@
 									}									
 								}
 							} else { //condition: First of a mask for parent layer
-                                this.activeMaskParents.push(currLayer.seldonLayer.lid);
 								this.activeMask.push(maskName.replace("MaskFor",""));
 		                        currLayer.seldonLayer.activateMask(maskName, currLayer.seldonLayer.index);  //activate mask at the layer level
 								if ($("#"+maskName.replace("MaskFor","")).get(0)) {
@@ -792,6 +790,12 @@
             //this needs to be more robust accounting for all mask possible being
             //off, but for now i am going to leave it like this.
             app.updateShareMapUrl();
+			//remove all occurrence of this lid from activeMaskParets
+			for(var i = this.activeMaskParents.length - 1; i >= 0; i--) {
+				if(this.activeMaskParents[i] === lid) {
+				   this.activeMaskParents.splice(i, 1);
+				}
+			}			
             $('#mask-status'+ this.lid).text(""); 
         };
 
@@ -1128,7 +1132,7 @@
             this.emit("activate");
             //If there is currently any active mask
             //then activate mask on this layer if it hasn't already been activated
-            //Because we will fly through here again we need to use both activeMask
+            //we will fly through here again we need to use both activeMask
             //and activeMaskParents to verify that we don't get into a recursive loop
             if ((app.activeMask.length > 0) &&
                 (this.mask) &&
@@ -1153,6 +1157,7 @@
 					}
 				}
 			}
+			app.updateShareMapUrl();
             app.map.updateSize();
         };
 
@@ -1235,11 +1240,12 @@
                         layers           : this.layers+maskLayerName.replace("/","").replace(this.lid,""),
                         identify         : this.identify,
                         name             : this.lid+maskLayerName.replace("/",""),
-                        mask             : 'true',
+                        mask             : 'false',
                         legend           : this.legend
                 });
-                //add to activeMaskParents
-                //app.activeMaskParents.push(this.lid);
+                //add to activeMaskParents, for the purpose of 
+                //keeping track of the number of mask-per-parent
+				app.activeMaskParents.push(this.lid);
             } else { //applying additional mask
                  var maskLayer = new Layer({
                         lid              : this.lid.replace(this.lid.substring(this.lid.indexOf("MaskFor"),this.lid.length), maskLayerName),
@@ -1258,8 +1264,15 @@
 				maskLayer.activate();
 			}
             if (this.openLayersLayer && (this.lid.indexOf("MaskFor") == -1)) {
-                app.map.removeLayer(this.openLayersLayer);
-                this.removeFromLegend();
+                try {
+                    app.map.removeLayer(this.openLayersLayer); //I think this is throwing and error
+                    this.removeFromLegend();
+                }
+                catch(err) {
+                    //Error will occur here because we have already remove the parent layer
+                    //from the openlayers map.  But we will allow things to go on...
+                    // alert(err.message);
+                }
             }
             app.updateShareMapUrl();
 			checkForMaskLayerActive = this.checkForExistingLayer(this.lid);
