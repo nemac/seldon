@@ -183,11 +183,12 @@
 				//options.layers = lids;
 				//loop through the layers active one accordingly
 				for (var i = app.map.getNumLayers()-1; i > 0; i--) {
-					var currLayer = app.map.layers[i];
-					if (lids.indexOf(currLayer.seldonLayer.lid) > -1) {
-						//alert(currLayer.lid);
-						options.layers.push(currLayer.seldonLayer);
-					}
+                        var currLayer = app.map.layers[i];
+                        for (var j=0; j<lids.length; j++) {
+                            if (lids[j]==currLayer.seldonLayer.lid)   {
+                                options.layers.push(currLayer.seldonLayer);
+                            }
+                        }
 				}
                 for (var i = 0; i < app.activeMask.length; i++) {
                     //this.activateMask("MaskFor"+app.activeMask[i],this.index);
