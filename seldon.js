@@ -32,7 +32,8 @@
         this.currentTheme          = undefined;
         this.identifyTool          = undefined;
         this.multigraphTool        = undefined;
-
+        this.defaultMasks           = ["MaskForConiferForest","MaskForDeciduousForest","MaskForMixedForest"];
+        
         // array of saved extent objects; each entry is a JavaScript object of the form
         //     { left : VALUE, bottom : VALUE, right : VALUE, top : VALUE }
         this.savedExtents = [];
@@ -324,6 +325,12 @@
                     this.setMask(true, "MaskFor"+options.shareUrlMasks[m]);
                 }
             }
+            
+            //jdm 1/3/14: set the default forest mask
+            for (var n = 0; n < app.defaultMasks.length; n++) {
+                this.setMask(true, app.defaultMasks[n]);
+            }            
+            
         };
 
         this.shareUrl = function () {
@@ -601,10 +608,10 @@
                 activeBtn.children().addClass('icon-active');
             });
 
-	    //
-	    // splash screen
-	    //
-	    createSplashScreen();
+            //
+            // splash screen
+            //
+            createSplashScreen();
 
             //Find Area
             var $findArea = $('#findArea');
