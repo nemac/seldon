@@ -235,7 +235,7 @@
                     (!accordionGroupOption && accGp.selectedInConfig)) {
                     accordionGroup = accGp;
                 }
-                var g = $layerPickerAccordion.listAccordion('addSection', '<a>'+accGp.label+'</a>');
+                var g = $layerPickerAccordion.listAccordion('addSection', accGp.label);
                 for (var i = 0, j = accGp.sublists.length; i < j; i++) {
                     var sublist = accGp.sublists[i],
                         s = $layerPickerAccordion.listAccordion('addSublist', g, sublist.label);
@@ -431,10 +431,7 @@
             $("#layerPickerDialog").dialog({ zIndex   : 10050,
                                              position : { my : "left top", at: "left+5 top+100"},
                                              autoOpen : true,
-                                             hide     : "fade",
-                                             open     : function () {
-                                                 $("a").focus().blur();
-                                             }
+                                             hide     : "fade"
                                            });
             app.addListener("accordiongroupchange", function () {
                 if (app.currentTheme) {
@@ -463,10 +460,7 @@
             $("#mapToolsDialog").dialog({ zIndex   : 10050,
                                           position : { my : "right top", at: "right-5 top+100"},
                                           autoOpen : true,
-                                          hide     : "fade",
-                                          open     : function () {
-                                              $("a").focus().blur();
-                                          }
+                                          hide     : "fade"
                                         });
             app.addListener("themechange", function () {
                 app.updateShareMapUrl();
@@ -1523,10 +1517,7 @@
             width       : windowWidth,
             minWidth    : 300,
             dialogClass : 'splashScreenStyle',
-            hide        : "explode",
-            open        : function () {
-                $("a").focus().blur();
-            }
+            hide        : "explode"
         });
         $splashScreenContainer.dialog("close");
     }
