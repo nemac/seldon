@@ -1012,8 +1012,12 @@
                 controls: [
                     new OpenLayers.Control.Navigation({
                         dragPanOptions: {
-                            enableKinetic: true
-                        }
+                            enableKinetic: true,
+							interval: 3000
+                        },
+						mouseWheelOptions: {
+							interval: 3000
+						}
                     }),
                     new OpenLayers.Control.Attribution(),
                     app.zoomInTool,
