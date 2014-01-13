@@ -9,7 +9,10 @@
 
     seldon.App = function () {
         EventEmitter.call(this);
+		OpenLayers.Util.onImageLoadErrorColor = 'transparent';
+		OpenLayers.IMAGE_RELOAD_ATTEMPTS = 3;
         this.map         = undefined; // OpenLayers map object
+		this.tileManager = undefined;
         this.projection  = undefined; // OpenLayers map projection
         this.gisServerType = undefined; //The type of server that the wms layers will be served from
         this.scalebar    = undefined;
@@ -1009,21 +1012,25 @@
             if (initialExtent === undefined) {
                 initialExtent = app.maxExtent;
             }
-            app.map = new OpenLayers.Map('map', {
+            
+			app.tileManager = new OpenLayers.TileManager({
+				cacheSize: 12,
+				moveDelay: 3000,
+				zoomDelay: 3000
+			});					
+			
+			app.map = new OpenLayers.Map('map', {
                 maxExtent:         maxExtentBounds,
                 units:             'm',
                 resolutions:       layer.resolutions,
                 numZoomLevels:     layer.numZoomLevels,
                 tileSize:          layer.tileSize,
+				tileManager:       app.tileManager,
                 controls: [
                     new OpenLayers.Control.Navigation({
                         dragPanOptions: {
-                            enableKinetic: true,
-							interval: 3000
-                        },
-						mouseWheelOptions: {
-							interval: 3000
-						}
+                            enableKinetic: true
+                        }
                     }),
                     new OpenLayers.Control.Attribution(),
                     app.zoomInTool,
@@ -1044,11 +1051,11 @@
             // to fetch the layerInfo, which in this case we already have
             this.currentBaseLayer = baseLayer;
             this.emit("baselayerchange");
-            this.scalebar = new OpenLayers.Control.ScaleBar({
-                    displaySystem: "english"
-                });
-            this.scalebar.divisions = 3;
-            this.map.addControl(this.scalebar);
+            // this.scalebar = new OpenLayers.Control.ScaleBar({
+                    // displaySystem: "english"
+                // });
+            // this.scalebar.divisions = 3;
+            // this.map.addControl(this.scalebar);
             this.map.addLayers([layer]);
             this.map.setLayerIndex(layer, 0);
             this.setTheme(theme, themeOptions);

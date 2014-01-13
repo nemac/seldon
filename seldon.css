@@ -27,6 +27,15 @@ a {
 }
 
 /*
+No more pink screens
+*/
+.olImageLoadError { 
+    /* when OL encounters a 404, don't display the pink image */
+    display: none !important;
+}
+
+
+/*
 Header Styles
 */
 #titleBar {
