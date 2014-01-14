@@ -683,50 +683,44 @@
         //jdm: 7/9/12 - for global mask functionality at app level
         this.setMask = function (toggle, maskName) {
             if (toggle) {
-                if (app.activeMask.length<4) {
-					//Add the mask to the activeMask list so that we can keep track
-					//at the app level by loop through each currently active layer
-					for (var i = app.map.getNumLayers()-1; i > 0; i--) {
-						var currLayer = app.map.layers[i];
-						if (currLayer.seldonLayer.mask) {
-							//need to only add one lid to activeMaskParents but be able to
-							//handle the case in deactivateMask where there are multiple mask on
-							//and how to wait until the last mask is off to re-activate the parent.
-							//if not already in the active mask parent list add to keep track
-							if (this.activeMaskParents.indexOf(currLayer.seldonLayer.lid) == -1) {
-								if (currLayer.seldonLayer.lid.indexOf("MaskFor") > -1) {
-									if ((this.activeMaskParents.indexOf(currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("MaskFor"))) > -1) 
-										&& (app.activeMask.indexOf(maskName.replace("MaskFor",""))==-1)) {  //condition: Already in activeMaskParents but a new mask
-										this.activeMask.push(maskName.replace("MaskFor",""));
-										currLayer.seldonLayer.activateMask(maskName, currLayer.seldonLayer.index);  //activate mask at the layer level
-										if ($("#"+maskName.replace("MaskFor","")).get(0)) {
-											$("#"+maskName.replace("MaskFor","")).get(0).checked = true;
-										}									
-									}
-									else { 
-										//if the parent layer checkbox and mask-toggle are not active make it so
-										if ($("#chk"+currLayer.seldonLayer.lid.replace(maskName,"")).get(0)) {
-											$("#chk"+currLayer.seldonLayer.lid.replace(maskName,"")).get(0).checked = true;
-											$('#mask-status'+ currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("MaskFor"))).text("(m)");
-										}
-										if ($("#"+maskName.replace("MaskFor","")).get(0)) {
-											$("#"+maskName.replace("MaskFor","")).get(0).checked = true;
-										}									
-									}
-								} else { //condition: First of a mask for parent layer
+				//Add the mask to the activeMask list so that we can keep track
+				//at the app level by loop through each currently active layer
+				for (var i = app.map.getNumLayers()-1; i > 0; i--) {
+					var currLayer = app.map.layers[i];
+					if (currLayer.seldonLayer.mask) {
+						//need to only add one lid to activeMaskParents but be able to
+						//handle the case in deactivateMask where there are multiple mask on
+						//and how to wait until the last mask is off to re-activate the parent.
+						//if not already in the active mask parent list add to keep track
+						if (this.activeMaskParents.indexOf(currLayer.seldonLayer.lid) == -1) {
+							if (currLayer.seldonLayer.lid.indexOf("MaskFor") > -1) {
+								if ((this.activeMaskParents.indexOf(currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("MaskFor"))) > -1) 
+									&& (app.activeMask.indexOf(maskName.replace("MaskFor",""))==-1)) {  //condition: Already in activeMaskParents but a new mask
 									this.activeMask.push(maskName.replace("MaskFor",""));
 									currLayer.seldonLayer.activateMask(maskName, currLayer.seldonLayer.index);  //activate mask at the layer level
 									if ($("#"+maskName.replace("MaskFor","")).get(0)) {
 										$("#"+maskName.replace("MaskFor","")).get(0).checked = true;
 									}									
 								}
+								else { 
+									//if the parent layer checkbox and mask-toggle are not active make it so
+									if ($("#chk"+currLayer.seldonLayer.lid.replace(maskName,"")).get(0)) {
+										$("#chk"+currLayer.seldonLayer.lid.replace(maskName,"")).get(0).checked = true;
+										$('#mask-status'+ currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("MaskFor"))).text("(m)");
+									}
+									if ($("#"+maskName.replace("MaskFor","")).get(0)) {
+										$("#"+maskName.replace("MaskFor","")).get(0).checked = true;
+									}									
+								}
+							} else { //condition: First of a mask for parent layer
+								this.activeMask.push(maskName.replace("MaskFor",""));
+								currLayer.seldonLayer.activateMask(maskName, currLayer.seldonLayer.index);  //activate mask at the layer level
+								if ($("#"+maskName.replace("MaskFor","")).get(0)) {
+									$("#"+maskName.replace("MaskFor","")).get(0).checked = true;
+								}									
 							}
-						} 
-					}
-				}
-				else {
-					alert("You cannot have more than 4 active mask!");
-					$("#"+maskName.replace("MaskFor","")).get(0).checked = false;
+						}
+					} 
 				}
             }
             else { //we have just turned off a mask
@@ -1015,8 +1009,8 @@
             
 			app.tileManager = new OpenLayers.TileManager({
 				cacheSize: 12,
-				moveDelay: 3000,
-				zoomDelay: 3000
+				moveDelay: 1000,
+				zoomDelay: 1000
 			});					
 			
 			app.map = new OpenLayers.Map('map', {
