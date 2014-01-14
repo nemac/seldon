@@ -330,9 +330,11 @@
             }
             
             //jdm 1/3/14: set the default forest mask
-            for (var n = 0; n < app.defaultMasks.length; n++) {
-                this.setMask(true, app.defaultMasks[n]);
-            }            
+            if ($.isEmptyObject(options)) {
+				for (var n = 0; n < app.defaultMasks.length; n++) {
+					this.setMask(true, app.defaultMasks[n]);
+				}
+			}
             
         };
 
@@ -722,6 +724,10 @@
 						}
 					} 
 				}
+				//Catch case of turning on a mask when there are not active parent layers
+				if (this.activeMask.indexOf(maskName.replace("MaskFor","")) == -1) {
+					this.activeMask.push(maskName.replace("MaskFor",""));
+				}
             }
             else { //we have just turned off a mask
                 //alert("turned off a mask "+ maskName);
@@ -774,6 +780,8 @@
             //turn off mask
             //this needs to be more robust accounting for all mask possible being
             //off, but for now i am going to leave it like this.
+			//Be sure to remove from active mask
+			app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")),1);			
             app.updateShareMapUrl();
             $('#mask-status'+ this.lid).text("");
         };
