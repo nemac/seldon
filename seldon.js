@@ -1053,11 +1053,7 @@
             // to fetch the layerInfo, which in this case we already have
             this.currentBaseLayer = baseLayer;
             this.emit("baselayerchange");
-            // this.scalebar = new OpenLayers.Control.ScaleBar({
-                    // displaySystem: "english"
-                // });
-            // this.scalebar.divisions = 3;
-            // this.map.addControl(this.scalebar);
+			this.map.addControl(new OpenLayers.Control.ScaleLine({bottomOutUnits: 'mi'}));
             this.map.addLayers([layer]);
             this.map.setLayerIndex(layer, 0);
             this.setTheme(theme, themeOptions);
