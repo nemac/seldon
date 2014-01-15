@@ -293,10 +293,18 @@
                         // options arg, active the layer only if it appears in that list.  If we
                         // received no layer list in the options arg, activate the layer if the layer's
                         // "selected" attribute was true in the config file.
-                        if (((options.layers !== undefined) && (arrayContainsElement(options.layers, layer))) ||
-                            ((options.layers === undefined) && layer.selectedInConfig)) {
+                        if ((options.layers === undefined) && (layer.selectedInConfig)) {
                             layer.activate();
-                        }
+                        }						
+						//we shouldn't have to re-activate an active layer on theme chang
+						//But, rather just verify that it is checked as such
+						if (lids !== undefined) {
+							for (var m=0; m<lids.length; m++) {
+								if ($("#chk"+lids[m])[0] !== undefined) {
+									$("#chk"+lids[m])[0].checked = true;
+								}
+							}
+						}
                     }
                 }
             }
@@ -769,7 +777,8 @@
                                     app.map.removeLayer(currLayer.seldonLayer.openLayersLayer);
                                 }
                             }
-                            app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")), 1);
+                            //app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")), 1);
+							removeFromArrayByVal(app.activeMask,maskLayerName.replace("MaskFor",""));
                             app.activeMaskParents.splice(app.activeMaskParents.indexOf(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))), 1);
                         }
                     }
@@ -781,7 +790,7 @@
             //this needs to be more robust accounting for all mask possible being
             //off, but for now i am going to leave it like this.
 			//Be sure to remove from active mask
-			app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")),1);			
+			//app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")),1);			
             app.updateShareMapUrl();
             $('#mask-status'+ this.lid).text("");
         };
@@ -1985,6 +1994,17 @@
     function getCount (word, arr) {
         return getCounts(arr)[word] || 0;
     }
+
+	function removeFromArrayByVal(arr) {
+		var what, a = arguments, L = a.length, ax;
+		while (L > 1 && arr.length) {
+			what = a[--L];
+			while ((ax= arr.indexOf(what)) !== -1) {
+				arr.splice(ax, 1);
+			}
+		}
+		return arr;
+	}
 
     //
     // exports, for testing:
