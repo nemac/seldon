@@ -293,10 +293,10 @@
                         // options arg, active the layer only if it appears in that list.  If we
                         // received no layer list in the options arg, activate the layer if the layer's
                         // "selected" attribute was true in the config file.
-                        if ((options.layers === undefined) && (layer.selectedInConfig)) {
+                        if (((options.layers !== undefined) && (arrayContainsElement(options.layers, layer))) || ((options.layers === undefined) && layer.selectedInConfig)) {
                             layer.activate();
                         }						
-						//we shouldn't have to re-activate an active layer on theme chang
+						//we shouldn't have to re-activate an active layer on theme change
 						//But, rather just verify that it is checked as such
 						if (lids !== undefined) {
 							for (var m=0; m<lids.length; m++) {
