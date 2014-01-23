@@ -1167,7 +1167,7 @@
             //we will fly through here again we need to use both activeMask
             //and activeMaskParents to verify that we don't get into a recursive loop
             if ((app.activeMask.length > 0) &&
-                (this.mask) &&
+                (this.mask=="true") &&
                 (this.lid.indexOf("MaskFor") == -1)) {
                 //Here we have a parent layer that has been activated
                 //after mask have already been turned on.
