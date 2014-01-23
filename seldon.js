@@ -760,7 +760,8 @@
                                     identify         : currLayer.seldonLayer.identify,
                                     name             : currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))+"MaskParent",
                                     mask             : 'true',
-                                    legend           : currLayer.seldonLayer.legend
+                                    legend           : currLayer.seldonLayer.legend, 
+									index			 : app.map.getNumLayers()+1									
                             });
                             app.map.layers[i].seldonLayer.removeFromLegend();
                             app.map.removeLayer(app.map.layers[i]);
@@ -1116,8 +1117,13 @@
         this.legend             = settings.legend;
         this.mask               = settings.mask;
         this.transparency       = 0;
-        this.index              = 0;
-        this.selectedInConfig   = settings.selectedInConfig;
+		if (settings.index == undefined) {
+			this.index          = 0;
+		}
+		else {
+			this.index          = settings.index;
+		}
+		this.selectedInConfig   = settings.selectedInConfig;
         this.openLayersLayer    = undefined;
         this.createOpenLayersLayer = function () {
             if (this.openLayersLayer !== undefined) {
@@ -1267,7 +1273,8 @@
                         identify         : this.identify,
                         name             : this.lid+maskLayerName.replace("/",""),
                         mask             : 'false',
-                        legend           : this.legend
+                        legend           : this.legend, 
+						index			 : seldonIndex
                 });
                 //add to activeMaskParents, for the purpose of 
                 //keeping track of the number of mask-per-parent
@@ -1282,7 +1289,8 @@
                         identify         : this.identify,
                         name             : this.lid.replace(this.lid.substring(this.lid.indexOf("MaskFor"),this.lid.length), maskLayerName),
                         mask             : 'true',
-                        legend           : this.legend
+                        legend           : this.legend, 
+						index			 : seldonIndex
                 });
             }
             if (maskLayer != undefined) {
