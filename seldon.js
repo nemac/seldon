@@ -1254,23 +1254,34 @@
         };
 
         this.setTransparency = function (transparency) {
-            if (this.openLayersLayer) {
-                this.openLayersLayer.setOpacity(1-parseFloat(transparency)/100.0);
-            }
-            this.transparency = transparency;
-            this.emit({type : 'transparency', value : this.transparency});
+			if (this.openLayersLayer) {
+				this.openLayersLayer.setOpacity(1-parseFloat(transparency)/100.0);
+			}
+			this.transparency = transparency;
 			
-			//handle transparency for mask
-			// for (var i = app.map.getNumLayers()-2; i > 0; i--) {
-				// var currentLayer = app.map.layers[i];
-				// if (stringContainsChar(currentLayer.name, 'Mask')) {
-					// if (currentLayer.seldonLayer.openLayersLayer) {
-						// currentLayer.seldonLayer.openLayersLayer.setOpacity(1-parseFloat(transparency)/100.0);
-					// }
-					// currentLayer.seldonLayer.transparency = transparency;
-					// currentLayer.seldonLayer.emit({type : 'transparency', value : this.transparency});
-				// }
-			// }			
+			//Comment this out for now
+			//Essentially emits the following two commands:
+			try {
+				this.emit({type : 'transparency', value : this.transparency});
+			}
+			catch(err) {
+				var test = this.transparency;
+				var errTxt = err.Message;
+			}
+			
+			//Handle transparency for mask
+			//Still need to make this parent-layer specific
+			if (app.map != undefined) {			
+				for (var i = app.map.getNumLayers()-2; i > 0; i--) {
+					var currentLayer = app.map.layers[i];
+					if (stringContainsChar(currentLayer.name, 'Mask')) {
+						if (currentLayer.seldonLayer.openLayersLayer) {
+							currentLayer.seldonLayer.openLayersLayer.setOpacity(1-parseFloat(transparency)/100.0);
+						}
+						currentLayer.seldonLayer.transparency = transparency;
+					}
+				}	
+			}
         };   
         
         this.activateMask = function (maskLayerName, seldonIndex) {
@@ -1569,12 +1580,8 @@
 
     //This function gets called every time the layer properties icon gets clicked
     function createLayerPropertiesDialog (layer) {
-        if (createLayerPropertiesDialog.$html[layer.lid]) {
-            createLayerPropertiesDialog.$html[layer.lid].dialog('destroy');
-            createLayerPropertiesDialog.$html[layer.lid].remove();
-        }
-
-        var $html = $(''
+		var localTransparency = 0;
+		var $html = $(''
                       + '<div class="layer-properties-dialog">'
                       +   '<table>'
                       +     '<tr>'
@@ -1590,22 +1597,33 @@
                       + '</div>'
                      );
 
-                //jdm:5/13/13 need to check for mask on this layer, and if so
-                //adjust the htm accordingly to have the toggles for those mask.
-
         $html.find('input.transparency-text').val(layer.transparency);
+		
+		if ((layer.transparency>0) && (app.activeMaskParents.indexOf(layer.lid) > -1)) {
+			localTransparency = layer.transparency;
+			layer.setTransparency(localTransparency);
+		}
+		
         $html.find('.transparency-slider').slider({
             min   : 0,
             max   : 100,
             step  : 1,
-            value : layer.transparency,
+            value : localTransparency,
             slide : function(event, ui) {
-                layer.setTransparency(ui.value);
+				try {
+					layer.setTransparency(ui.value);
+				}
+				catch(err) { 
+					var errTxt = err.message;
+					// layer.setTransparency($('input.transparency-text').val());
+				}
             }
         });
-        layer.addListener("transparency", function (e) {
-            $html.find('.transparency-slider').slider("value", e.value);
-        });
+        //This seems redundant as there is already a listener on the slider object
+		//So, for now I will comment this out
+		// layer.addListener("transparency", function (e) {
+            // $html.find('.transparency-slider').slider("value", e.value);
+        // });
         $html.find('input.transparency-text').change(function () {
             var $this = $(this),
                 newValueFloat = parseFloat($this.val());
