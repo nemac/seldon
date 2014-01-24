@@ -1131,7 +1131,8 @@
             }
             var options = {
                 isBaseLayer      : false,
-                transitionEffect : 'resize'
+                transitionEffect : 'resize',
+                buffer : 0
             };
 
             if (stringContainsChar(this.url, 'wlayers')) {
@@ -1258,6 +1259,18 @@
             }
             this.transparency = transparency;
             this.emit({type : 'transparency', value : this.transparency});
+			
+			//handle transparency for mask
+			// for (var i = app.map.getNumLayers()-2; i > 0; i--) {
+				// var currentLayer = app.map.layers[i];
+				// if (stringContainsChar(currentLayer.name, 'Mask')) {
+					// if (currentLayer.seldonLayer.openLayersLayer) {
+						// currentLayer.seldonLayer.openLayersLayer.setOpacity(1-parseFloat(transparency)/100.0);
+					// }
+					// currentLayer.seldonLayer.transparency = transparency;
+					// currentLayer.seldonLayer.emit({type : 'transparency', value : this.transparency});
+				// }
+			// }			
         };   
         
         this.activateMask = function (maskLayerName, seldonIndex) {
