@@ -1071,7 +1071,7 @@
             this.map.events.register("mousemove", app.map, function (e) {
                 var pixel = app.map.events.getMousePosition(e);
                 var lonlat = app.map.getLonLatFromPixel(pixel);
-                lonlat = lonlat.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
+                lonlat = lonlat.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection(seldon.projection));
                 OpenLayers.Util.getElement("latLonTracker").innerHTML = "Lat: " + sprintf("%.5f", lonlat.lat) + " Lon: " + sprintf("%.5f", lonlat.lon) + "";
             });
             app.map.addControl(new OpenLayers.Control.PanZoomBar());
@@ -1147,7 +1147,7 @@
                 new OpenLayers.Layer.WMS(this.name,
                                          this.url,
                                          {
-                                             projection  : new OpenLayers.Projection("EPSG:900913"),
+                                             projection  : new OpenLayers.Projection(seldon.projection),
                                              units       : "m",
                                              layers      : this.layers,
                                              maxExtent   : new OpenLayers.Bounds(app.maxExtent),
@@ -1716,7 +1716,7 @@
     function createWMSGetFeatureInfoRequestURL (serviceUrl, layers, srs, x, y) {
         var extent = app.map.getExtent();
         if (seldon.gisServerType === "ArcGIS") {
-            extent = extent.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
+            extent = extent.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection(seldon.projection));
         }
         return Mustache.render(
             (''
