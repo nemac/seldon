@@ -2057,5 +2057,23 @@
     seldon.stringContainsChar                = stringContainsChar;
     seldon.ShareUrlInfo                      = ShareUrlInfo;
     window.seldon                            = seldon;
+    
+    // Override of offending jquery ui original method per ticket
+    // https://github.com/nemac/seldon/issues/18
+    // see http://bugs.jqueryui.com/ticket/9364
+    // and http://www.markliublog.com/override-jquery-ui-widget.html
+    $.widget("ui.dialog", $.extend({}, $.ui.dialog.prototype, { 
+        _moveToTop: function(arg) { //_methodName is the new method or override method
+            if (arg) {
+                if (arg.handleObj.type!="mousedown") {
+                    var moved = !!this.uiDialog.nextAll(":visible").insertBefore( this.uiDialog ).length;
+                    if ( moved && !silent ) {
+                        this._trigger( "focus", event );
+                    }
+                    return moved;            
+                }
+            }
+        }
+    }));     
 	
 }(jQuery));
