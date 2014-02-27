@@ -15,6 +15,7 @@
 		this.tileManager = undefined;
         this.projection  = undefined; // OpenLayers map projection
         this.gisServerType = undefined; //The type of server that the wms layers will be served from
+		this.useProxyScript = undefined;
         this.scalebar    = undefined;
         this.zoomInTool  = undefined; // OpenLayers zoom in tool
         this.zoomOutTool = undefined; // OpenLayers zoom out tool
@@ -1367,7 +1368,7 @@
         //console.log(message);
     }
 
-    seldon.init = function (config, projection, gisServerType) {
+    seldon.init = function (config, projection, gisServerType, useProxyScript) {
         // jrf: Overrides OpenLayers.Map.getCurrentSize since by default it does not
         //      account for padding, and seldon requires padding on the top and bottom
         //      for its layout.
@@ -1396,6 +1397,7 @@
         seldon.app = app;
         seldon.projection = projection;
         seldon.gisServerType = gisServerType;
+		seldon.useProxyScript = useProxyScript;
     };
 
     function deactivateActiveOpenLayersControls () {
@@ -1825,6 +1827,9 @@
                             //NOTE: the correct coords to use in the request are (e.xy.y,e.xy.y), which are NOT the same as (e.x,e.y).
                             //      I'm not sure what the difference is, but (e.xy.y,e.xy.y) seems to be what GetFeatureInfo needs.
                             requestUrl = createWMSGetFeatureInfoRequestURL(service.url, service.layers, service.srs, e.xy.x, e.xy.y);
+							if (seldon.useProxyScript === "True") {
+								requestUrl = $(location).attr('href')+"/cgi-bin/proxy.cgi?url="+encodeURIComponent(requestUrl);
+							}
                         $.ajax({
                             url: requestUrl,
                             dataType: "text",
