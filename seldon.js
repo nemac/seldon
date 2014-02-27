@@ -1967,6 +1967,7 @@
                     ),
                     close : function( event, ui ) {
                         seldon.graphCount--;
+						$(this).remove();
                     },
                 });
 
