@@ -726,7 +726,10 @@
 										}									
 									}
 								} else { //condition: First of a mask for parent layer
-									this.activeMask.push(maskName.replace("MaskFor",""));
+									if (this.activeMask.indexOf(maskName.replace("MaskFor","")) == -1) {
+										this.activeMask.push(maskName.replace("MaskFor",""));
+									}
+									
 									currLayer.seldonLayer.activateMask(maskName, currLayer.seldonLayer.index);  //activate mask at the layer level
 									if ($("#"+maskName.replace("MaskFor","")).get(0)) {
 										$("#"+maskName.replace("MaskFor","")).get(0).checked = true;
@@ -773,7 +776,8 @@
                             });
                             app.map.layers[i].seldonLayer.removeFromLegend();
                             app.map.removeLayer(app.map.layers[i]);
-                            app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")), 1);
+                            removeFromArrayByVal(app.activeMask,maskLayerName.replace("MaskFor",""));
+							// app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")), 1);
                             app.activeMaskParents.splice(app.activeMaskParents.indexOf(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))), 1);
                             $('#mask-status'+ currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))).text("");
                             parentLayer.activate();
@@ -784,11 +788,10 @@
                                 var currLayer = app.map.layers[i];
                                 if (currLayer.name.indexOf(maskLayerName) > -1) {
                                     app.map.removeLayer(currLayer.seldonLayer.openLayersLayer);
+									app.activeMaskParents.splice(app.activeMaskParents.indexOf(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))), 1);
                                 }
                             }
-                            //app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")), 1);
 							removeFromArrayByVal(app.activeMask,maskLayerName.replace("MaskFor",""));
-                            app.activeMaskParents.splice(app.activeMaskParents.indexOf(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))), 1);
                         }
                     }
                 }
@@ -1337,7 +1340,7 @@
             if (this.openLayersLayer && (this.lid.indexOf("MaskFor") == -1)) {
                 try {
                     app.map.removeLayer(this.openLayersLayer); //I think this is throwing and error
-                    //Leave the parent layer legend so no --> this.removeFromLegend()
+                    //Leave the parent layer legend, so no --> this.removeFromLegend()
                 }
                 catch(err) {
                     //Error will occur here because we have already remove the parent layer
