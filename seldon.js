@@ -1324,7 +1324,7 @@
                         legend           : this.legend, 
 						index			 : seldonIndex
                 });
-				app.activeMaskParents.push(this.lid);
+				app.activeMaskParents.push(this.lid.substring(0,this.lid.indexOf("MaskFor")));
             }
             if (maskLayer != undefined) {
 				maskLayer.index = seldonIndex;
