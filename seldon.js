@@ -1169,8 +1169,12 @@
         };
         this.activate = function (isMask) {
             app.map.addLayer(this.createOpenLayersLayer());
-            this.addToLegend();
-            this.emit("activate");
+            //Only add legend for parent layers
+			if (this.lid.indexOf("MaskFor") == -1) {
+				this.addToLegend();
+			}
+            
+			this.emit("activate");
             //If there is currently any active mask
             //then activate mask on this layer if it hasn't already been activated
             //we will fly through here again we need to use both activeMask
@@ -1333,7 +1337,7 @@
             if (this.openLayersLayer && (this.lid.indexOf("MaskFor") == -1)) {
                 try {
                     app.map.removeLayer(this.openLayersLayer); //I think this is throwing and error
-                    this.removeFromLegend();
+                    //Leave the parent layer legend so no --> this.removeFromLegend()
                 }
                 catch(err) {
                     //Error will occur here because we have already remove the parent layer
