@@ -774,10 +774,9 @@
                                     legend           : currLayer.seldonLayer.legend, 
 									index			 : app.map.getNumLayers()+1									
                             });
-                            app.map.layers[i].seldonLayer.removeFromLegend();
+                            $('#lgd'+currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))).remove();
                             app.map.removeLayer(app.map.layers[i]);
                             removeFromArrayByVal(app.activeMask,maskLayerName.replace("MaskFor",""));
-							// app.activeMask.splice(app.activeMask.indexOf(maskLayerName.replace("MaskFor","")), 1);
                             app.activeMaskParents.splice(app.activeMaskParents.indexOf(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))), 1);
                             $('#mask-status'+ currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))).text("");
                             parentLayer.activate();
@@ -1234,6 +1233,7 @@
                         //need to remove mask-status too...
                         $('#mask-status'+ this.lid).text("");
                     } else {
+                        $("#chk"+this.lid).get(0).checked = false;
                         $('#mask-status'+ this.lid).text("");
                         app.map.removeLayer(this.openLayersLayer);
                     }
