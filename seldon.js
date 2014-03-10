@@ -223,7 +223,7 @@
                 }
             });
 
-            $('#legend').empty();
+            // $('#legend').empty();
 
             //jdm: re-wrote loop using traditional for loops (more vintage-IE friendly)
             //vintage-IE does work with jquery each loops, but seems to be slower
@@ -1232,6 +1232,7 @@
                         //app.activeMaskParents.splice(app.activeMaskParents.indexOf(this.lid), 1);
                         //need to remove mask-status too...
                         $('#mask-status'+ this.lid).text("");
+                        $("#chk"+this.lid).get(0).checked = false;
                     } else {
                         $("#chk"+this.lid).get(0).checked = false;
                         $('#mask-status'+ this.lid).text("");
@@ -1254,12 +1255,27 @@
 
         this.addToLegend = function () {
             var that = this;
-            this.$legendItem = $(document.createElement("div")).attr("id", "lgd" + this.lid)
+            //clear out old legend graphic if necessary
+            if ($(document.getElementById("lgd" + this.lid))) {
+                $(document.getElementById("lgd" + this.lid)).remove();
+            }
+            if (this.url.indexOf("vlayers")>-1) {
+                this.$legendItem = $(document.createElement("div")).attr("id", "lgd" + this.lid)
+                .prepend($(document.createElement("img")).attr("src", this.legend))
+                .prependTo($('#legend'))
+                .click(function () {
+                    that.deactivate();
+                });
+            }
+            else {
+                this.$legendItem = $(document.createElement("div")).attr("id", "lgd" + this.lid)
                 .append($(document.createElement("img")).attr("src", this.legend))
                 .appendTo($('#legend'))
                 .click(function () {
                     that.deactivate();
                 });
+            }
+
         };
 
         this.removeFromLegend = function () {
