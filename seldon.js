@@ -388,6 +388,13 @@
 
                 }
             });
+            
+            //Catch case of turned off parent layer, but need to keep the active mask in the share map url
+            for (var i = 0; i < app.activeMask.length; i++) {
+                if (layerMask.indexOf(app.activeMask[i].replace("MaskFor",""))==-1) {
+                    layerMask.push(app.activeMask[i].replace("MaskFor",""));
+                }
+            }
 
             url = window.location.toString();
             url = url.replace(/\?.*$/, '');
