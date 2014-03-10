@@ -694,8 +694,8 @@
         //jdm: 7/9/12 - for global mask functionality at app level
         this.setMask = function (toggle, maskName) {
             if (toggle) {
-				//Limit active mask
-				if (app.activeMask.length<4) {
+				//Limit active mask being sure to to double-count current active mask
+				if ((app.activeMask.length<4) || (app.activeMask.indexOf(maskName.replace("MaskFor",""))>-1)) {
 					//Add the mask to the activeMask list so that we can keep track
 					//at the app level by loop through each currently active layer
 					for (var i = app.map.getNumLayers()-1; i > 0; i--) {
