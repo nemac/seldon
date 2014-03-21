@@ -344,8 +344,17 @@
 					this.setMask(true, app.defaultMasks[n]);
 				}
 			}
-            
-        };
+			
+			//if zoom parameter on theme to to that extent
+            if (theme.zoom) {
+				var zoomExtent = { 
+					left : theme.xmin, 
+					bottom : theme.ymin, 
+					right : theme.xmax, 
+					top : theme.ymax };
+				app.zoomToExtent(zoomExtent);			
+			}
+        }; //end setTheme
 
         this.shareUrl = function () {
             if (!this.currentTheme) { return undefined; }
@@ -982,6 +991,11 @@
                 theme = new Theme({
                     name  : $view.attr('name'),
                     label : $view.attr('label'),
+					zoom  : $view.attr('zoom'),
+					xmin  : $view.attr('xmin'),
+					ymin  : $view.attr('ymin'),
+					xmax  : $view.attr('xmax'),
+					ymax  : $view.attr('ymax'),
                     index : i
                 });
                 app.themes.push(theme);
@@ -1389,6 +1403,11 @@
         this.name  = settings.name;
         this.label = settings.label;
         this.index = settings.index;
+		this.zoom = settings.zoom;
+		this.xmin = settings.xmin;
+		this.ymin = settings.ymin;
+		this.xmax = settings.xmax;
+		this.ymax = settings.ymax;
         this.getAccordionGroupIndex = function (accordionGroup) {
             // return the index of a given AccordionGroup in this theme's list,
             // or -1 if it is not in the list
