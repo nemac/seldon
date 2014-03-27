@@ -1102,7 +1102,7 @@
             this.map.events.register("mousemove", app.map, function (e) {
                 var pixel = app.map.events.getMousePosition(e);
                 var lonlat = app.map.getLonLatFromPixel(pixel);
-                lonlat = lonlat.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection(seldon.projection));
+                lonlat = lonlat.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
                 OpenLayers.Util.getElement("latLonTracker").innerHTML = "Lat: " + sprintf("%.5f", lonlat.lat) + " Lon: " + sprintf("%.5f", lonlat.lon) + "";
             });
             app.map.addControl(new OpenLayers.Control.PanZoomBar());
