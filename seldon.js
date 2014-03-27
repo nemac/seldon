@@ -2023,7 +2023,7 @@
                                                 }
                     ),
                     close : function( event, ui ) {
-                        seldon.graphCount--;
+                        // seldon.graphCount--;
 						$(this).remove();
                     },
                 });
