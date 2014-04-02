@@ -391,8 +391,10 @@
                         }
                     } else { 
                         //otherwise add to layerLids
-                        layerLids.push(this.seldonLayer.lid);
-                        layerAlphas.push(op);
+                        if (this.seldonLayer) {
+							layerLids.push(this.seldonLayer.lid);
+							layerAlphas.push(op);
+						}
                     } //end
 
                 }
@@ -2009,6 +2011,18 @@
                 var lonlat = app.map.getLonLatFromPixel(e.xy);
                 lonlat.transform(app.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
 
+				var styleMap = new OpenLayers.StyleMap({pointRadius: 4, 
+					fillColor: "yellow", 
+					fillOpacity: 0.75,});				
+				
+				var markerLayer = new OpenLayers.Layer.Vector("markerLayer", 
+					{styleMap: styleMap});
+				var feature = new OpenLayers.Feature.Vector(
+				 new OpenLayers.Geometry.Point(coords.lon, coords.lat),
+					{some:'data'});
+				markerLayer.addFeatures(feature);
+				app.map.addLayer(markerLayer);
+				
                 var popup = $(document.createElement('div'));
                 popup.id = "#seldonMultigraphMessageDiv"+seldon.graphCount+"";
                 popup.html('<div class="multigraphLoader"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="seldonMultigraph'+seldon.graphCount+'" style="width: 600px; height: 300px;" ></div>');
@@ -2024,6 +2038,7 @@
                     ),
                     close : function( event, ui ) {
                         // seldon.graphCount--;
+						app.map.removeLayer(markerLayer);
 						$(this).remove();
                     },
                 });
@@ -2035,7 +2050,9 @@
                         'swf'    : "libs/seldon/libs/Multigraph.swf"
                     });
                 seldonMultigraph.multigraph('done', function (m) {
-                    $(m.div()).parent().children(".multigraphLoader").remove();
+                    if (m) {
+						$(m.div()).parent().children(".multigraphLoader").remove();
+					}
                 });
             });
     }
