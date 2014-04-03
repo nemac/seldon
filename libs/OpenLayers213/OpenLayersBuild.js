@@ -416,7 +416,6 @@ var listeners=this.listeners[type];if(listeners!=null){for(var i=0,len=listeners
 if(evt==null){evt={};}
 evt.object=this.object;evt.element=this.element;if(!evt.type){evt.type=type;}
 listeners=listeners.slice();var continueChain;for(var i=0,len=listeners.length;i<len;i++){var callback=listeners[i];continueChain=callback.func.apply(callback.obj,[evt]);if((continueChain!=undefined)&&(continueChain==false)){break;}}
-if(!this.fallThrough){OpenLayers.Event.stop(evt,true);}
 return continueChain;},handleBrowserEvent:function(evt){var type=evt.type,listeners=this.listeners[type];if(!listeners||listeners.length==0){return;}
 var touches=evt.touches;if(touches&&touches[0]){var x=0;var y=0;var num=touches.length;var touch;for(var i=0;i<num;++i){touch=this.getTouchClientXY(touches[i]);x+=touch.clientX;y+=touch.clientY;}
 evt.clientX=x/num;evt.clientY=y/num;}

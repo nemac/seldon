@@ -879,10 +879,14 @@ OpenLayers.Events = OpenLayers.Class({
                 break;
             }
         }
+        /**
+         * This block breaks jquery ui components so it is being removed
+         *
         // don't fall through to other DOM elements
         if (!this.fallThrough) {           
             OpenLayers.Event.stop(evt, true);
         }
+        */
         return continueChain;
     },
 
