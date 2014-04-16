@@ -1911,7 +1911,7 @@
                                     // on a related note ArcGIS WMS Raster layers do not support
                                     // GetFeatureInfo
                                     if (seldon.gisServerType == "ArcGIS") {
-                                        var result = getLayerResultsFromArcXML($gml, this);
+                                        var result = getLayerResultsFromArcXML($gml, this, layerIDCount);
                                     } else { //assuming MapServer at this point
                                         var result = getLayerResultsFromGML($gml, this);
                                     }
@@ -1954,19 +1954,19 @@
         return (string.substring(0, prefix.length) === prefix);
     }
 
-    function getLayerResultsFromArcXML ($xml, layerName) {
-        var returnVals = [];
+    function getLayerResultsFromArcXML ($xml, layerName, layerIDCount) {
+        var dataVals = [];
         try {
             var fields     = $xml.find( "FIELDS" ),
-                attributes = fields[0].attributes,
+                attributes = fields[layerIDCount].attributes,
                 i;
             for (i = 0; i < attributes.length; ++i) {
-                returnVals[i] = [attributes[i].name, attributes[i].value];
+                dataVals[i] = [attributes[i].name, attributes[i].value];
             }
         } catch(err){
-            returnVals[0] = ["Error description:", err.message];
+            dataVals[0] = ["Error description:", err.message];
         }
-        return returnVals;
+        return dataVals;
     }
 
     function getLayerResultsFromGML ($gml, layerName) {
