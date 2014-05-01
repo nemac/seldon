@@ -1329,10 +1329,10 @@
 				for (var i = app.map.getNumLayers()-2; i > 0; i--) {
 					var currentLayer = app.map.layers[i];
 					if (stringContainsChar(currentLayer.name, 'Mask')) {
-						if (currentLayer.seldonLayer.openLayersLayer) {
+						if ((currentLayer.seldonLayer.openLayersLayer) && (currentLayer.seldonLayer.lid.substring(0, currentLayer.seldonLayer.lid.indexOf("MaskFor"))==this.lid)){
 							currentLayer.seldonLayer.openLayersLayer.setOpacity(1-parseFloat(transparency)/100.0);
+							currentLayer.seldonLayer.transparency = transparency;
 						}
-						currentLayer.seldonLayer.transparency = transparency;
 					}
 				}	
 			}
