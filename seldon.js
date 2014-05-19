@@ -559,6 +559,13 @@
                 deactivateActiveOpenLayersControls();
                 app.dragPanTool.activate();
             });
+			
+            //
+            // print button
+            //
+            $("#btnPrint").click(function () {
+                printMap();
+            });			
 
             //
             // zoom in button
@@ -2154,6 +2161,47 @@
                 }
             }
         }
-    }));     
+    }));  
+
+	function printMap() {
+		// go through all layers, and collect a list of objects
+		// each object is a tile's URL and the tile's pixel location relative to the viewport
+		var offsetX = parseInt(app.map.layerContainerDiv.style.left);
+		var offsetY = parseInt(app.map.layerContainerDiv.style.top);
+		var size  = app.map.getSize();
+		var tiles = [];
+		for (var layername in app.map.layers) {
+			// if the layer isn't visible at this range, or is turned off, skip it
+			var layer = app.map.layers[layername];
+			if (!layer.getVisibility()) continue;
+			if (!layer.calculateInRange()) continue;
+			// iterate through their grid's tiles, collecting each tile's extent and pixel location at this moment
+			for (var tilerow in layer.grid) {
+				for (var tilei in layer.grid[tilerow]) {
+					var tile     = layer.grid[tilerow][tilei]
+					var url      = layer.getURL(tile.bounds);
+					var position = tile.position;
+					var tilexpos = position.x + offsetX;
+					var tileypos = position.y + offsetY;
+					var opacity  = layer.opacity ? parseInt(100*layer.opacity) : 100;
+					tiles[tiles.length] = {url:url, x:tilexpos, y:tileypos, opacity:opacity};
+				}
+			}
+		}
+
+		// hand off the list to our server-side script, which will do the heavy lifting
+		var tiles_json = JSON.stringify(tiles);
+		var printparams = 'width='+size.w + '&height='+size.h + '&tiles='+escape(tiles_json) ;
+		OpenLayers.Request.POST({ 
+				url:'cgi-bin/print.cgi',
+				data:OpenLayers.Util.getParameterString({width:size.w,height:size.h,tiles:tiles_json}),
+				headers:{'Content-Type':'application/x-www-form-urlencoded'},
+				callback: function(request) {
+					// window.open(request.responseText);
+					alert("done");
+					window.open('http://'+window.location.hostname+'/~derek/taccimo/cgi-bin/printed_map.jpg');
+				}
+		});
+	}
 	
 }(jQuery));
