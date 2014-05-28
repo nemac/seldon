@@ -2170,22 +2170,29 @@
 		var offsetY = parseInt(app.map.layerContainerDiv.style.top);
 		var size  = app.map.getSize();
 		var tiles = [];
-		for (var layername in app.map.layers) {
+        for (var i = 0; i < app.map.layers.length; ++i) {
 			// if the layer isn't visible at this range, or is turned off, skip it
-			var layer = app.map.layers[layername];
-			if (!layer.getVisibility()) continue;
-			if (!layer.calculateInRange()) continue;
-			// iterate through their grid's tiles, collecting each tile's extent and pixel location at this moment
-			for (var tilerow in layer.grid) {
-				for (var tilei in layer.grid[tilerow]) {
-					var tile     = layer.grid[tilerow][tilei]
-					var url      = layer.getURL(tile.bounds);
-					var position = tile.position;
-					var tilexpos = position.x + offsetX;
-					var tileypos = position.y + offsetY;
-					var opacity  = layer.opacity ? parseInt(100*layer.opacity) : 100;
-					tiles[tiles.length] = {url:url, x:tilexpos, y:tileypos, opacity:opacity};
+			try {
+				var layer = app.map.layers[i];
+				if (!layer.getVisibility()) continue;
+				if (!layer.calculateInRange()) continue;
+				// iterate through their grid's tiles, collecting each tile's extent and pixel location at this moment
+				// for (var tilerow in layer.grid) {
+				for (var j = 0; j < layer.grid.length; ++j) {
+					// for (var tilei in layer.grid[tilerow]) {
+					for (var k = 0; k < layer.grid[j].length; ++k) {
+						var tile     = layer.grid[j][k]
+						var url      = layer.getURL(tile.bounds);
+						var position = tile.position;
+						var tilexpos = position.x + offsetX;
+						var tileypos = position.y + offsetY;
+						var opacity  = layer.opacity ? parseInt(100*layer.opacity) : 100;
+						tiles[tiles.length] = {url:url, x:tilexpos, y:tileypos, opacity:opacity};
+					}
 				}
+			} //end try
+			catch(err) {					
+				alert(err.message);
 			}
 		}
 
