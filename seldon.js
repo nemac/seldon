@@ -2196,17 +2196,36 @@
 			}
 		}
 
+		//the legend url's to pass along
+		var layerLegendsURLs   = [];
+		$('#legend').find('div').each(function(){
+			var innerDivId = $(this).attr('id');
+			var innerDivImgSrc = $('#'+innerDivId).children('img').attr('src');
+			layerLegendsURLs[layerLegendsURLs.length]= {url:innerDivImgSrc};
+		});
+		
 		// hand off the list to our server-side script, which will do the heavy lifting
 		var tiles_json = JSON.stringify(tiles);
-		var printparams = 'width='+size.w + '&height='+size.h + '&tiles='+escape(tiles_json) ;
+		var legends_json = JSON.stringify(layerLegendsURLs);
+		// var printparams = 'width='+size.w + '&height='+size.h + '&tiles='+escape(tiles_json) ;
+		alert("Printing will take a few seconds.");
+
+		var printPopup = $(document.createElement('div'));
+		printPopup.id = "#printPopupDiv";
+		printPopup.html('<div>Click here: <a href="http://'+window.location.hostname+'/~derek/taccimo/cgi-bin/printed_map.jpg" style="color:blue" target="_new">Print map result</a></div>');
 		OpenLayers.Request.POST({ 
 				url:'cgi-bin/print.cgi',
-				data:OpenLayers.Util.getParameterString({width:size.w,height:size.h,tiles:tiles_json}),
+				data:OpenLayers.Util.getParameterString({width:size.w,height:size.h,tiles:tiles_json,legends:legends_json}),
 				headers:{'Content-Type':'application/x-www-form-urlencoded'},
 				callback: function(request) {
-					// window.open(request.responseText);
-					alert("done");
-					window.open('http://'+window.location.hostname+'/~derek/taccimo/cgi-bin/printed_map.jpg');
+					// window.open('http://'+window.location.hostname+'/~derek/taccimo/cgi-bin/printed_map.jpg');
+					printPopup.dialog({
+						resizable : false,
+						title     : 'Print Map Result',
+						close : function( event, ui ) {
+							$(this).remove();
+						},
+					});							
 				}
 		});
 	}
