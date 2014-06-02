@@ -2208,24 +2208,41 @@
 		var tiles_json = JSON.stringify(tiles);
 		var legends_json = JSON.stringify(layerLegendsURLs);
 		// var printparams = 'width='+size.w + '&height='+size.h + '&tiles='+escape(tiles_json) ;
-		alert("Printing will take a few seconds.");
 
 		var printPopup = $(document.createElement('div'));
 		printPopup.id = "#printPopupDiv";
-		printPopup.html('<div>Click here: <a href="http://'+window.location.hostname+'/~derek/taccimo/cgi-bin/printed_map.jpg" style="color:blue" target="_new">Print map result</a></div>');
+		printPopup.html('<div id="printMapLoader"></div>');
+		printPopup.dialog({
+			resizable : false,
+            height    :75,
+			title     : 'Printing...',
+			close : function( event, ui ) {
+				$(this).remove();
+			},
+		});		
+		// $("#printMapLoader").html("<p>Printing...</p>");
+		var p=0;
+		$("#printMapLoader").progressbar({value:.5});
+		var timer = setInterval(function(){
+			//This animates the bar
+			$("#printMapLoader .ui-progressbar-value").animate({width: p+"%"}, 500);
+			//This does static sets of the value
+			p = p +3;
+			if(p>100){
+				$("#printMapLoader .ui-progressbar-value").animate({width: "100%"}, 500);
+				clearInterval(timer);
+			}
+		},500);		
+		
 		OpenLayers.Request.POST({ 
 				url:'cgi-bin/print.cgi',
 				data:OpenLayers.Util.getParameterString({width:size.w,height:size.h,tiles:tiles_json,legends:legends_json}),
 				headers:{'Content-Type':'application/x-www-form-urlencoded'},
 				callback: function(request) {
 					// window.open('http://'+window.location.hostname+'/~derek/taccimo/cgi-bin/printed_map.jpg');
-					printPopup.dialog({
-						resizable : false,
-						title     : 'Print Map Result',
-						close : function( event, ui ) {
-							$(this).remove();
-						},
-					});							
+					// alert("done");
+					$("#printMapLoader").html('<center><a href="http://'+window.location.hostname+'/~derek/taccimo/cgi-bin/printed_map.jpg" style="color:blue" target="_new">print map result</a></center>');
+                    printPopup.dialog('option', 'title', 'Printing Complete!');
 				}
 		});
 	}
