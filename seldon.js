@@ -65,7 +65,7 @@
                 if (extentsAreEqual(currentSavedExtent, newExtent)) {
                     return;
                 }
-            }
+                }
 
             // chop off the list after the current position
             newSavedExtents = [];
@@ -2227,7 +2227,7 @@
 			//This animates the bar
 			$("#printMapLoader .ui-progressbar-value").animate({width: p+"%"}, 500);
 			//This does static sets of the value
-			p = p +3;
+			p = p +.5;
 			if(p>100){
 				$("#printMapLoader .ui-progressbar-value").animate({width: "100%"}, 500);
 				clearInterval(timer);
@@ -2241,7 +2241,7 @@
 				callback: function(request) {
 					// window.open('http://'+window.location.hostname+'/~derek/taccimo/cgi-bin/printed_map.jpg');
 					// alert("done");
-					$("#printMapLoader").html('<center><a href="http://'+window.location.hostname+'/~derek/taccimo/cgi-bin/printed_map.jpg" style="color:blue" target="_new">print map result</a></center>');
+					$("#printMapLoader").html('<center><a href="http://'+window.location.hostname+'/~derek/fswms/html/view/ol/cgi-bin/printed_map.jpg" style="color:blue" target="_new">print map result</a></center>');
                     printPopup.dialog('option', 'title', 'Printing Complete!');
 				}
 		});
