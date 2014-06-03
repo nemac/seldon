@@ -2240,8 +2240,8 @@
 				headers:{'Content-Type':'application/x-www-form-urlencoded'},
 				callback: function(request) {
 					// window.open('http://'+window.location.hostname+'/~derek/taccimo/cgi-bin/printed_map.jpg');
-					// alert("done");
-					$("#printMapLoader").html('<center><a href="http://'+window.location.hostname+'/~derek/fswms/html/view/ol/cgi-bin/printed_map.jpg" style="color:blue" target="_new">print map result</a></center>');
+					// alert(window.location.pathname);
+					$("#printMapLoader").html('<center><a href="http://'+window.location.hostname+window.location.pathname+'cgi-bin/printed_map.jpg" style="color:blue" target="_new">print map result</a></center>');
                     printPopup.dialog('option', 'title', 'Printing Complete!');
 				}
 		});
