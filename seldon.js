@@ -131,23 +131,35 @@
 
         this.setBaseLayer = function (baseLayer) {
             var app = this;
-            $.ajax({
-                url: baseLayer.url + '?f=json&pretty=true',
-                dataType: "jsonp",
-                success:  function (layerInfo) {
-                    var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
-                        layerInfo: layerInfo
-                    });
-                    app.map.removeLayer(app.map.layers[0]);
-                    app.currentBaseLayer = baseLayer;
-                    app.map.addLayers([layer]);
-                    app.map.setLayerIndex(layer, 0);
-                    app.emit("baselayerchange");
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert(textStatus);
-                }
-            });
+            if (baseLayer.name.indexOf("Google") > -1) {
+				var layer = new OpenLayers.Layer.Google(
+					"Google Streets"
+				);
+				app.map.removeLayer(app.map.layers[0]);
+				app.currentBaseLayer = baseLayer;
+				app.map.addLayers([layer]);
+				app.map.setLayerIndex(layer, 0);
+				app.emit("baselayerchange");				
+			}
+			else { //assuming esri base layer at this point
+				$.ajax({
+					url: baseLayer.url + '?f=json&pretty=true',
+					dataType: "jsonp",
+					success:  function (layerInfo) {
+						var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
+							layerInfo: layerInfo
+						});
+						app.map.removeLayer(app.map.layers[0]);
+						app.currentBaseLayer = baseLayer;
+						app.map.addLayers([layer]);
+						app.map.setLayerIndex(layer, 0);
+						app.emit("baselayerchange");
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						alert(textStatus);
+					}
+				});
+			}
         };
 
 
@@ -1061,9 +1073,15 @@
         };
 
         this.initOpenLayers = function (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
-            var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
-                layerInfo: baseLayerInfo
-            });
+
+			if (baseLayer.name.indexOf("Google") > -1) {
+				var layer = new OpenLayers.Layer.Google("Google Streets", {numZoomLevels: 20});	
+			}
+			else { //assume arcgis 
+				var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
+					layerInfo: baseLayerInfo
+				});
+			}
 
             var maxExtentBounds = new OpenLayers.Bounds(app.maxExtent.left, app.maxExtent.bottom,
                                                         app.maxExtent.right, app.maxExtent.top);
