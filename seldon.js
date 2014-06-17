@@ -20,6 +20,7 @@
         this.zoomInTool  = undefined; // OpenLayers zoom in tool
         this.zoomOutTool = undefined; // OpenLayers zoom out tool
         this.dragPanTool = undefined; // OpenLayers dragpan tool
+		this.id_markerLayer = undefined;
         this.maxExtent   = {
             left   : -15000000,  //NOTE: These values get replaced by settings from the config file.
             bottom : 2000000,    //      Don't worry about keeping these in sync if the config fil
@@ -718,6 +719,11 @@
 
         //jdm: 7/9/12 - for global mask functionality at app level
         this.setMask = function (toggle, maskName) {
+			//remove any id markers when adjusting mask
+			if (app.id_markerLayer) {
+				app.map.removeLayer(app.id_markerLayer)
+				app.id_markerLayer = undefined;
+			}   		
             if (toggle) {
 				//Limit active mask being sure to to double-count current active mask
 				if ((app.activeMask.length<4) || (app.activeMask.indexOf(maskName.replace("MaskFor",""))>-1)) {
@@ -1200,12 +1206,12 @@
             return this.openLayersLayer;
         };
         this.activate = function (isMask) {
-            app.map.addLayer(this.createOpenLayersLayer());
+			app.map.addLayer(this.createOpenLayersLayer());
             //Only add legend for parent layers
 			if (this.lid.indexOf("MaskFor") == -1) {
 				this.addToLegend();
 			}
-            
+			
 			this.emit("activate");
             //If there is currently any active mask
             //then activate mask on this layer if it hasn't already been activated
@@ -1346,7 +1352,12 @@
         };   
         
         this.activateMask = function (maskLayerName, seldonIndex) {
-            //Need to do a check for existing mask
+			//remove any id markers when activating a new layer
+			if (app.id_markerLayer) {
+				app.map.removeLayer(app.id_markerLayer)
+				app.id_markerLayer = undefined;
+			}            
+			//Need to do a check for existing mask
 			var checkForMaskLayerActive = this.checkForExistingLayer(this.lid);
 			if (this.lid.indexOf("MaskFor") == -1) { //no mask applied yet
                 var maskLayer = new Layer({
@@ -1831,10 +1842,32 @@
                 var services = {},
                     service, urlsrs;
 
-                // First remove any exiting popup window left over from a previous identify
+                // First remove any existing popup window left over from a previous identify
                 $('#identify_popup').remove();
 
-                // Then loop over all the current (non-base) layers in the map to construct the
+                
+                // This coords object is not really in lon/lat; it's in the display projection of the map,
+                // which is EPSG:900913.
+                var coords = app.map.getLonLatFromPixel(e.xy);				
+				//add marker
+				var styleMap = new OpenLayers.StyleMap({pointRadius: 4, 
+					fillColor: "yellow", 
+					fillOpacity: 0.75,});				
+				
+				if (app.id_markerLayer) {
+					app.map.removeLayer(app.id_markerLayer)
+					app.id_markerLayer = undefined;
+				}
+				app.id_markerLayer = new OpenLayers.Layer.Vector("markerLayer", 
+					{styleMap: styleMap});
+				var feature = new OpenLayers.Feature.Vector(
+				 new OpenLayers.Geometry.Point(coords.lon, coords.lat),
+					{some:'data'});
+				app.id_markerLayer.addFeatures(feature);
+				app.map.addLayer(app.id_markerLayer);				
+				
+				
+				// Then loop over all the current (non-base) layers in the map to construct the
                 // GetFeatureInfo requests. There will be one request for each unique WMS layer
                 // service URL and SRS combination. (Typically, and in all cases I know of that
                 // we are using at the momenet, all layers from the same WMS service use the
@@ -1848,7 +1881,7 @@
                 var html = '<table id="identify_results" height="100">';
                 $.each(app.map.layers, function () {
                     var srs, url, name, urlsrs;
-                    if (! this.isBaseLayer) {
+                    if ((!this.isBaseLayer) && (this.params)) {
                         srs    = this.projection.projCode;
                         url    = this.url;
                         name   = this.params.LAYERS;
@@ -1873,17 +1906,22 @@
                 });
                 html = html + "</table>";
 
-                // Display the popup window; we'll populate the results later, asynchronously,
-                // as they arrive.
-                app.map.addPopup(new OpenLayers.Popup.FramedCloud(
-                    "identify_popup",                   // id
-                    app.map.getLonLatFromPixel(e.xy),   // lonlat
-                    null,                               // contentSize
-                    html,                               // contentHTML
-                    null,                               // anchor
-                    true,                               // closeBox
-                    null                                // closeBoxCallback
-                ));
+                var popup = $(document.createElement('div'));
+				popup.attr("id", "identify_popup");
+                popup.id = "#identify_popup";
+                popup.html(html);
+                popup.dialog({
+                    width     : 600,
+					height     : 200,
+                    resizable : true,
+                    title     : "Identify Results",
+                    close : function( event, ui ) {
+						// app.map.removeLayer(markerLayer);
+						app.map.removeLayer(app.id_markerLayer);
+						app.id_markerLayer = undefined;
+						$(this).remove();
+                    },
+                });				
 
                 // Now loop over each item in the `services` object, generating the GetFeatureInfo request for it
                 for (urlsrs in services) {
@@ -1903,15 +1941,16 @@
                                 var $gml = $($.parseXML(response)),
                                     $identify_results = $("#identify_results");
                                 // For each layer that this request was for, parse the GML for the results
-                                // for that layer, and populate the corresponding result in the popup
+                                // for that layer, and populate the corresponding result in the pop-up
                                 // created above.
                                 if (firstResultsYet < 1) {
-                                    $identify_results.empty(); //first clear out orginal
+                                    $identify_results.empty(); //first clear out original
                                     firstResultsYet = firstResultsYet + 1;
                                 }
                                 var layerIDCount     = 0,
                                     newTableContents = '',
                                     lastURL          = '';
+								var previousMaskLayer;
                                 $.each(service.layers, function () {
                                     // jdm: Check to see if we are using ArcGIS
                                     // if so handle the xml that comes back differently
@@ -1922,25 +1961,36 @@
                                     } else { //assuming MapServer at this point
                                         var result = getLayerResultsFromGML($gml, this);
                                     }
-                                    //jdm: with this list back from getLayerResultsFromGML
-                                    //loop through and build up new table structure
-                                    newTableContents = (''
-                                                        + '<tr>'
-                                                        +       '<td><b>'+service.layers[layerIDCount]+'</b></td>'
-                                                        +   '<td>&nbsp</td>'
-                                                        + '</tr>'
-                                                        );
-                                    $identify_results.append(newTableContents);
-                                    var i;
-                                    for (i = 1; i < result.length; ++i) {
-                                        newTableContents = (''
-                                                            + '<tr>'
-                                                            +   '<td align="right">'+String(result[i][0]).replace("_0","")+':&nbsp&nbsp</td>'
-                                                            +   '<td>'+result[i][1]+'</td>'
-                                                            + '</tr>'
-                                                            );
-                                        $identify_results.append(newTableContents);
-                                    }
+                                    //check for previous mask
+									if (previousMaskLayer != service.layers[layerIDCount].substring(0,service.layers[layerIDCount].indexOf("MaskFor"))) {
+										var layerTitle = service.layers[layerIDCount];
+										if (layerTitle.indexOf("MaskFor") > -1) {
+												layerTitle = layerTitle.substring(0, layerTitle.indexOf('MaskFor'));
+										}
+										//jdm: with this list back from getLayerResultsFromGML
+										//loop through and build up new table structure                                    
+										newTableContents = (''
+															+ '<tr>'
+															+       '<td><b>'+layerTitle+'</b></td>'
+															+   '<td>&nbsp</td>'
+															+ '</tr>'
+															);
+										$identify_results.append(newTableContents);
+										var i;
+										for (i = 1; i < result.length; ++i) {
+											newTableContents = (''
+																+ '<tr>'
+																+   '<td align="right">'+String(result[i][0]).replace("_0","")+':&nbsp&nbsp</td>'
+																+   '<td>'+result[i][1]+'</td>'
+																+ '</tr>'
+																);
+											$identify_results.append(newTableContents);
+										}
+									}
+                                    //populate for previous mask
+									if (service.layers[layerIDCount].indexOf("MaskFor") > -1) {
+										previousMaskLayer = service.layers[layerIDCount].substring(0,service.layers[layerIDCount].indexOf("MaskFor"));
+									}
                                     layerIDCount++;
                                 });
                             },
