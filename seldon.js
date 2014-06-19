@@ -2279,28 +2279,15 @@
 
 		var printPopup = $(document.createElement('div'));
 		printPopup.id = "#printPopupDiv";
-		printPopup.html('<div id="printMapLoader"></div>');
+		printPopup.html('<div id="printMapLoader"><center><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></center></div>');
 		printPopup.dialog({
 			resizable : false,
             height    :75,
-			title     : 'Printing...',
+			title     : 'Creating Image for Print...',
 			close : function( event, ui ) {
 				$(this).remove();
 			},
 		});		
-		// $("#printMapLoader").html("<p>Printing...</p>");
-		var p=0;
-		$("#printMapLoader").progressbar({value:.5});
-		var timer = setInterval(function(){
-			//This animates the bar
-			$("#printMapLoader .ui-progressbar-value").animate({width: p+"%"}, 500);
-			//This does static sets of the value
-			p = p +.5;
-			if(p>100){
-				$("#printMapLoader .ui-progressbar-value").animate({width: "100%"}, 500);
-				clearInterval(timer);
-			}
-		},500);		
 		
 		OpenLayers.Request.POST({ 
 				url:'cgi-bin/print.cgi',
@@ -2309,8 +2296,8 @@
 				callback: function(request) {
 					// window.open('http://'+window.location.hostname+'/~derek/taccimo/cgi-bin/printed_map.jpg');
 					// alert(window.location.pathname);
-					$("#printMapLoader").html('<center><a href="http://'+window.location.hostname+window.location.pathname+'cgi-bin/printed_map.jpg" style="color:blue" target="_new">print map result</a></center>');
-                    printPopup.dialog('option', 'title', 'Printing Complete!');
+					$("#printMapLoader").html('<center><a href="http://'+window.location.hostname+window.location.pathname+'cgi-bin/printed_map.jpg" style="color:blue" target="_new">print image result</a></center>');
+					printPopup.dialog('option', 'title', 'Print Image Created!');
 				}
 		});
 	}
