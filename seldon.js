@@ -2310,7 +2310,7 @@
 		});		
 		
 		OpenLayers.Request.POST({ 
-				url:'cgi-bin/print.cgi',
+				url:'http://'+app.urlTemp+'cgi-bin/print.cgi',
 				data:OpenLayers.Util.getParameterString({width:size.w,height:size.h,tiles:tiles_json,legends:legends_json}),
 				headers:{'Content-Type':'application/x-www-form-urlencoded'},
 				callback: function(request) {
