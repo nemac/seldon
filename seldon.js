@@ -17,6 +17,7 @@
         this.gisServerType = undefined; //The type of server that the wms layers will be served from
 		this.useProxyScript = undefined;
         this.scalebar    = undefined;
+		this.urlTemp = "rain.nemac.org/~derek/fswms/html/view/ol/"; //jdm: this is temporary until I get some url path issues worked out with printing
         this.zoomInTool  = undefined; // OpenLayers zoom in tool
         this.zoomOutTool = undefined; // OpenLayers zoom out tool
         this.dragPanTool = undefined; // OpenLayers dragpan tool
@@ -2292,6 +2293,10 @@
 		var legends_json = JSON.stringify(layerLegendsURLs);
 		// var printparams = 'width='+size.w + '&height='+size.h + '&tiles='+escape(tiles_json) ;
 
+		if (window.location.hostname != "forwarn.forestthreats.org") {
+			app.urlTemp = window.location.hostname+window.location.pathname;
+		}
+
 		var printPopup = $(document.createElement('div'));
 		printPopup.id = "#printPopupDiv";
 		printPopup.html('<div id="printMapLoader"><center><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></center></div>');
@@ -2311,7 +2316,7 @@
 				callback: function(request) {
 					// window.open('http://'+window.location.hostname+'/~derek/taccimo/cgi-bin/printed_map.jpg');
 					// alert(window.location.pathname);
-					$("#printMapLoader").html('<center><a href="http://'+window.location.hostname+window.location.pathname+'cgi-bin/printed_map.jpg" style="color:blue" target="_new">print image result</a></center>');
+					$("#printMapLoader").html('<center><a href="http://'+app.urlTemp+'cgi-bin/printed_map.jpg" style="color:blue" target="_new">print image result</a></center>');
 					printPopup.dialog('option', 'title', 'Print Image Created!');
 				}
 		});
