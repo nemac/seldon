@@ -37,7 +37,7 @@
         this.currentTheme          = undefined;
         this.identifyTool          = undefined;
         this.multigraphTool        = undefined;
-        this.defaultMasks           = ["MaskForConiferForest","MaskForDeciduousForest","MaskForMixedForest"];
+        this.defaultMasks           = ["MaskForForest"];
         
         // array of saved extent objects; each entry is a JavaScript object of the form
         //     { left : VALUE, bottom : VALUE, right : VALUE, top : VALUE }
@@ -731,6 +731,13 @@
 
         //jdm: 7/9/12 - for global mask functionality at app level
         this.setMask = function (toggle, maskName) {
+			//if ForestOnly grey out the sub-forest types
+			if (maskName=="MaskForForest") {
+				$( "#ConiferForest" ).attr("disabled", true);
+				$( "#DeciduousForest" ).attr("disabled", true);
+				$( "#MixedForest" ).attr("disabled", true);
+			}
+			
 			//remove any id markers when adjusting mask
 			if (app.id_markerLayer) {
 				app.map.removeLayer(app.id_markerLayer)
@@ -798,6 +805,14 @@
         }; //end app.setMask()
 
         this.deactivateMask = function (maskLayerName) {
+		
+			//if ForestOnly grey out the sub-forest types
+			if (maskLayerName=="MaskForForest") {
+				$( "#ConiferForest" ).attr("disabled", false);
+				$( "#DeciduousForest" ).attr("disabled", false);
+				$( "#MixedForest" ).attr("disabled", false);
+			}		
+		
             for (var i = app.map.getNumLayers()-1; i > 0; i--) {
                 var currLayer = app.map.layers[i];
                 if (currLayer.seldonLayer.mask) {
