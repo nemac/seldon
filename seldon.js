@@ -253,10 +253,13 @@
                     accordionGroup = accGp;
                 }
                 var g = $layerPickerAccordion.listAccordion('addSection', accGp.label);
+				var selectBoxLayers = [];
+				var radioButtonIDList = [];
+				var radioButtonLayers = [];
                 for (var i = 0, j = accGp.sublists.length; i < j; i++) {
                     var sublist = accGp.sublists[i],
                         s = $layerPickerAccordion.listAccordion('addSublist', g, sublist.label);
-                    for (var k = 0, l = sublist.layers.length; k < l; k++) {
+					for (var k = 0, l = sublist.layers.length; k < l; k++) {
                         var layer = sublist.layers[k];
                         // remove any previously defined listeners for this layer, in case this isn't the first
                         // time we've been here
@@ -283,23 +286,47 @@
                         //jdm 5/28/13: if there is a mask for this layer then we will provide a status
                         //as to when that mask is active
                         var $testForMask = layer.mask;
+						var radioButton;
                         if ($testForMask) {
                             maskLabelElem = document.createElement("label");
                             maskTextElem = document.createTextNode(""); //empty until active, if active then put (m)
                             maskLabelElem.setAttribute("id", "mask-status" + layer.lid);
                             maskLabelElem.appendChild(maskTextElem);
+							$layerPickerAccordion.listAccordion('addSublistItem', s,
+																[createLayerToggleCheckbox(layer),
+																 labelElem,
+																 createLayerPropertiesIcon(layer),
+																 maskLabelElem]);
+                        } else { //no mask for this layer (most will be of this type outside of FCAV)
                             // add the layer to the accordion group
-                            $layerPickerAccordion.listAccordion('addSublistItem', s,
-                                                                [createLayerToggleCheckbox(layer),
-                                                                 labelElem,
-                                                                 createLayerPropertiesIcon(layer),
-                                                                 maskLabelElem]);
-                        } else { //no mask for this layer
-                            // add the layer to the accordion group
-                            $layerPickerAccordion.listAccordion('addSublistItem', s,
-                                                                [createLayerToggleCheckbox(layer),
-                                                                 labelElem,
-                                                                 createLayerPropertiesIcon(layer)]);
+                            if (sublist.type=="radiobutton") { //radio button type
+								$layerPickerAccordion.listAccordion('addSublistItem', s,
+									[radioButton=createLayerToggleRadioButton(layer, sublist.label.replace(/\s+/g, '')),
+									labelElem,
+									createLayerPropertiesIcon(layer)]);
+								radioButtonIDList.push(radioButton);
+								radioButtonLayers.push(layer);
+							}
+                            else if (sublist.type=="dropdownbox") { //dropdownbox type
+								// Using sublist.layers.length build up array of layer information to pass to 
+								// the dropdownbox such that only one call to createLayerToggleDropdownBox.
+								// Assumption #1: A dropdownbox is always preceded in the config. file by a 
+								// radiobutton and therefore the dropdownbox needs to know about its corresponding radiobutton group
+								if (((selectBoxLayers.length+1)<sublist.layers.length) || (selectBoxLayers.length == undefined)){
+									selectBoxLayers.push(layer);
+								}
+								else {
+									selectBoxLayers.push(layer);
+									$layerPickerAccordion.listAccordion('addSublistItem', s,
+										[createLayerToggleDropdownBox(radioButtonIDList, layer, selectBoxLayers, sublist.label.replace(/\s+/g, ''), radioButtonLayers)]);							
+								}
+							}							
+							else { // assume checkbox type
+								$layerPickerAccordion.listAccordion('addSublistItem', s,
+									[createLayerToggleCheckbox(layer),
+									labelElem,
+									createLayerPropertiesIcon(layer)]);
+							}
                         }
 
 
@@ -307,8 +334,11 @@
                         // options arg, active the layer only if it appears in that list.  If we
                         // received no layer list in the options arg, activate the layer if the layer's
                         // "selected" attribute was true in the config file.
-                        if (((options.layers !== undefined) && (arrayContainsElement(options.layers, layer))) || ((options.layers === undefined) && layer.selectedInConfig)) {
-                            layer.activate();
+                        if (((options.layers !== undefined) && 
+							(arrayContainsElement(options.layers, layer))) || 
+							((options.layers === undefined) && 
+							layer.selectedInConfig) && (sublist.type!="radiobutton")) {
+								layer.activate();
                         }						
 						//we shouldn't have to re-activate an active layer on theme change
 						//But, rather just verify that it is checked as such
@@ -975,7 +1005,8 @@
                 for (j = 0, ll = $wmsSubgroups.length; j < ll; j++) {
                     $wmsSubgroup = $($wmsSubgroups[j]); // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
                     sublist      = new AccordionGroupSublist({
-                        label : $wmsSubgroup.attr('label')
+                        label : $wmsSubgroup.attr('label'),
+						type  : $wmsSubgroup.attr('type')
                     });
                     accordionGroup.sublists.push(sublist);
                     $wmsLayers = $wmsSubgroup.find("wmsLayer");
@@ -1180,6 +1211,7 @@
         this.layers = [];
         if (!settings) { return; }
         this.label  = settings.label;
+		this.type  = settings.type;
     }
 
     function Layer (settings) {
@@ -1638,6 +1670,106 @@
             });
     };
 
+	function createLayerToggleDropdownBox (radioButtonIDList, lastLayerInGroup, selectBoxLayers, selectBoxGroupName, radioButtonLayers) {
+		var selectBox = document.createElement("select"),$selectBox;
+		selectBox.setAttribute("id", selectBoxGroupName);
+		var options = [];
+		//Loop through selectBoxLayers adding to options accordingly
+		for (var i = 0; i < selectBoxLayers.length; i++) {
+			options.push(selectBoxLayers[i].layers+":"+selectBoxLayers[i].name);
+		}
+		//Loop through options adding to the selectBox
+		for(var x in options) {
+			if(options.hasOwnProperty(x)) {
+				var option = document.createElement("option");
+				option.value = x;
+				option.appendChild(document.createTextNode(options[x]));
+				selectBox.appendChild(option);
+			}
+		}
+		$selectBox = $(selectBox);
+		//Change event listener
+		$selectBox.change(function() {
+			var selectID = selectBoxGroupName;
+			var radioIDList = radioButtonIDList;
+			var selectLayer = lastLayerInGroup;
+			var radioButtonLayersTemp = radioButtonLayers;
+            //Loop through other radio buttons and find currently active one
+			//along with its associated layer.
+			// var wanted_id = $( "#"+selectID+" option:selected" ).text().split(":")[0];
+			var wanted_layer = undefined;
+			var wanted_lid = undefined;
+			for (var i = 0; i < radioIDList.length; i++) {
+				if (radioIDList[i].checked) {
+					for (var j = 0; j < radioButtonLayersTemp.length; j++) {
+						if(radioButtonLayersTemp[j].lid == radioIDList[i].id.replace("rdo","")) {
+							// alert(radioIDList[i].id);
+							wanted_layer = (+radioButtonLayersTemp[j].layers) + (+selectLayer.layers)
+							wanted_lid = radioIDList[i].id
+						}				
+					}
+				}
+			}			
+			var selectBoxLayer = new Layer({
+				lid              : wanted_lid,
+				visible          : selectLayer.visible,
+				url              : selectLayer.url,
+				srs              : selectLayer.srs,
+				layers           : wanted_layer,
+				identify         : selectLayer.identify,
+				name             : wanted_lid,
+				mask             : selectLayer.mask,
+				legend           : selectLayer.legend, 
+				index			 : selectLayer.index
+			});
+			selectBoxLayer.activate(true);
+		});		
+		return selectBox;
+	}
+	
+    function createLayerToggleRadioButton (layer, radioGroupName) {
+        // create the checkbox
+        var checkbox = document.createElement("input"),
+            $checkbox;
+        checkbox.type = "radio";
+		checkbox.name = radioGroupName;
+        checkbox.id = "rdo" + layer.lid;
+		if (layer.selectedInConfig) {
+			checkbox.checked = true;
+		}
+        checkbox.onchange = function () {
+            //Loop through other radio buttons and deactivate those layers accordingly.
+			$('input:radio').each(function() {
+			    if($(this).is(':checked')) {
+					// You have a checked radio button here...
+					// To-do: loop through the relative select box
+					// and activate appropriate layer
+				} 
+				else {
+					// Or an unchecked one here
+					// Need to know the previously active radio button
+					// loop through the layers deactivate accordingly
+					for (var i = app.map.getNumLayers()-1; i > 0; i--) {
+							var currLayer = app.map.layers[i];
+							if (this.id==currLayer.seldonLayer.lid) {
+								currLayer.seldonLayer.deactivate(true);
+							}
+					}
+				}	
+			});
+        }; //End checkbox.onchange
+        $checkbox = $(checkbox);
+        // listen for activate/deactivate events from the layer, and update the checkbox accordingly
+        layer.addListener("activate", function () {
+            $checkbox.attr('checked', true);
+        });
+        layer.addListener("deactivate", function () {
+            $checkbox.attr('checked', false);
+        });
+        // return the new checkbox DOM element
+        return checkbox;
+	} //End createLayerToggleRadioButton
+	
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
         var checkbox = document.createElement("input"),
