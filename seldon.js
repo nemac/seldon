@@ -430,9 +430,10 @@
                         //make sure the parent to the layerMask stays on the share map url
                         if (layerLids.indexOf(this.name.substring(0, this.name.indexOf("MaskFor"))) == -1) {
                             layerLids.push(this.name.substring(0, this.name.indexOf("MaskFor")));
-                            layerAlphas.push(op);
+							layerAlphas.push(op);
                         }
-                    } else { 
+						var test = "";
+					} else { 
                         //otherwise add to layerLids
                         if (this.seldonLayer) {
 							layerLids.push(this.seldonLayer.lid);
@@ -787,10 +788,12 @@
 							//if not already in the active mask parent list add to keep track
 							if (this.activeMaskParents.indexOf(currLayer.seldonLayer.lid) == -1) {
 								if (currLayer.seldonLayer.lid.indexOf("MaskFor") > -1) {
-									if ((this.activeMaskParents.indexOf(currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("MaskFor"))) > -1) 
-										&& (app.activeMask.indexOf(maskName.replace("MaskFor",""))==-1)) {  //condition: Already in activeMaskParents but a new mask
-										this.activeMask.push(maskName.replace("MaskFor",""));
-										currLayer.seldonLayer.activateMask(maskName, currLayer.seldonLayer.index);  //activate mask at the layer level
+									if ((this.activeMaskParents.indexOf(currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("MaskFor"))) > -1)) {  
+                                        //Add only unique activeMask
+                                        if (app.activeMask.indexOf(maskName.replace("MaskFor",""))==-1) {
+                                            this.activeMask.push(maskName.replace("MaskFor",""));
+										}
+                                        currLayer.seldonLayer.activateMask(maskName, currLayer.seldonLayer.index);  //activate mask at the layer level
 										if ($("#"+maskName.replace("MaskFor","")).get(0)) {
 											$("#"+maskName.replace("MaskFor","")).get(0).checked = true;
 										}									
@@ -803,7 +806,9 @@
 										}
 										if ($("#"+maskName.replace("MaskFor","")).get(0)) {
 											$("#"+maskName.replace("MaskFor","")).get(0).checked = true;
-										}									
+										}
+										//Be sure to update active mask parents
+										this.activeMaskParents.push(currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("MaskFor")));
 									}
 								} else { //condition: First of a mask for parent layer
 									if (this.activeMask.indexOf(maskName.replace("MaskFor","")) == -1) {
