@@ -776,7 +776,8 @@
 			}   		
             if (toggle) {
 				//Limit active mask being sure to to double-count current active mask
-				if ((app.activeMask.length<4) || (app.activeMask.indexOf(maskName.replace("MaskFor",""))>-1)) {
+				if ((app.activeMask.length<4) &&
+                    (app.activeMaskParents.length<6)) {
 					//Add the mask to the activeMask list so that we can keep track
 					//at the app level by loop through each currently active layer
 					for (var i = app.map.getNumLayers()-1; i > 0; i--) {
@@ -796,7 +797,8 @@
                                         currLayer.seldonLayer.activateMask(maskName, currLayer.seldonLayer.index);  //activate mask at the layer level
 										if ($("#"+maskName.replace("MaskFor","")).get(0)) {
 											$("#"+maskName.replace("MaskFor","")).get(0).checked = true;
-										}									
+										}
+										break;
 									}
 									else { 
 										//if the parent layer checkbox and mask-toggle are not active make it so
@@ -814,7 +816,6 @@
 									if (this.activeMask.indexOf(maskName.replace("MaskFor","")) == -1) {
 										this.activeMask.push(maskName.replace("MaskFor",""));
 									}
-									
 									currLayer.seldonLayer.activateMask(maskName, currLayer.seldonLayer.index);  //activate mask at the layer level
 									if ($("#"+maskName.replace("MaskFor","")).get(0)) {
 										$("#"+maskName.replace("MaskFor","")).get(0).checked = true;
@@ -829,7 +830,7 @@
 					}
 				}
 				else {
-					alert("You cannot have more than 4 active mask!");
+					alert("Maskable layer limit!  Please deactivate some mask, \nor reduce the number of layers you have active");
 					$("#"+maskName.replace("MaskFor","")).get(0).checked = false;
 				}				
 			}
@@ -1277,30 +1278,38 @@
         };
         this.activate = function (isMask) {
 			app.map.addLayer(this.createOpenLayersLayer());
-            //Only add legend for parent layers
+			//Only add legend for parent layers
 			if (this.lid.indexOf("MaskFor") == -1) {
 				this.addToLegend();
 			}
 			
 			this.emit("activate");
-            //If there is currently any active mask
-            //then activate mask on this layer if it hasn't already been activated
-            //we will fly through here again we need to use both activeMask
-            //and activeMaskParents to verify that we don't get into a recursive loop
-            if ((app.activeMask.length > 0) &&
-                (this.mask=="true") &&
-                (this.lid.indexOf("MaskFor") == -1)) {
-                //Here we have a parent layer that has been activated
-                //after mask have already been turned on.
-                //So we need to loop through the activeMask and turn on
-                //the mask accordingly.
-                for (var i = 0; i < app.activeMask.length; i++) {
-                    this.activateMask("MaskFor"+app.activeMask[i],this.index);
-                }
-            }
-            //reorder maps layers based on the current layer index
+			//If there is currently any active mask
+			//then activate mask on this layer if it hasn't already been activated
+			//we will fly through here again we need to use both activeMask
+			//and activeMaskParents to verify that we don't get into a recursive loop
+			if ((app.activeMask.length > 0) &&
+				(this.mask=="true") &&
+				(this.lid.indexOf("MaskFor") == -1)) {
+				//Here we have a parent layer that has been activated
+				//after mask have already been turned on.
+				//So we need to loop through the activeMask and turn on
+				//the mask accordingly.
+				var alreadyPassedMaskableLimit = true;
+				for (var i = 0; i < app.activeMask.length; i++) {
+					if (app.activeMaskParents.length<6) {
+						this.activateMask("MaskFor"+app.activeMask[i],this.index);
+					}
+					else if(alreadyPassedMaskableLimit){
+						alert("Maskable layer limit!  Please deactivate some mask, \nor reduce the number of layers you have active");
+						this.deactivate();
+						alreadyPassedMaskableLimit=false;
+					}
+				}
+			}
+			//reorder maps layers based on the current layer index
 			//jdm 9/23: this needs to be revisited to deal with masking
-            if (app.map.getNumLayers()>1) {
+			if (app.map.getNumLayers()>1) {
 			var lyrJustAdded = app.map.layers[app.map.getNumLayers()-1];
 				for (var i = app.map.getNumLayers()-2; i > 0; i--) {
 					var nextLayerDown = app.map.layers[i];
@@ -1311,7 +1320,7 @@
 				}
 			}
 			app.updateShareMapUrl();
-            app.map.updateSize();
+			app.map.updateSize();
         };
 
         this.checkForExistingLayer = function (layerName) {
@@ -1430,54 +1439,54 @@
 			//Need to do a check for existing mask
 			var checkForMaskLayerActive = this.checkForExistingLayer(this.lid);
 			if (this.lid.indexOf("MaskFor") == -1) { //no mask applied yet
-                var maskLayer = new Layer({
-                        lid              : this.lid+maskLayerName.replace("/",""),
-                        visible          : this.visible,
-                        url              : this.url,
-                        srs              : this.srs,
-                        layers           : this.layers+maskLayerName.replace("/","").replace(this.lid,""),
-                        identify         : this.identify,
-                        name             : this.lid+maskLayerName.replace("/",""),
-                        mask             : 'false',
-                        legend           : this.legend, 
+				var maskLayer = new Layer({
+						lid              : this.lid+maskLayerName.replace("/",""),
+						visible          : this.visible,
+						url              : this.url,
+						srs              : this.srs,
+						layers           : this.layers+maskLayerName.replace("/","").replace(this.lid,""),
+						identify         : this.identify,
+						name             : this.lid+maskLayerName.replace("/",""),
+						mask             : 'false',
+						legend           : this.legend, 
 						index			 : seldonIndex
-                });
-                //add to activeMaskParents, for the purpose of 
-                //keeping track of the number of mask-per-parent
+				});
+				//add to activeMaskParents, for the purpose of 
+				//keeping track of the number of mask-per-parent
 				app.activeMaskParents.push(this.lid);
-            } else { //applying additional mask
-                 var maskLayer = new Layer({
-                        lid              : this.lid.replace(this.lid.substring(this.lid.indexOf("MaskFor"),this.lid.length), maskLayerName),
-                        visible          : this.visible,
-                        url              : this.url,
-                        srs              : this.srs,
-                        layers           : this.layers.replace(this.lid.substring(this.lid.indexOf("MaskFor"),this.lid.length), maskLayerName),
-                        identify         : this.identify,
-                        name             : this.lid.replace(this.lid.substring(this.lid.indexOf("MaskFor"),this.lid.length), maskLayerName),
-                        mask             : 'true',
-                        legend           : this.legend, 
+			} else { //applying additional mask
+				 var maskLayer = new Layer({
+						lid              : this.lid.replace(this.lid.substring(this.lid.indexOf("MaskFor"),this.lid.length), maskLayerName),
+						visible          : this.visible,
+						url              : this.url,
+						srs              : this.srs,
+						layers           : this.layers.replace(this.lid.substring(this.lid.indexOf("MaskFor"),this.lid.length), maskLayerName),
+						identify         : this.identify,
+						name             : this.lid.replace(this.lid.substring(this.lid.indexOf("MaskFor"),this.lid.length), maskLayerName),
+						mask             : 'true',
+						legend           : this.legend, 
 						index			 : seldonIndex
-                });
+				});
 				app.activeMaskParents.push(this.lid.substring(0,this.lid.indexOf("MaskFor")));
-            }
-            if (maskLayer != undefined) {
+			}
+			if (maskLayer != undefined) {
 				maskLayer.index = seldonIndex;
 				maskLayer.activate();
 			}
-            if (this.openLayersLayer && (this.lid.indexOf("MaskFor") == -1)) {
-                try {
-                    app.map.removeLayer(this.openLayersLayer); //I think this is throwing and error
-                    //Leave the parent layer legend, so no --> this.removeFromLegend()
-                }
-                catch(err) {
-                    //Error will occur here because we have already remove the parent layer
-                    //from the openlayers map.  But we will allow things to go on...
-                    // alert(err.message);
-                }
-            }
-            app.updateShareMapUrl();
+			if (this.openLayersLayer && (this.lid.indexOf("MaskFor") == -1)) {
+				try {
+					app.map.removeLayer(this.openLayersLayer); //I think this is throwing and error
+					//Leave the parent layer legend, so no --> this.removeFromLegend()
+				}
+				catch(err) {
+					//Error will occur here because we have already remove the parent layer
+					//from the openlayers map.  But we will allow things to go on...
+					// alert(err.message);
+				}
+			}
+			app.updateShareMapUrl();
 			checkForMaskLayerActive = this.checkForExistingLayer(this.lid);
-            if (checkForMaskLayerActive) {
+			if (checkForMaskLayerActive) {
 				$('#mask-status'+ this.lid.substring(0,this.lid.indexOf("MaskFor"))).text("(m)");
 			}
 			else {
