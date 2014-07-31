@@ -777,7 +777,7 @@
             if (toggle) {
 				//Limit active mask being sure to to double-count current active mask
 				if ((app.activeMask.length<4) &&
-                    (app.activeMaskParents.length<6)) {
+                    (app.activeMaskParents.length<20)) {
 					//Add the mask to the activeMask list so that we can keep track
 					//at the app level by loop through each currently active layer
 					for (var i = app.map.getNumLayers()-1; i > 0; i--) {
@@ -1297,7 +1297,7 @@
 				//the mask accordingly.
 				var alreadyPassedMaskableLimit = true;
 				for (var i = 0; i < app.activeMask.length; i++) {
-					if (app.activeMaskParents.length<6) {
+					if (app.activeMaskParents.length<20) {
 						this.activateMask("MaskFor"+app.activeMask[i],this.index);
 					}
 					else if(alreadyPassedMaskableLimit){
