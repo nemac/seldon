@@ -163,10 +163,62 @@
         };
 
 
+		//Begin Accordion Group Specific Functions
         this.setAccordionGroup = function (accordionGroup) {
             this.currentAccordionGroup = accordionGroup;
             this.emit("accordiongroupchange");
         };
+		
+        this.clearAccordionSections = function (accordionGroup) {
+			$(accordionGroup).empty();
+            $(accordionGroup).data('listAccordion').sections = [];
+            $(accordionGroup).accordion('refresh');
+		};
+		
+		this.addAccordionSection = function (accordionGroup, title) {
+            var sectionObj = {
+                title          : title,
+                titleElement   : $('<h3>' + title + '</h3>'),
+                contentElement : $('<div></div>'),
+                sublists    : []
+            };
+            $(accordionGroup).data('listAccordion').sections.push(sectionObj);
+            $(accordionGroup) .
+                append(sectionObj.titleElement) .
+                append(sectionObj.contentElement);
+            $(accordionGroup).accordion('refresh');
+            return sectionObj;		
+		}
+
+		this.addAccordionSublist = function (g, heading) {
+            var sublistObj = {
+                heading : heading,
+                items : [],
+                contentElement : $('<div><h4>' + heading + '</h4></div>')
+            };
+            g.sublists.push(sublistObj);
+            $(g.contentElement).append(sublistObj.contentElement);
+            return sublistObj;
+		}
+
+		this.addAccordionSublistItem = function (s, items) {
+            var contents = $('<div class="layer"></div>');
+            
+			for (var x=0; x<items.length; x++) {
+				contents.append(items[x]);
+			}
+			// $.each(items, function() {
+                // contents.append(this);
+            // });
+			
+            var layer = {
+                name : name,
+                contentElement : contents
+            };
+            s.items.push(layer);
+            s.contentElement.append(layer.contentElement);
+		}
+		//End Accordion Group Specific Functions
 
         this.setTheme = function (theme, options) {
 			
@@ -224,17 +276,35 @@
                     .css("height", "400px");
             }
 
-            if ($layerPickerAccordion.data('listAccordion')) {
-                $layerPickerAccordion.listAccordion('clearSections');
+            //Clear our previous accordion on theme change
+			if ($layerPickerAccordion.data('listAccordion')) {
+                // $layerPickerAccordion.listAccordion('clearSections');
+				app.clearAccordionSections($layerPickerAccordion);
             }
 
-            $layerPickerAccordion.listAccordion({
+			//Initialize listAccordion
+			$layerPickerAccordion.accordion({
                 heightStyle : 'content',
                 change      : function (event, ui) {
                     var accordionGroupIndex = $layerPickerAccordion.accordion('option', 'active');
                     app.setAccordionGroup(theme.accordionGroups[accordionGroupIndex]);
                 }
             });
+			if ( ! $layerPickerAccordion.data('listAccordion') ) {
+				$layerPickerAccordion.data('listAccordion', {
+					accordionOptions     : options,
+					sections             : []
+				});
+				$layerPickerAccordion.accordion('option', 'active');
+			}
+
+            // $layerPickerAccordion.listAccordion({
+                // heightStyle : 'content',
+                // change      : function (event, ui) {
+                    // var accordionGroupIndex = $layerPickerAccordion.accordion('option', 'active');
+                    // app.setAccordionGroup(theme.accordionGroups[accordionGroupIndex]);
+                // }
+            // });
 
             // $('#legend').empty();
 
@@ -252,13 +322,17 @@
                     (!accordionGroupOption && accGp.selectedInConfig)) {
                     accordionGroup = accGp;
                 }
-                var g = $layerPickerAccordion.listAccordion('addSection', accGp.label);
+                // var g = $layerPickerAccordion.listAccordion('addSection', accGp.label);
+				var g = app.addAccordionSection($layerPickerAccordion, accGp.label);
 				var selectBoxLayers = [];
 				var radioButtonIDList = [];
 				var radioButtonLayers = [];
-                for (var i = 0, j = accGp.sublists.length; i < j; i++) {
+				for (var i = 0, j = accGp.sublists.length; i < j; i++) {
+                    // var sublist = accGp.sublists[i],
+                        // s = $layerPickerAccordion.listAccordion('addSublist', g, sublist.label);
                     var sublist = accGp.sublists[i],
-                        s = $layerPickerAccordion.listAccordion('addSublist', g, sublist.label);
+                        s = app.addAccordionSublist(g, sublist.label);						
+					var stallInterval = 0;
 					for (var k = 0, l = sublist.layers.length; k < l; k++) {
                         var layer = sublist.layers[k];
                         // remove any previously defined listeners for this layer, in case this isn't the first
@@ -292,18 +366,27 @@
                             maskTextElem = document.createTextNode(""); //empty until active, if active then put (m)
                             maskLabelElem.setAttribute("id", "mask-status" + layer.lid);
                             maskLabelElem.appendChild(maskTextElem);
-							$layerPickerAccordion.listAccordion('addSublistItem', s,
-																[createLayerToggleCheckbox(layer),
-																 labelElem,
-																 createLayerPropertiesIcon(layer),
-																 maskLabelElem]);
+							// $layerPickerAccordion.listAccordion('addSublistItem', s,
+																// [createLayerToggleCheckbox(layer),
+																 // labelElem,
+																 // createLayerPropertiesIcon(layer),
+																 // maskLabelElem]);
+							app.addAccordionSublistItem(s,
+														[createLayerToggleCheckbox(layer),
+														 labelElem,
+														 createLayerPropertiesIcon(layer),
+														 maskLabelElem]);																 
                         } else { //no mask for this layer (most will be of this type outside of FCAV)
                             // add the layer to the accordion group
                             if (sublist.type=="radiobutton") { //radio button type
-								$layerPickerAccordion.listAccordion('addSublistItem', s,
+								// $layerPickerAccordion.listAccordion('addSublistItem', s,
+									// [radioButton=createLayerToggleRadioButton(layer, sublist.label.replace(/\s+/g, '')),
+									// labelElem,
+									// createLayerPropertiesIcon(layer)]);
+								app.addAccordionSublistItem(s,
 									[radioButton=createLayerToggleRadioButton(layer, sublist.label.replace(/\s+/g, '')),
 									labelElem,
-									createLayerPropertiesIcon(layer)]);
+									createLayerPropertiesIcon(layer)]);									
 								radioButtonIDList.push(radioButton);
 								radioButtonLayers.push(layer);
 							}
@@ -317,15 +400,21 @@
 								}
 								else {
 									selectBoxLayers.push(layer);
-									$layerPickerAccordion.listAccordion('addSublistItem', s,
-										[createLayerToggleDropdownBox(radioButtonIDList, layer, selectBoxLayers, sublist.label.replace(/\s+/g, ''), radioButtonLayers)]);							
+									// $layerPickerAccordion.listAccordion('addSublistItem', s,
+										// [createLayerToggleDropdownBox(radioButtonIDList, layer, selectBoxLayers, sublist.label.replace(/\s+/g, ''), radioButtonLayers)]);							
+									app.addAccordionSublistItem(s,
+										[createLayerToggleDropdownBox(radioButtonIDList, layer, selectBoxLayers, sublist.label.replace(/\s+/g, ''), radioButtonLayers)]);
 								}
 							}							
 							else { // assume checkbox type
-								$layerPickerAccordion.listAccordion('addSublistItem', s,
+								// $layerPickerAccordion.listAccordion('addSublistItem', s,
+									// [createLayerToggleCheckbox(layer),
+									// labelElem,
+									// createLayerPropertiesIcon(layer)]);
+								app.addAccordionSublistItem(s,
 									[createLayerToggleCheckbox(layer),
 									labelElem,
-									createLayerPropertiesIcon(layer)]);
+									createLayerPropertiesIcon(layer)]);									
 							}
                         }
 
@@ -349,7 +438,16 @@
 								}
 							}
 						}
-                    }
+						// Every 10 iterations, take a break
+						if ( stallInterval > 0 && stallInterval % 10 == 0) {
+							// Manually increment `b` because we break
+							stallInterval=0;
+							// Set a timer for the next iteration 
+							setTimeout(function(){var test = 2+2;},1000)
+							break;
+						}
+						stallInterval++;	
+					}
                 }
             }
 
