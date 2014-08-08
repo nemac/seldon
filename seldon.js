@@ -444,7 +444,6 @@
 							stallInterval=0;
 							// Set a timer for the next iteration 
 							setTimeout(function(){var test = 2+2;},1000)
-							break;
 						}
 						stallInterval++;	
 					}
