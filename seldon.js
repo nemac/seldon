@@ -1,6 +1,19 @@
 (function ($) {
     "use strict";
 
+    var RepeatingOperation = function(op, yieldEveryIteration) {
+      var count = 0;
+      var instance = this;
+      this.step = function(args) {
+        if (++count >= yieldEveryIteration) {
+          count = 0;
+          setTimeout(function() { op(args); }, 1, [])
+          return;
+          }
+        op(args);
+      };
+    };     
+    
     var EventEmitter = window.EventEmitter,
         seldon = {},
         activeBtn = [],
@@ -312,7 +325,9 @@
 
             //jdm: re-wrote loop using traditional for loops (more vintage-IE friendly)
             //vintage-IE does work with jquery each loops, but seems to be slower
-            for (var a = 0, b = theme.accordionGroups.length; a < b; a++) {
+            // for (var a = 0, b = theme.accordionGroups.length; a < b; a++) {
+            var a = 0;
+            var ro1 = new RepeatingOperation(function() {
                 var accGp = theme.accordionGroups[a],
                     accordionGroupOption = options.accordionGroup;
                 // Decide whether to open this accordion group.  If we received an
@@ -447,7 +462,12 @@
 					app.addAccordionSublistItems(sublistObj, sublistLayerItems);
                 } // end loop for accGp.sublists
 				app.addAccordionSublists(g, sublistItems) 
-            } //end loop for theme.accordionGroups
+                if (++a < theme.accordionGroups.length) { 
+                    ro1.step(); 
+                }            
+            }, 5);
+            ro1.step();             
+            // } //end loop for theme.accordionGroups
 
             $layerPickerAccordion.accordion("refresh");
 
