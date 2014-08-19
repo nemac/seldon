@@ -465,7 +465,7 @@
                 if (++a < theme.accordionGroups.length) { 
                     ro1.step(); 
                 }            
-            }, 5);
+            }, theme.accordionGroups.length+1);
             ro1.step();             
             // } //end loop for theme.accordionGroups
 
