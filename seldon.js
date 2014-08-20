@@ -244,6 +244,48 @@
 		
 		//End Accordion Group Specific Functions
 
+        this.setThemeContinue = function (theme, options, accordionGroup)  {
+            app.currentTheme = theme;
+            app.setAccordionGroup(accordionGroup);
+            $('#layerPickerDialog').scrollTop(0);
+            $('#mapToolsDialog').scrollTop(0);
+            app.emit("themechange");
+
+            //jdm 6/28/13: do a check to see if there is a corresponding active mask in options.shareUrlMasks
+            //can be multiple mask per a parent layer
+            if (options.shareUrlMasks !== undefined) {
+                for (var m = 0; m < options.shareUrlMasks.length; m++) {
+                    //we have already activated the respective parent layers
+                    //so so we have to go through the masking process
+                    this.setMask(true, "MaskFor"+options.shareUrlMasks[m]);
+                }
+            }
+            
+            //jdm 1/3/14: set the default forest mask
+            if ($.isEmptyObject(options)) {
+				for (var n = 0; n < app.defaultMasks.length; n++) {
+					this.setMask(true, app.defaultMasks[n]);
+				}
+			}
+			
+			//if zoom parameter on theme to to that extent
+            if (theme.zoom) {
+				var zoomExtent = { 
+					left : theme.xmin, 
+					bottom : theme.ymin, 
+					right : theme.xmax, 
+					top : theme.ymax };
+				app.zoomToExtent(zoomExtent);			
+			}   
+            
+            if (!accordionGroup) {
+                // if we get to this point and don't have an accordion group to open,
+                // default to the first one
+                accordionGroup = theme.accordionGroups[0];
+            }            
+         } //end setThemeContinue
+        
+        
         this.setTheme = function (theme, options) {
 			
             var app = this,
@@ -464,8 +506,11 @@
 				app.addAccordionSublists(g, sublistItems) 
                 if (++a < theme.accordionGroups.length) { 
                     ro1.step(); 
-                }            
-            }, theme.accordionGroups.length+1);
+                }
+                else {
+                    app.setThemeContinue(theme, options, accordionGroup);
+                }
+            }, 5);
             ro1.step();             
             // } //end loop for theme.accordionGroups
 
@@ -475,44 +520,6 @@
             if (flag === true) {
                 $("#layerPickerDialog").append($layerPickerAccordion);
             }
-
-            if (!accordionGroup) {
-                // if we get to this point and don't have an accordion group to open,
-                // default to the first one
-                accordionGroup = theme.accordionGroups[0];
-            }
-            app.currentTheme = theme;
-            app.setAccordionGroup(accordionGroup);
-            $('#layerPickerDialog').scrollTop(0);
-            $('#mapToolsDialog').scrollTop(0);
-            app.emit("themechange");
-
-            //jdm 6/28/13: do a check to see if there is a corresponding active mask in options.shareUrlMasks
-            //can be multiple mask per a parent layer
-            if (options.shareUrlMasks !== undefined) {
-                for (var m = 0; m < options.shareUrlMasks.length; m++) {
-                    //we have already activated the respective parent layers
-                    //so so we have to go through the masking process
-                    this.setMask(true, "MaskFor"+options.shareUrlMasks[m]);
-                }
-            }
-            
-            //jdm 1/3/14: set the default forest mask
-            if ($.isEmptyObject(options)) {
-				for (var n = 0; n < app.defaultMasks.length; n++) {
-					this.setMask(true, app.defaultMasks[n]);
-				}
-			}
-			
-			//if zoom parameter on theme to to that extent
-            if (theme.zoom) {
-				var zoomExtent = { 
-					left : theme.xmin, 
-					bottom : theme.ymin, 
-					right : theme.xmax, 
-					top : theme.ymax };
-				app.zoomToExtent(zoomExtent);			
-			}
         }; //end setTheme
 
         this.shareUrl = function () {
@@ -914,7 +921,6 @@
 										if ($("#"+maskName.replace("MaskFor","")).get(0)) {
 											$("#"+maskName.replace("MaskFor","")).get(0).checked = true;
 										}
-										break;
 									}
 									else { 
 										//if the parent layer checkbox and mask-toggle are not active make it so
