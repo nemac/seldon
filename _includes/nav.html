@@ -1,0 +1,42 @@
+    <div class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a href="/"><span class="navbar-brand"><i class="icon-layers"></i> Seldon</span></a>
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+        </div>
+        <div class="navbar-collapse collapse" id="navbar-main">
+          <ul class="nav navbar-nav">
+            <li{% if page.about == "selected" %} class="active"{% endif %}>
+                <a href="{{ site.baseurl }}/">About</a>
+            </li>
+            <li{% if page.features == "selected" %} class="active"{% endif %}>
+                <a href="{{ site.baseurl }}/features">Features</a>
+            </li>
+            <li{% if page.docs == "selected" %} class="active"{% endif %}>
+                <a href="{{ site.baseurl }}/docs">Documentation</a>
+            </li>
+            <li{% if page.examples == "selected" %} class="active"{% endif %}>
+                <a href="{{ site.baseurl }}/examples">Examples</a>
+            </li>
+            <li class="dropdown{% if page.other == "selected" %} active{% endif %}">
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="download">Other <span class="caret"></span></a>
+              <ul class="dropdown-menu" aria-labelledby="download">
+                <li{% if page.credits == "selected" %} class="active"{% endif %}><a href="{{ site.baseurl }}/credits">Credits</a></li>
+                <li{% if page.license == "selected" %} class="active"{% endif %}><a href="{{ site.baseurl }}/docs/license.html">License</a></li>
+              </ul>
+            </li>
+          </ul>
+
+          <ul class="nav navbar-nav navbar-right">
+            <li{% if page.purchase == "selected" %} class="active"{% endif %}>
+                <a href="{{ site.baseurl }}/purchase">Purchase</a>
+            </li>
+          </ul>
+
+        </div>
+      </div>
+    </div>

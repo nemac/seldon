@@ -1,0 +1,229 @@
+/*
+ * This file overrides several Bootstrap's styles
+ * or provides custom ones for various pages.
+ * Use this file. DO NOT EDIT the bootstrap files!
+ */
+
+
+/* HOME PAGE */
+.jumbotron {
+    padding-top: 25px;
+    padding-bottom: 25px;
+    background: transparent; /*#fafafa*/
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(204, 204, 204, 0.54);
+    text-shadow: 1px 1px rgba(204, 204, 204, 0.6);
+}
+.jumbotron:before {
+    content: "";
+    position: absolute;
+    width: 1600px;
+    height: 1600px;
+    left: -445px;
+    top: -630px;
+    opacity: 0.8;
+    z-index: -1;
+    background: url("../images/jumbotron-map.jpg") 0 0 repeat;
+    -webkit-animation:spin 900s linear infinite;
+    -moz-animation:spin 900s linear infinite;
+    animation:spin 900s linear infinite;
+}
+.jumbotron:hover:before {
+    opacity: 1.0;
+}
+.jumbotron:hover {
+    text-shadow: 1px 1px rgba(204, 204, 204, 0.6);
+}
+@-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
+@-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
+@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+.jumbotron p.lead {
+    text-indent: 0.5cm;
+}
+.row h1, .row h2, .row p {
+    text-align: center;
+}
+.list-group {
+    width: 50%;;
+    float: left;
+    padding: 0 2px 0 2px;
+}
+.panning:hover {
+    color: #d12913;
+}
+.zooming:hover {
+    color: #0a82d1;
+}
+.integrating:hover {
+    color: #8d07e0;
+}
+p.get-started {
+    text-align: center;
+    background: #f8f8f8;
+    border: 1px #e2e2e2 dashed;
+    padding: 5px;
+}
+.fa-github-square {
+    font-size: 15pt;
+}
+.fa-download {
+    font-size: 10pt;
+    padding-right: 1px;
+}
+
+
+/* UNIVERSAL STYLES */
+.content {
+    margin-top: 75px;
+    color: #323e52;
+}
+.navbar {
+    background-color: #5797dd;
+}
+.navbar-default .navbar-nav .active a, .navbar-default .navbar-nav .active a:hover, .navbar-default .navbar-nav li a:hover, .navbar-default .navbar-nav .open a:focus {
+    background-color: #21486b;
+}
+.navbar-default .dropdown-menu {
+    background-color: #62a4eb;
+}
+.lead {
+    color: rgba(97, 98, 111, 0.85);
+}
+footer {
+    padding-top: 30px;
+    text-align: center;
+    font-size: 8pt;
+    color: #bebcbc;
+    clear: both;
+}
+footer a.icon {
+    color: #dedede;
+}
+footer a:hover.icon {
+    color: #0a82d1;
+}
+footer a:active.icon {
+    color: #056aad;
+}
+footer a {
+    color: #bebcbc;
+}
+footer a:hover {
+    color: #919293;
+    text-decoration: none;
+}
+footer a:active {
+    color: #6d6d6d;
+}
+footer abbr[title] {
+    border-bottom-width: 0;
+}
+pre.prettyprint {
+    padding: 10px;
+    border: 1px solid #cccccc;
+}
+
+
+/* CREDITS PAGE */
+.credit-logo  {
+    padding-right: 15px;
+    padding-left: 15px;
+    float: left;
+}
+
+
+/* DOWNLOAD PAGE */
+table.release-table {
+    margin-left: 10px;
+    width: auto;
+    border-collapse: collapse;
+}
+table.release-table td, table.release-table th {
+    padding: 6px 10px 6px 10px;
+    border: 1px solid gray;
+}
+table.release-table td.notes {
+    text-align: center;
+}
+table.release-table tr:nth-of-type(even) {
+    background: #ededed;
+}
+
+
+/* EXAMPLES PAGE */
+.example-nav {
+    font-size: 9pt;
+    float: left;
+    width: 20%;
+}
+.example-nav li.active a {
+    color: #000;
+    font-weight: bold;
+}
+.example-content {
+    font-size: 9pt;
+    text-align: center;
+}
+.example-content .multigraph {
+    width: 80%;
+    height: 400px;
+    float: left;
+}
+.example-download {
+    float: left;
+}
+.example-open {
+    float: right;
+}
+pre.example {
+    overflow: auto;
+    width: 80%;
+    height: 500px;
+    text-align: left;
+}
+h3.example-title {
+    text-align: center;
+}
+
+
+/* Elements to change when user is on smartphone */
+@media (max-width: 768px) {
+    .content {
+        margin-top: 60px;
+    }
+    .example-nav {
+        display: none;
+    }
+    .example-intro-text {
+        display: none;
+    }
+    .example-content .multigraph {
+        width: 100%;
+    }
+    pre.example {
+        width: 100%;
+        height: 300px;
+        font-size: 9pt;
+    }
+    .btn, button {
+        padding: 8px;
+    }
+    .dropdown-menu li a {
+        padding: 8px;
+    }
+    .dropdown-menu li.active a {
+        font-weight: bold;
+        background-color: inherit;
+    }
+    .credit-logo {
+        display: none;
+    }
+}
+
+/* Elements to change or disappear when NOT on smartphone */
+@media (min-width: 768px) {
+    .example-mobile-nav {
+        display: none;
+    }
+}
