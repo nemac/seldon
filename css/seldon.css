@@ -81,11 +81,17 @@ p.get-started {
 .navbar {
     background-color: #5797dd;
 }
+.navbar-default .navbar-collapse {
+    border-color: #21486b;
+}
 .navbar-default .navbar-nav .active a, .navbar-default .navbar-nav .active a:hover, .navbar-default .navbar-nav li a:hover, .navbar-default .navbar-nav .open a:focus {
     background-color: #21486b;
 }
 .navbar-default .dropdown-menu {
     background-color: #62a4eb;
+}
+.navbar-default .navbar-nav .open a, .navbar-default .navbar-nav .open a:focus {
+    background-color: #21486b;
 }
 .lead {
     color: rgba(97, 98, 111, 0.85);
