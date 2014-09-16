@@ -1432,14 +1432,13 @@
 			//reorder maps layers based on the current layer index
 			//jdm 9/23: this needs to be revisited to deal with masking
 			if (app.map.getNumLayers()>1) {
-			var lyrJustAdded = app.map.layers[app.map.getNumLayers()-1];
-				for (var i = app.map.getNumLayers()-2; i > 0; i--) {
-					var nextLayerDown = app.map.layers[i];
-					if (nextLayerDown.seldonLayer.index < lyrJustAdded.seldonLayer.index) {
-						//move lyrJustAdded up one in the OL stack
-						app.map.setLayerIndex(lyrJustAdded, i);
+				var lyrJustAdded = app.map.layers[app.map.getNumLayers()-1];
+					for (var i = app.map.getNumLayers()-2; i > 0; i--) {
+						var nextLayerDown = app.map.layers[i];
+						if (nextLayerDown.url.indexOf("vlayers")>-1) {
+							app.map.setLayerIndex(nextLayerDown, app.map.layers.length-1);
+						}
 					}
-				}
 			}
 			app.updateShareMapUrl();
 			app.map.updateSize();
