@@ -965,6 +965,7 @@
             for (var i = app.map.getNumLayers()-1; i > 0; i--) {
                 var currLayer = app.map.layers[i];
                 if (currLayer.seldonLayer.mask) {
+                    currLayer.loadingimage.remove();
                     //roll back to parent layer only if there are no other mask
                     //currently active for the parent layer
                     if (maskLayerName == currLayer.name.substring(currLayer.name.indexOf("MaskFor"),currLayer.name.length)) {
@@ -1017,6 +1018,7 @@
             for (var i = app.map.getNumLayers()-1; i > 0; i--) {
                 var currLayer = app.map.layers[i];
                 if (currLayer.seldonLayer.mask) {
+                    currLayer.loadingimage.remove();
                     if (lid == currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))) {
                         this.map.layers[i].seldonLayer.removeFromLegend();
                         this.map.removeLayer(app.map.layers[i]);
@@ -1384,6 +1386,16 @@
                                          },
                                          options
                                         );
+            var loadingimage = $('<img class="layer-loader-image" src="icons/ajax-loader.gif"/>');
+            $("#map").append(loadingimage);
+            this.openLayersLayer.loadingimage = loadingimage;
+
+            this.openLayersLayer.events.register("loadstart", this.openLayersLayer, function () {
+                loadingimage.addClass("loading");
+            });
+            this.openLayersLayer.events.register("loadend", this.openLayersLayer, function () {
+                loadingimage.removeClass("loading");
+            });
             this.openLayersLayer.setOpacity(1-parseFloat(this.transparency)/100.0);
             this.openLayersLayer.seldonLayer = this;
             return this.openLayersLayer;
@@ -1474,6 +1486,7 @@
                     }
                 }
                 this.removeFromLegend();
+                this.openLayersLayer.loadingimage.remove();
             }
             this.emit("deactivate");
         };

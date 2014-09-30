@@ -137,6 +137,20 @@ Map Styles
     padding-bottom: 23px !important;
 }
 
+.layer-loader-image {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -25px;
+    margin-left: -25px;
+    display: none;
+    z-index: 1000;
+}
+
+.layer-loader-image.loading {
+    display: block;
+}
+
 /*
 Footer Styles
 */
