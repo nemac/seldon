@@ -528,8 +528,6 @@
             $.each(this.map.layers, function () {
                 var op;
                 if (! this.isBaseLayer) {
-                    var lid = this.seldonLayer.lid,
-                        name = this.name;
                     if (this.opacity === 1) {
                         op = "1";
                     } else if (this.opacity === 0) {
@@ -537,24 +535,21 @@
                     } else {
                         op = sprintf("%.2f", this.opacity);
                     }
-                    if (stringContainsChar(name, 'MaskFor')) {
-                        var trimLid = lid.substring(lid.indexOf("MaskFor"), lid.length).replace("MaskFor",""),
-                            trimName = name.substring(0, name.indexOf("MaskFor"));
-
+                    if (stringContainsChar(this.name, 'MaskFor')) {
                         //if this layer is a mask add to layerMask list
-                        if (layerMask.indexOf(trimLid) == -1) {
-                            layerMask.push(trimLid);
+                        if (layerMask.indexOf(this.seldonLayer.lid.substring(this.seldonLayer.lid.indexOf("MaskFor"),this.seldonLayer.lid.length).replace("MaskFor","")) == -1) {
+                            layerMask.push(this.seldonLayer.lid.substring(this.seldonLayer.lid.indexOf("MaskFor"),this.seldonLayer.lid.length).replace("MaskFor",""));
                         }
                         //make sure the parent to the layerMask stays on the share map url
-                        if (layerLids.indexOf(trimName) == -1) {
-                            layerLids.push(trimName);
+                        if (layerLids.indexOf(this.name.substring(0, this.name.indexOf("MaskFor"))) == -1) {
+                            layerLids.push(this.name.substring(0, this.name.indexOf("MaskFor")));
                             layerAlphas.push(op);
                         }
                         var test = "";
                     } else { 
                         //otherwise add to layerLids
                         if (this.seldonLayer) {
-                            layerLids.push(lid);
+                            layerLids.push(this.seldonLayer.lid);
                             layerAlphas.push(op);
                         }
                     } //end
@@ -1540,12 +1535,11 @@
             //Still need to make this parent-layer specific
             if (app.map != undefined) {			
                 for (var i = app.map.getNumLayers()-2; i > 0; i--) {
-                    var currentLayer = app.map.layers[i],
-                    seldonLayer = currentLayer.seldonLayer;
+                    var currentLayer = app.map.layers[i];
                     if (stringContainsChar(currentLayer.name, 'Mask')) {
-                        if ((seldonLayer.openLayersLayer) && (seldonLayer.lid.substring(0, seldonLayer.lid.indexOf("MaskFor")) == this.lid)){
-                            seldonLayer.openLayersLayer.setOpacity(1-parseFloat(transparency)/100.0);
-                            seldonLayer.transparency = transparency;
+                        if ((currentLayer.seldonLayer.openLayersLayer) && (currentLayer.seldonLayer.lid.substring(0, currentLayer.seldonLayer.lid.indexOf("MaskFor")) == this.lid)){
+                            currentLayer.seldonLayer.openLayersLayer.setOpacity(1-parseFloat(transparency)/100.0);
+                            currentLayer.seldonLayer.transparency = transparency;
                         }
                     }
                 }
