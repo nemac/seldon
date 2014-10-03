@@ -960,7 +960,11 @@
             for (var i = app.map.getNumLayers()-1; i > 0; i--) {
                 var currLayer = app.map.layers[i];
                 if (currLayer.seldonLayer.mask) {
+                    /**
+                     * TODO: Add this code block back in once layer confusion has been addressed
+                     *
                     currLayer.loadingimage.remove();
+                    */
                     //roll back to parent layer only if there are no other mask
                     //currently active for the parent layer
                     if (maskLayerName == currLayer.name.substring(currLayer.name.indexOf("MaskFor"),currLayer.name.length)) {
@@ -1013,7 +1017,11 @@
             for (var i = app.map.getNumLayers()-1; i > 0; i--) {
                 var currLayer = app.map.layers[i];
                 if (currLayer.seldonLayer.mask) {
+                    /**
+                     * TODO: Add this code block back in once layer confusion has been addressed
+                     *
                     currLayer.loadingimage.remove();
+                    */
                     if (lid == currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))) {
                         this.map.layers[i].seldonLayer.removeFromLegend();
                         this.map.removeLayer(app.map.layers[i]);
@@ -1381,16 +1389,20 @@
                                          },
                                          options
                                         );
-            var loadingimage = $('<img class="layer-loader-image" src="icons/ajax-loader.gif"/>');
+            /**
+             * TODO: Add this code block back in once layer confusion has been addressed
+             *
+            var loadingimage = $('<img class="layer-loader-image ' + this.name + '" src="icons/ajax-loader.gif"/>');
             $("#map").append(loadingimage);
             this.openLayersLayer.loadingimage = loadingimage;
 
             this.openLayersLayer.events.register("loadstart", this.openLayersLayer, function () {
-                loadingimage.addClass("loading");
+                this.loadingimage.addClass("loading");
             });
             this.openLayersLayer.events.register("loadend", this.openLayersLayer, function () {
-                loadingimage.removeClass("loading");
+                this.loadingimage.removeClass("loading");
             });
+            */
             this.openLayersLayer.setOpacity(1-parseFloat(this.transparency)/100.0);
             this.openLayersLayer.seldonLayer = this;
             return this.openLayersLayer;
@@ -1481,7 +1493,11 @@
                     }
                 }
                 this.removeFromLegend();
+                /**
+                 * TODO: Add this code block back in once layer confusion has been addressed
+                 *
                 this.openLayersLayer.loadingimage.remove();
+                */
             }
             this.emit("deactivate");
         };
@@ -2359,21 +2375,26 @@
                 var lonlat = app.map.getLonLatFromPixel(e.xy);
                 lonlat.transform(app.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
 
-				var styleMap = new OpenLayers.StyleMap({pointRadius: 4, 
-					fillColor: "yellow", 
-					fillOpacity: 0.75,});				
+                var styleMap = new OpenLayers.StyleMap({pointRadius: 4, 
+                                                        fillColor: "yellow", 
+                                                        fillOpacity: 0.75,});				
 				
-				var markerLayer = new OpenLayers.Layer.Vector("markerLayer", 
-					{styleMap: styleMap});
-				var feature = new OpenLayers.Feature.Vector(
-				 new OpenLayers.Geometry.Point(coords.lon, coords.lat),
-					{some:'data'});
-				markerLayer.addFeatures(feature);
-				app.map.addLayer(markerLayer);
-				
+                var markerLayer = new OpenLayers.Layer.Vector("markerLayer", 
+                                                              {styleMap: styleMap});
+                var feature = new OpenLayers.Feature.Vector(
+                                                            new OpenLayers.Geometry.Point(coords.lon, coords.lat),
+                                                            {some:'data'});
+                markerLayer.addFeatures(feature);
+                app.map.addLayer(markerLayer);
+
                 var popup = $(document.createElement('div'));
                 popup.id = "#seldonMultigraphMessageDiv"+seldon.graphCount+"";
-                popup.html('<div class="multigraphLoader"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="seldonMultigraph'+seldon.graphCount+'" style="width: 600px; height: 300px;" ></div>');
+
+                if (!window.multigraph.core.browserHasCanvasSupport() && !window.multigraph.core.browserHasSVGSupport()) {
+                    popup.html('<div id="seldonMultigraph'+seldon.graphCount+'" style="width: 600px; height: 300px;" ></div>');
+                } else {
+                    popup.html('<div class="multigraphLoader"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="seldonMultigraph'+seldon.graphCount+'" style="width: 600px; height: 300px;" ></div>');
+                }
                 popup.dialog({
                     width     : 600,
                     resizable : false,
