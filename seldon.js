@@ -892,9 +892,23 @@
                     (app.activeMaskParents.length < 20)) {
                     //Add the mask to the activeMask list so that we can keep track
                     //at the app level by loop through each currently active layer
+                    var lastLID = undefined;
+                    var currentLID = undefined;
                     for (var i = app.map.getNumLayers()-1; i > 0; i--) {
                         var currLayer = app.map.layers[i];
-                        if (currLayer.seldonLayer.mask) {
+                        if (currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("Mask"))=="") {
+                            currentLID = currLayer.seldonLayer.lid;
+                        }
+                        else {
+                            currentLID = currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("Mask"))
+                        }
+                        if ((currLayer.seldonLayer.mask) &&  (lastLID != currentLID)){
+                            if (currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("Mask"))=="") {
+                                lastLID = currLayer.seldonLayer.lid;
+                            }
+                            else {
+                                lastLID = currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("Mask"))
+                            }
                             //need to only add one lid to activeMaskParents but be able to
                             //handle the case in deactivateMask where there are multiple mask on
                             //and how to wait until the last mask is off to re-activate the parent.
@@ -920,7 +934,7 @@
                                             $("#"+maskName.replace("MaskFor","")).get(0).checked = true;
                                         }
                                         //Be sure to update active mask parents
-                                        this.activeMaskParents.push(currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("MaskFor")));
+                                        // this.activeMaskParents.push(currLayer.seldonLayer.lid.substring(0,currLayer.seldonLayer.lid.indexOf("MaskFor")));
                                     }
                                 } else { //condition: First of a mask for parent layer
                                     if (this.activeMask.indexOf(maskName.replace("MaskFor","")) == -1) {
@@ -942,7 +956,7 @@
                     alert("Maskable layer limit!  Please deactivate some mask, \nor reduce the number of layers you have active");
                     $("#"+maskName.replace("MaskFor","")).get(0).checked = false;
                 }
-            }
+            } //end if (toggle)
             else { //we have just turned off a mask
                 //alert("turned off a mask "+ maskName);
                 app.deactivateMask(maskName); //deactivate mask at the app level
