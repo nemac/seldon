@@ -464,6 +464,11 @@
                 if (++a < theme.accordionGroups.length) {
                     ro1.step();
                 } else {
+                    //jdm 10/21/14: If the accordionGroup is not currently set,
+                    //go ahead and assign it to the current accordion group
+                    if (accordionGroup === undefined) {
+                        accordionGroup = accGp.gid
+                    }                
                     app.setThemeContinue(theme, options, accordionGroup);
                 }
             }, 5);
