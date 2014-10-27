@@ -633,6 +633,7 @@
             app.addListener("extentchange", function () {
                 app.saveCurrentExtent();
                 app.updateShareMapUrl();
+                app.map.setOptions({maxExtent: app.map.getExtent()});
             });
 
             //
