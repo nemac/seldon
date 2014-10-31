@@ -1423,15 +1423,27 @@
                     }
                 }
             }
-            //reorder maps layers based on the current layer index
-            //jdm 9/23: this needs to be revisited to deal with masking
+            //View order rules of the house
+            //1. Vector layers (vlayers) always on top
+            //2. otherwise things go by seldon layer index.
             if (app.map.getNumLayers()>1) {
                 var lyrJustAdded = app.map.layers[app.map.getNumLayers()-1];
-                for (var i = app.map.getNumLayers()-2; i > 0; i--) {
-                    var nextLayerDown = app.map.layers[i];
-                    if (nextLayerDown.url.indexOf("vlayers") > -1) {
-                        app.map.setLayerIndex(nextLayerDown, app.map.layers.length-1);
+                if (lyrJustAdded.url.indexOf("vlayers") == -1) {
+                    for (var i = app.map.getNumLayers()-2; i > 0; i--) {
+                        var nextLayerDown = app.map.layers[i];
+                        if (nextLayerDown.url.indexOf("vlayers") == -1) {
+                            if (nextLayerDown.seldonLayer.index < lyrJustAdded.seldonLayer.index) {
+                                //lyrJustAdded view index get nextLayerDown's view index what ever that is
+                                app.map.setLayerIndex(lyrJustAdded, i);
+                            }
+                        }
+                        else {
+                            app.map.setLayerIndex(lyrJustAdded, i);
+                        }
                     }
+                }
+                else {
+                    app.map.setLayerIndex(lyrJustAdded, app.map.layers.length-1);
                 }
             }
             app.updateShareMapUrl();
