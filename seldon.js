@@ -965,7 +965,7 @@
                                     name             : currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))+"MaskParent",
                                     mask             : 'true',
                                     legend           : currLayer.seldonLayer.legend, 
-                                    index      	     : app.map.getNumLayers()+1
+                                    index      	     : currLayer.seldonLayer.index
                             });
                             $('#lgd'+currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))).remove();
                             app.map.removeLayer(app.map.layers[i]);
@@ -1423,7 +1423,7 @@
                     }
                 }
             }
-            //View order rules of the house
+            //View order rules:
             //1. Vector layers (vlayers) always on top
             //2. otherwise things go by seldon layer index.
             if (app.map.getNumLayers()>1) {
@@ -1433,12 +1433,11 @@
                         var nextLayerDown = app.map.layers[i];
                         if (nextLayerDown.url.indexOf("vlayers") == -1) {
                             if (nextLayerDown.seldonLayer.index < lyrJustAdded.seldonLayer.index) {
-                                //lyrJustAdded view index get nextLayerDown's view index what ever that is
                                 app.map.setLayerIndex(lyrJustAdded, i);
                             }
                         }
                         else {
-                            app.map.setLayerIndex(lyrJustAdded, i);
+                            app.map.setLayerIndex(nextLayerDown, app.map.layers.length-1);
                         }
                     }
                 }
