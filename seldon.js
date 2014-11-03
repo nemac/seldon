@@ -1240,8 +1240,17 @@
 
             var maxExtentBounds = new OpenLayers.Bounds(app.maxExtent.left, app.maxExtent.bottom,
                                                         app.maxExtent.right, app.maxExtent.top);
+            // console.log(maxExtentBounds);
+            // console.log(initialExtent);
+            
             if (initialExtent === undefined) {
+                //take the extent coming from the config file
                 initialExtent = app.maxExtent;
+            }
+            else {
+                //take the extent of the share map url
+                maxExtentBounds = new OpenLayers.Bounds(initialExtent.left, initialExtent.bottom,
+                                                        initialExtent.right, initialExtent.top);
             }
 
             app.tileManager = new OpenLayers.TileManager({
