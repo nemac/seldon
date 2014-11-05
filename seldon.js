@@ -344,6 +344,7 @@
             //vintage-IE does work with jquery each loops, but seems to be slower
             // for (var a = 0, b = theme.accordionGroups.length; a < b; a++) {
             var a = 0;
+            var defaultAccordionGroup = undefined;
             var ro1 = new RepeatingOperation(function () {
                 var accGp = theme.accordionGroups[a],
                     accordionGroupOption = options.accordionGroup;
@@ -423,6 +424,7 @@
 								// radiobutton and therefore the dropdownbox needs to know about its corresponding radiobutton group
 								if (((selectBoxLayers.length+1)<sublist.layers.length) || (selectBoxLayers.length == undefined)){
 									selectBoxLayers.push(layer);
+                                    app.dropdownBoxLayers.push(layer);									
 								}
 								else {
 									selectBoxLayers.push(layer);
@@ -468,7 +470,8 @@
                     //go ahead and assign it to the current accordion group
                     if (accordionGroup === undefined) {
                         accordionGroup = accGp.gid
-                    }                
+                    }
+                    defaultAccordionGroup = accordionGroup;
                     app.setThemeContinue(theme, options, accordionGroup);
                 }
             }, 5);
@@ -476,11 +479,11 @@
             // } //end loop for theme.accordionGroups
 
             $layerPickerAccordion.accordion("refresh");
-
             // if page doesn't have layerPickerAccordion, insert it
             if (flag === true) {
                 $("#layerPickerDialog").append($layerPickerAccordion);
             }
+            return defaultAccordionGroup;
         }; //end setTheme
 
         this.shareUrl = function () {
@@ -1294,7 +1297,8 @@
             this.map.addControl(new OpenLayers.Control.ScaleLine({bottomOutUnits: 'mi'}));
             this.map.addLayers([layer]);
             this.map.setLayerIndex(layer, 0);
-            this.setTheme(theme, themeOptions);
+            // this.setTheme(theme, themeOptions);
+            app.setAccordionGroup(this.setTheme(theme, themeOptions));
             this.zoomToExtent(initialExtent);
             this.map.events.register("mousemove", app.map, function (e) {
                 var pixel = app.map.events.getMousePosition(e);
@@ -1821,7 +1825,25 @@
             });
     };
 
-	function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
+	function getActiveDropdownBoxRadioLID () {
+        var wanted_lid = undefined;
+        var selectLayer = undefined;
+        for (var i = 0; i < app.dropdownBoxList[0].length; i++) {
+            if (app.dropdownBoxList[0][i].selected) {
+                selectLayer = app.dropdownBoxLayers[app.dropdownBoxList[0].selectedIndex];
+                wanted_lid = selectLayer.lid;
+            }
+        }
+        for (var i = 0; i < app.radioButtonList.length; i++) {
+            if (app.radioButtonList[i].checked) {
+                wanted_lid = app.radioButtonLayers[i].lid+wanted_lid;
+            }
+        }
+        return wanted_lid;
+    };
+    
+    
+    function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
 		var selectBox = document.createElement("select"),$selectBox;
 		selectBox.setAttribute("id", selectBoxGroupName);
 		var options = [];
@@ -1847,46 +1869,66 @@
 		$selectBox = $(selectBox);
 		//Change event listener
 		$selectBox.change(function() {
-			var selectID = selectBoxGroupName;
-			var selectLayer = lastLayerInGroup;
-            //Loop through other radio buttons and find currently active one
-			//along with its associated layer.
-			var wanted_layer = undefined;
-			var wanted_lid = undefined;
-			for (var i = 0; i < app.radioButtonList.length; i++) {
-				if (app.radioButtonList[i].checked) {
-					for (var j = 0; j < app.radioButtonLayers.length; j++) {
-						if(app.radioButtonLayers[j].lid == app.radioButtonList[i].id.replace("rdo","")) {
-							wanted_layer = (+app.radioButtonLayers[j].layers) + (+selectLayer.layers)
-							wanted_lid = app.radioButtonList[i].id
-						}				
-					}
-				}
-			}			
-			var selectBoxLayer = new Layer({
-				lid              : wanted_lid,
-				visible          : selectLayer.visible,
-				url              : selectLayer.url,
-				srs              : selectLayer.srs,
-				layers           : wanted_layer,
-				identify         : selectLayer.identify,
-				name             : wanted_lid,
-				mask             : selectLayer.mask,
-				legend           : selectLayer.legend, 
-				index			 : selectLayer.index
-			});
-			selectBoxLayer.activate(true);
+            var wanted_layer = undefined;
+            var wanted_lid = undefined;
+            var selectLayer = undefined;
+            // var selectedDropDownBoxIndex = app.dropdownBoxList[0].selectedIndex
+            for (var i = 0; i < app.dropdownBoxList[0].length; i++) {
+                if (app.dropdownBoxList[0][i].selected) {
+                    if (app.dropdownBoxList[0][i].innerHTML=="select...") {
+                        alert("Please make a selection from the appropriate dropdown list");
+                        break;
+                    }
+                    selectLayer = app.dropdownBoxLayers[app.dropdownBoxList[0].selectedIndex];
+                    wanted_lid = selectLayer.lid;
+                }
+            }
+            for (var i = 0; i < app.radioButtonList.length; i++) {
+                if (app.radioButtonList[i].checked) {
+                    wanted_layer = parseInt(selectLayer.layers)+parseInt(app.radioButtonLayers[i].layers);
+                    wanted_lid = app.radioButtonLayers[i].lid+wanted_lid;
+                }
+            }                    
+            if (selectLayer!=undefined) {
+                var checkBoxLayer = new Layer({
+                    lid              : wanted_lid,
+                    visible          : selectLayer.visible,
+                    url              : selectLayer.url,
+                    srs              : selectLayer.srs,
+                    layers           : wanted_layer,
+                    identify         : selectLayer.identify,
+                    name             : wanted_lid,
+                    mask             : selectLayer.mask,
+                    legend           : selectLayer.legend, 
+                    index			 : selectLayer.index
+                });
+                checkBoxLayer.activate(true);  
+            }
+            //Clear out any previously active layers, not needed any more
+            for (var i = app.map.getNumLayers()-1; i > 0; i--) {
+                    var currLayer = app.map.layers[i];
+                    //Outer loop radio buttons
+                    for (var j = 0; j < app.radioButtonLayers.length; j++) {
+                        //Inner loop drop-down list
+                        for (var k = 0; k < app.dropdownBoxLayers.length; k++) {
+                            // console.log(app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid);
+                            if ((currLayer.seldonLayer.lid==app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid) &&
+                                (app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid!==getActiveDropdownBoxRadioLID()))
+                                currLayer.seldonLayer.deactivate(true);
+                        }                                
+                    }                            
+            }            
 		});		
 		return selectBox;
 	}
 	
     function createLayerToggleRadioButton (layer, radioGroupName) {
-        // create the checkbox
+        // create the radio buttons
         var checkbox = document.createElement("input"),
             $checkbox;
         checkbox.type = "radio";
         checkbox.name = radioGroupName;
-        checkbox.id = "rdo" + layer.lid;
+        checkbox.id = layer.lid;
         if (layer.selectedInConfig) {
             checkbox.checked = true;
         }
@@ -1894,20 +1936,54 @@
             //Loop through other radio buttons and deactivate those layers accordingly.
 			$('input:radio').each(function() {
 			    if($(this).is(':checked')) {
-					// You have a checked radio button here...
-					// To-do: loop through the relative select box
-					// and activate appropriate layer
-                    var test = this;
+                    var wanted_layer = undefined;
+                    var wanted_lid = undefined;
+                    var selectLayer = undefined;
+                    for (var i = 0; i < app.dropdownBoxList[0].length; i++) {
+                        if (app.dropdownBoxList[0][i].selected) {
+                            if (app.dropdownBoxList[0][i].innerHTML=="select...") {
+                                alert("Please make a selection from the appropriate dropdown list");
+                                break;
+                            }
+                            selectLayer = app.dropdownBoxLayers[app.dropdownBoxList[0].selectedIndex];
+                            wanted_lid = selectLayer.lid;
+                        }
+                    }
+                    for (var i = 0; i < app.radioButtonList.length; i++) {
+                        if (app.radioButtonList[i].checked) {
+                            wanted_layer = parseInt(selectLayer.layers)+parseInt(app.radioButtonLayers[i].layers);
+                            wanted_lid = app.radioButtonLayers[i].lid+wanted_lid;
+                        }
+                    }                    
+                    if (selectLayer!=undefined) {
+                        var checkBoxLayer = new Layer({
+                            lid              : wanted_lid,
+                            visible          : selectLayer.visible,
+                            url              : selectLayer.url,
+                            srs              : selectLayer.srs,
+                            layers           : wanted_layer,
+                            identify         : selectLayer.identify,
+                            name             : wanted_lid,
+                            mask             : selectLayer.mask,
+                            legend           : selectLayer.legend, 
+                            index			 : selectLayer.index
+                        });
+                        checkBoxLayer.activate(true);  
+                    }
                 } 
 				else {
-					// Or an unchecked one here
-					// Need to know the previously active radio button
-					// loop through the layers deactivate accordingly
 					for (var i = app.map.getNumLayers()-1; i > 0; i--) {
 							var currLayer = app.map.layers[i];
-							if (this.id==currLayer.seldonLayer.lid) {
-								currLayer.seldonLayer.deactivate(true);
-							}
+							//Outer loop radio buttons
+                            for (var j = 0; j < app.radioButtonLayers.length; j++) {
+                                //Inner loop drop-down list
+                                for (var k = 0; k < app.dropdownBoxLayers.length; k++) {
+                                    // console.log(app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid);
+                                    if ((currLayer.seldonLayer.lid==app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid) &&
+                                        (app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid!==getActiveDropdownBoxRadioLID()))
+                                        currLayer.seldonLayer.deactivate(true);
+                                }                                
+                            }                            
 					}
 				}	
 			});
