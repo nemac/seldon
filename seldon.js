@@ -1849,7 +1849,8 @@
 		var options = [];
 		//Loop through selectBoxLayers adding to options accordingly
 		for (var i = 0; i < selectBoxLayers.length; i++) {
-			options.push(selectBoxLayers[i].layers+":"+selectBoxLayers[i].name);
+			// options.push(selectBoxLayers[i].layers+":"+selectBoxLayers[i].name);
+            options.push(selectBoxLayers[i].name);
 		}
 		//Loop through options adding to the selectBox
 		for(var x in options) {
