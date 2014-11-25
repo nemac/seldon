@@ -982,8 +982,25 @@
                             for (var i = app.map.getNumLayers()-1; i > 0; i--) {
                                 var currLayer = app.map.layers[i];
                                 if (currLayer.name.indexOf(maskLayerName) > -1) {
-                                    app.map.removeLayer(currLayer.seldonLayer.openLayersLayer);
+                                    var parentLayer = new Layer({
+                                            lid              : currLayer.name.substring(0,currLayer.name.indexOf("MaskFor")),
+                                            visible          : currLayer.seldonLayer.visible,
+                                            url              : currLayer.seldonLayer.url,
+                                            srs              : currLayer.seldonLayer.srs,
+                                            layers           : currLayer.seldonLayer.layers.substring(0,currLayer.seldonLayer.layers.indexOf("MaskFor")),
+                                            identify         : currLayer.seldonLayer.identify,
+                                            name             : currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))+"MaskParent",
+                                            mask             : 'true',
+                                            legend           : currLayer.seldonLayer.legend, 
+                                            index      	     : currLayer.seldonLayer.index
+                                    });
+                                    $('#lgd'+currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))).remove();
+                                    app.map.removeLayer(app.map.layers[i]);
+                                    removeFromArrayByVal(app.activeMask,maskLayerName.replace("MaskFor",""));
                                     app.activeMaskParents.splice(app.activeMaskParents.indexOf(currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))), 1);
+                                    $('#mask-status'+ currLayer.name.substring(0,currLayer.name.indexOf("MaskFor"))).text("");
+                                    parentLayer.activate();
+                                    app.updateShareMapUrl();
                                 }
                             }
                             removeFromArrayByVal(app.activeMask,maskLayerName.replace("MaskFor",""));
