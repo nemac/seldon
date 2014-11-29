@@ -1216,7 +1216,7 @@
             app.zoomOutTool    = new OpenLayers.Control.ZoomBox({out:true});
             app.dragPanTool    = new OpenLayers.Control.DragPan();
             app.identifyTool   = createIdentifyTool();
-            app.multigraphTool = createMultigraphTool();
+            app.multigraphTool = createMultigraphTool($configXML);
 
             var initialExtent;
 
@@ -2445,7 +2445,11 @@
 
     seldon.graphCount = 0;
 
-    function createMultigraphTool () {
+    function createMultigraphTool ($configXML) {
+        var muglPrefix = $configXML.find("tools tool[name=Phenograph]").attr("muglPrefix");
+        if (muglPrefix === undefined || muglPrefix === "") {
+            console.log("WARNING: no muglPrefix for Phenograph tool found; Phenographs will not work");
+        }
         return new ClickTool(
             function (e) {
                 // This function gets called when the user clicks a point in the map while the
@@ -2502,7 +2506,7 @@
                 var seldonMultigraph = $('#seldonMultigraph'+seldon.graphCount+''),
                     promise = seldonMultigraph.multigraph({
                         //NOTE: coords.lon and coords.lat on the next line are really x,y coords in EPSG:900913, not lon/lat:
-                        'mugl'   : "http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+coords.lon+","+coords.lat,
+                        'mugl'   : muglPrefix + coords.lon + "," + coords.lat,
                         'swf'    : "libs/seldon/libs/Multigraph.swf"
                     });
                 seldonMultigraph.multigraph('done', function (m) {
