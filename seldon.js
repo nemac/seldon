@@ -959,6 +959,7 @@
                     var layersToRemove = [];
                     for (var mp = 0; mp < app.maskParentLayers.length; mp++) {
                         app.maskParentLayers[mp].activate();
+                        app.maskParentLayers[mp].visible="true";
                         layersToRemove.push(app.maskParentLayers[mp]);
                     }
                     for (var l = 0; l < layersToRemove.length; l++) {
@@ -992,7 +993,7 @@
                     app.masks[m].maskLayers.push(maskLayer);
                     if (parentLayer.visible=="true") {
                         parentLayer.deactivate();
-                        parentLayer.visible=="false";
+                        parentLayer.visible="false";
                     }
                     $("#"+app.masks[m].maskName.replace("MaskFor","")).get(0).checked = true;
                     $('#mask-status'+ parentLayer.lid).text("(m)")                        
@@ -1008,6 +1009,7 @@
                         var currentMaskLayer = app.masks[m].maskLayers[ml];
                         if (currentMaskLayer.parentLayer.lid==parentLayer.lid) {
                             currentMaskLayer.deactivate();
+                            $('#mask-status'+ currentMaskLayer.parentLayer.lid).text("")
                             maskLayersToDelete.push(currentMaskLayer);
                         }
                     }
@@ -1017,15 +1019,11 @@
                 }
                 //remove from maskParentLayers and activate parentLayer
                 app.maskParentLayers.remove(parentLayer);
-                //Note: Something about the below if statement doesn't make sense to me
-                //However, at this point I need to submit this code and move on.
-                //TODO: Review but make sure all aspects of masking are working before changing
-                if (parentLayer.visible="false") {
+                if (parentLayer.visible=="false") {
                     parentLayer.visible="true";
-                    parentLayer.deactivate(); //news
                 }
                 else {
-                    parentLayer.visible="true";
+                    parentLayer.visible=="true";
                     parentLayer.deactivate();
                 }
                 $('#mask-status'+ parentLayer.lid).text("")                        
@@ -1473,7 +1471,6 @@
                     this.visible="false";
                 }
                 else { //we are dealing with a inactive parent layer to mask
-                    this.visible="true";
                     this.removeFromLegend();
                     app.setMaskByLayer(false,this);
                 }
