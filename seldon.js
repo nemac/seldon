@@ -1428,10 +1428,9 @@
             }
             
             this.emit("activate");
-
+            this.visible="true";
             if ((this.mask == "true") && (this.lid.indexOf("MaskFor") == -1)) {
                     if (app.masks.length>0) {
-                        this.visible="true";
                         app.setMaskByLayer(true,this);
                     }
             }
