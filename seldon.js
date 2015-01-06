@@ -1374,14 +1374,9 @@
                 buffer : 0
             };
 
-            if (stringContainsChar(this.url, 'wlayers')) {
-                options.tileSize = new OpenLayers.Size(500,500);
-                options.ratio    = 1;
-                options.buffer   = 2;
-            } else {
-                options.singleTile = true;
-                options.ratio      = 1;
-            }
+            options.singleTile = true;
+            options.ratio      = 1;            
+
             //console.log("new OpenLayers.Layer.WMS "+" of "+this.layers);
             this.openLayersLayer =
                 new OpenLayers.Layer.WMS(this.name,
