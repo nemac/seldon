@@ -24,7 +24,7 @@
     top: -630px;
     opacity: 0.8;
     z-index: -1;
-    background: url("../images/jumbotron-map.jpg") 0 0 repeat;
+    background: url("../images/jumbotron-map.png") 0 0 repeat;
     -webkit-animation:spin 900s linear infinite;
     -moz-animation:spin 900s linear infinite;
     animation:spin 900s linear infinite;
@@ -70,6 +70,9 @@ p.get-started {
 .fa-download {
     font-size: 10pt;
     padding-right: 1px;
+}
+.icon-layers-alt, .icon-globe, .icon-mobile {
+    font-size: 55pt;
 }
 
 
@@ -157,42 +160,6 @@ table.release-table tr:nth-of-type(even) {
 }
 
 
-/* EXAMPLES PAGE */
-.example-nav {
-    font-size: 9pt;
-    float: left;
-    width: 20%;
-}
-.example-nav li.active a {
-    color: #000;
-    font-weight: bold;
-}
-.example-content {
-    font-size: 9pt;
-    text-align: center;
-}
-.example-content .multigraph {
-    width: 80%;
-    height: 400px;
-    float: left;
-}
-.example-download {
-    float: left;
-}
-.example-open {
-    float: right;
-}
-pre.example {
-    overflow: auto;
-    width: 80%;
-    height: 500px;
-    text-align: left;
-}
-h3.example-title {
-    text-align: center;
-}
-
-
 /* Elements to change when user is on smartphone */
 @media (max-width: 768px) {
     .content {
@@ -225,6 +192,14 @@ h3.example-title {
     .credit-logo {
         display: none;
     }
+}
+
+.thumbnail {
+  border-radius: 4px;
+}
+
+.caption h3 {
+    text-align: center;
 }
 
 /* Elements to change or disappear when NOT on smartphone */

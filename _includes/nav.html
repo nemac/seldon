@@ -16,18 +16,8 @@
             <li{% if page.features == "selected" %} class="active"{% endif %}>
                 <a href="{{ site.baseurl }}/features">Features</a>
             </li>
-            <li{% if page.docs == "selected" %} class="active"{% endif %}>
-                <a href="{{ site.baseurl }}/docs">Documentation</a>
-            </li>
             <li{% if page.examples == "selected" %} class="active"{% endif %}>
                 <a href="{{ site.baseurl }}/examples">Examples</a>
-            </li>
-            <li class="dropdown{% if page.other == "selected" %} active{% endif %}">
-              <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="download">Other <span class="caret"></span></a>
-              <ul class="dropdown-menu" aria-labelledby="download">
-                <li{% if page.credits == "selected" %} class="active"{% endif %}><a href="{{ site.baseurl }}/credits">Credits</a></li>
-                <li{% if page.license == "selected" %} class="active"{% endif %}><a href="{{ site.baseurl }}/docs/license.html">License</a></li>
-              </ul>
             </li>
           </ul>
 
