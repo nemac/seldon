@@ -25,9 +25,9 @@
     opacity: 0.8;
     z-index: -1;
     background: url("../images/jumbotron-map.png") 0 0 repeat;
-    -webkit-animation:spin 900s linear infinite;
-    -moz-animation:spin 900s linear infinite;
-    animation:spin 900s linear infinite;
+    -webkit-animation:spin 1200s linear infinite;
+    -moz-animation:spin 1200s linear infinite;
+    animation:spin 1200s linear infinite;
 }
 .jumbotron:hover:before {
     opacity: 1.0;
@@ -64,17 +64,12 @@ p.get-started {
     border: 1px #e2e2e2 dashed;
     padding: 5px;
 }
-.fa-github-square {
-    font-size: 15pt;
-}
-.fa-download {
-    font-size: 10pt;
-    padding-right: 1px;
-}
 .icon-layers-alt, .icon-globe, .icon-mobile {
     font-size: 55pt;
 }
-
+.fa-user-plus, .fa-train, .fa-user-secret {
+    font-size: 115pt;
+}
 
 /* UNIVERSAL STYLES */
 .content {
@@ -96,6 +91,9 @@ p.get-started {
 .navbar-default .navbar-nav .open a, .navbar-default .navbar-nav .open a:focus {
     background-color: #21486b;
 }
+.navbar .navbar-toggle:hover .icon-bar {
+    background-color: #d4d4d4;
+}
 .lead {
     color: rgba(97, 98, 111, 0.85);
 }
@@ -105,15 +103,6 @@ footer {
     font-size: 8pt;
     color: #bebcbc;
     clear: both;
-}
-footer a.icon {
-    color: #dedede;
-}
-footer a:hover.icon {
-    color: #0a82d1;
-}
-footer a:active.icon {
-    color: #056aad;
 }
 footer a {
     color: #bebcbc;
@@ -133,12 +122,13 @@ pre.prettyprint {
     border: 1px solid #cccccc;
 }
 
+/* EXAMPLES PAGE */
+.thumbnail {
+  border-radius: 4px;
+}
 
-/* CREDITS PAGE */
-.credit-logo  {
-    padding-right: 15px;
-    padding-left: 15px;
-    float: left;
+.caption h3 {
+    text-align: center;
 }
 
 
@@ -192,14 +182,6 @@ table.release-table tr:nth-of-type(even) {
     .credit-logo {
         display: none;
     }
-}
-
-.thumbnail {
-  border-radius: 4px;
-}
-
-.caption h3 {
-    text-align: center;
 }
 
 /* Elements to change or disappear when NOT on smartphone */
