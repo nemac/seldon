@@ -2224,7 +2224,7 @@
                 popup.html(html);
                 popup.dialog({
                     width     : 600,
-                    height     : 200,
+                    height     : 300,
                     resizable : true,
                     title     : "Identify Results",
                     close : function( event, ui ) {
@@ -2292,7 +2292,7 @@
                                         for (i = 1; i < result.length; ++i) {
                                             newTableContents = (''
                                                                 + '<tr>'
-                                                                +   '<td align="right">'+String(result[i][0]).replace("_0","")+':&nbsp&nbsp</td>'
+                                                                +   '<td class="label">'+String(result[i][0]).replace("_0","")+':&nbsp&nbsp</td>'
                                                                 +   '<td>'+result[i][1]+'</td>'
                                                                 + '</tr>'
                                                                 );

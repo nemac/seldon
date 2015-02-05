@@ -324,12 +324,34 @@ Other Popup Styles
 }
 
 #identify_results {
-    border-collapse: collapse; 
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#identify_results b {
+    text-transform: uppercase;
 }
 
 #identify_results td {
-    border: .05em solid #c0c0c0;
-    border-collapse: collapse; 
+    border-collapse: collapse;
+    padding: 10px 0 10px 20px;
+    display: inline-block;
+    max-width: 80%;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
+#identify_results tr {
+    border-bottom: 1px solid #c7c6c6;
+}
+
+#identify_results tr:nth-of-type(even) {
+    background: #ededed;
+}
+
+#identify_results td.label {
+    text-indent: 1.5em;
+    width: 20%;
 }
 
 #identify_results td.layer-results {
