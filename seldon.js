@@ -1390,9 +1390,6 @@
                                          },
                                          options
                                         );
-            /**
-             * TODO: Add this code block back in once layer confusion has been addressed
-             *
             var loadingimage = $('<img class="layer-loader-image ' + this.name + '" src="icons/ajax-loader.gif"/>');
             $("#map").append(loadingimage);
             this.openLayersLayer.loadingimage = loadingimage;
@@ -1403,7 +1400,6 @@
             this.openLayersLayer.events.register("loadend", this.openLayersLayer, function () {
                 this.loadingimage.removeClass("loading");
             });
-            */
             this.openLayersLayer.setOpacity(1-parseFloat(this.transparency)/100.0);
             this.openLayersLayer.seldonLayer = this;
             return this.openLayersLayer;
