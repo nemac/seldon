@@ -67,8 +67,16 @@ p.get-started {
 .icon-layers-alt, .icon-globe, .icon-mobile {
     font-size: 55pt;
 }
-.fa-user-plus, .fa-train, .fa-user-secret {
-    font-size: 115pt;
+.feature-row .fa-globe, .feature-row .fa-print, .feature-row .fa-bar-chart, .feature-row .fa-map-marker, .feature-row .fa-link, .feature-row .fa-arrows, .feature-row .fa-mobile, .feature-row .fa-train {
+    font-size: 95pt;
+}
+
+.feature-row .icon-layers-alt {
+    font-size: 68pt;
+}
+
+.feature-row .fa:hover, .feature-row .icon-layers-alt:hover {
+    color: #5797dd;
 }
 
 /* UNIVERSAL STYLES */
@@ -132,21 +140,9 @@ pre.prettyprint {
 }
 
 
-/* DOWNLOAD PAGE */
-table.release-table {
-    margin-left: 10px;
-    width: auto;
-    border-collapse: collapse;
-}
-table.release-table td, table.release-table th {
-    padding: 6px 10px 6px 10px;
-    border: 1px solid gray;
-}
-table.release-table td.notes {
-    text-align: center;
-}
-table.release-table tr:nth-of-type(even) {
-    background: #ededed;
+/* FEATURES PAGE */
+.feature-row {
+    padding-top: 20px;
 }
 
 
@@ -154,15 +150,6 @@ table.release-table tr:nth-of-type(even) {
 @media (max-width: 768px) {
     .content {
         margin-top: 60px;
-    }
-    .example-nav {
-        display: none;
-    }
-    .example-intro-text {
-        display: none;
-    }
-    .example-content .multigraph {
-        width: 100%;
     }
     pre.example {
         width: 100%;
@@ -182,11 +169,12 @@ table.release-table tr:nth-of-type(even) {
     .credit-logo {
         display: none;
     }
+    .fa-user-plus, .fa-train, .fa-user-secret {
+    font-size: 75pt;
+    }
 }
 
 /* Elements to change or disappear when NOT on smartphone */
 @media (min-width: 768px) {
-    .example-mobile-nav {
-        display: none;
-    }
+
 }
