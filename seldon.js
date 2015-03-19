@@ -14,6 +14,44 @@
         };
     };
     
+    var createArcGIS93RestParams = function($layer) {
+        //  $layer is a jQuery object corresponding to a <restLayer> section in the config file.
+        //  For example:
+        //
+        //    <restLayer
+        //      name="Climate Wizard"
+        //      url="http://www.climatewizard.org:6080/ArcGIS/rest/services/ClimateWizard/US/ImageServer/exportImage/exportImage"
+        //      legend="yaya-placeholder.png"
+        //      lid="CC9999"
+        //      visible="true">
+        //        <param name="noData" value="0" />
+        //        <param name="format" value="png" />
+        //        <param name="interpolation" value="RSP_NearestNeighbor" />
+        //        <param name="transparent" value="true" />
+        //        <param name="mosaicRule">
+        //            <param name="mosaicMethod" value="esriMosaicAttribute" />
+        //            <param name="where" value="Name = 'm_ensemble_50_a2_pptPct_14_2040_2069'" />
+        //            <param name="sortField" value="Name" />
+        //        </param>
+        //        <param name="imageSR" value="102100" />
+        //        <param name="bboxSR" value="102100" />
+        //        <param name="f" value="json" />
+        //    </restLayer>
+        //
+        //  This function constructs and returns a (nested) JS Object corresponding
+        //  to the <param> subelements.
+        var obj = {};
+        $layer.find('>param').each(function(i,param) {
+            var $param = $(param);
+            if (param.hasAttribute('value')) {
+                obj[$param.attr('name')] = $param.attr('value');
+            } else {
+                obj[$param.attr('name')] = createArcGIS93RestParams($param);
+            }
+        });
+        return obj;
+    };
+
     var EventEmitter = window.EventEmitter,
         seldon = {},
         activeBtn = [],
@@ -1133,22 +1171,37 @@
                                                 type  : $wmsSubgroup.attr('type')
                     });
                     accordionGroup.sublists.push(sublist);
-                    $wmsLayers = $wmsSubgroup.find("wmsLayer");
+                    $wmsLayers = $wmsSubgroup.find("wmsLayer,restLayer");
                     for (k = 0, lll = $wmsLayers.length; k < lll; k++) {
                         $wmsLayer = $($wmsLayers[k]);
-                        layer = new Layer({
-                            lid              : $wmsLayer.attr('lid'),
-                            visible          : $wmsLayer.attr('visible'),
-                            url              : $wmsLayer.attr('url'),
-                            srs              : $wmsLayer.attr('srs'),
-                            layers           : $wmsLayer.attr('layers'),
-                            styles           : $wmsLayer.attr('styles'),
-                            identify         : $wmsLayer.attr('identify'),
-                            name             : $wmsLayer.attr('name'),
-                            legend           : $wmsLayer.attr('legend'),
-                            mask             : $wmsLayer.attr('mask'),
-                            selectedInConfig : ($wmsLayer.attr('selected') === "true")
-                        });
+                        if ($wmsLayer[0].tagName === "wmsLayer") {
+                            layer = new Layer({
+                                type             : "WMS",
+                                lid              : $wmsLayer.attr('lid'),
+                                visible          : $wmsLayer.attr('visible'),
+                                url              : $wmsLayer.attr('url'),
+                                srs              : $wmsLayer.attr('srs'),
+                                layers           : $wmsLayer.attr('layers'),
+                                styles           : $wmsLayer.attr('styles'),
+                                identify         : $wmsLayer.attr('identify'),
+                                name             : $wmsLayer.attr('name'),
+                                legend           : $wmsLayer.attr('legend'),
+                                mask             : $wmsLayer.attr('mask'),
+                                selectedInConfig : ($wmsLayer.attr('selected') === "true")
+                            });
+                        } else {
+                            layer = new Layer({
+                                type             : "ArcGIS93Rest",
+                                name             : $wmsLayer.attr('name'),
+                                lid              : $wmsLayer.attr('lid'),
+                                legend           : $wmsLayer.attr('legend'),
+                                visible          : $wmsLayer.attr('visible'),
+                                url              : $wmsLayer.attr('url'),
+                                selectedInConfig : ($wmsLayer.attr('selected') === "true"),
+                                params           : createArcGIS93RestParams($wmsLayer),
+                                identify         : $wmsLayer.attr('identify')
+                            });
+                        }
                         layer.index = index;
                         sublist.layers.push(layer);
                         if (shareUrlInfo && (shareUrlLayerAlpha[layer.lid] !== undefined)) {
@@ -1353,29 +1406,17 @@
         this.maskLayers = [];
     }
     
-    
     function Layer (settings) {
         EventEmitter.call(this);
         if (!settings) { return; }
-        this.lid                = settings.lid;
-        this.visible            = settings.visible;
-        this.url                = settings.url;
-        this.srs                = settings.srs;
-        this.layers             = settings.layers;
-        this.parentLayer        = settings.parentLayer;
-        this.styles             = settings.styles;
-        this.identify           = settings.identify;
-        this.name               = settings.name;
-        this.legend             = settings.legend;
-        this.mask               = settings.mask;
+        $.extend(true, this, settings); // copy all properties from `settings` into `this`
         this.transparency       = 0;
-        if (settings.index == undefined) {
-            this.index          = 0;
+        if (this.index == undefined) {
+            this.index = 0;
         }
-        else {
-            this.index          = settings.index;
+        if (this.type == undefined) {
+            this.type = "WMS";
         }
-        this.selectedInConfig   = settings.selectedInConfig;
         this.openLayersLayer    = undefined;
         this.createOpenLayersLayer = function () {
             if (this.openLayersLayer !== undefined) {
@@ -1391,18 +1432,33 @@
             options.ratio      = 1;            
 
             //console.log("new OpenLayers.Layer.WMS "+" of "+this.layers);
-            this.openLayersLayer =
-                new OpenLayers.Layer.WMS(this.name,
-                                         this.url,
-                                         {
-                                             projection  : new OpenLayers.Projection(seldon.projection),
-                                             units       : "m",
-                                             layers      : this.layers,
-                                             maxExtent   : new OpenLayers.Bounds(app.maxExtent),
-                                             transparent : true
-                                         },
-                                         options
-                                        );
+            if (this.type === "ArcGIS93Rest") {
+                this.openLayersLayer =
+                    new OpenLayers.Layer.ArcGIS93Rest(this.name,
+                                                      this.url,
+                                                      // The following expression returns either this.params, if it has no mosaicRule property, or
+                                                      // a copy of this.params in which the mosaicRule property has been stringified, if this
+                                                      // mosaicRule property is present:
+                                                      (  this.params.mosaicRule
+                                                         ? $.extend(true, {}, this.params, { 'mosaicRule' : JSON.stringify(this.params.mosaicRule) })
+                                                         : this.params),
+                                                      options
+                                                     );
+            } else {
+                this.openLayersLayer =
+                    new OpenLayers.Layer.WMS(this.name,
+                                             this.url,
+                                             {
+                                                 projection  : new OpenLayers.Projection(seldon.projection),
+                                                 units       : "m",
+                                                 layers      : this.layers,
+                                                 maxExtent   : new OpenLayers.Bounds(app.maxExtent),
+                                                 transparent : true
+                                             },
+                                             options
+                                            );
+            }
+
             var loadingimage = $('<img class="layer-loader-image ' + this.name + '" src="icons/ajax-loader.gif"/>');
             $("#map").append(loadingimage);
             this.openLayersLayer.loadingimage = loadingimage;
