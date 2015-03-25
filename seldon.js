@@ -1533,7 +1533,12 @@
                     this.removeFromLegend();
                     app.setMaskByLayer(false,this);
                 }
+
+                if (this.openLayersLayer.loadingimage) {
+                    this.openLayersLayer.loadingimage.removeClass("loading");
+                }
             }
+
             this.emit("deactivate");
         };
 
