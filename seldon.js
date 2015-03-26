@@ -13,7 +13,7 @@
             op(args);
         };
     };
-    
+
     var createArcGIS93RestParams = function($layer) {
         //  $layer is a jQuery object corresponding to a <restLayer> section in the config file.
         //  For example:
@@ -84,10 +84,10 @@
         this.maskParentLayers      = []; // list of currently active global mask parent layers
         this.masks                 = [];
         this.defaultMasks          = ["MaskForForest"];
-                this.radioButtonList       = [];
-                this.radioButtonLayers     = [];
-                this.dropdownBoxList       = [];
-                this.dropdownBoxLayers     = [];
+        this.radioButtonList       = [];
+        this.radioButtonLayers     = [];
+        this.dropdownBoxList       = [];
+        this.dropdownBoxLayers     = [];
         this.currentBaseLayer      = undefined;
         this.currentAccordionGroup = undefined;
         this.currentTheme          = undefined;
@@ -162,8 +162,8 @@
                 }
             }
             return isItemInArray;
-        };         
-        
+        };
+
         this.zoomToNextExtent = function () {
             if (this.currentSavedExtentIndex < this.savedExtents.length-1) {
                 ++this.currentSavedExtentIndex;
@@ -197,9 +197,7 @@
         this.setBaseLayer = function (baseLayer) {
             var app = this;
             if (baseLayer.name.indexOf("Google") > -1) {
-                var layer = new OpenLayers.Layer.Google(
-                                                        "Google Streets"
-                                                        );
+                var layer = new OpenLayers.Layer.Google("Google Streets");
                 app.map.removeLayer(app.map.layers[0]);
                 app.currentBaseLayer = baseLayer;
                 app.map.addLayers([layer]);
@@ -246,19 +244,17 @@
                 sublists    : []
             };
             $(accordionGroup).data('listAccordion').sections.push(sectionObj);
-            $(accordionGroup) .
-                append(sectionObj.titleElement) .
-                append(sectionObj.contentElement);
+            $(accordionGroup).append(sectionObj.titleElement)
+                .append(sectionObj.contentElement);
             $(accordionGroup).accordion('refresh');
-            return sectionObj;          
-                }
+            return sectionObj;
+        }
 
-                this.addAccordionSublists = function (g, items) {
+        this.addAccordionSublists = function (g, items) {
             $(g.contentElement).append(items);
-                }               
+        }
 
-                this.addAccordionSublistItems = function (s, items) {
-
+        this.addAccordionSublistItems = function (s, items) {
             var contents = $('<div class="layer"></div>');
             contents.append(items);
             var layer = {
@@ -306,9 +302,9 @@
             }
 
             for (var mp = 0; mp < app.maskParentLayers.length; mp++) {
-                $('#mask-status'+ app.maskParentLayers[mp].lid).text("(m)")                        
+                $('#mask-status'+ app.maskParentLayers[mp].lid).text("(m)");
                 $("#chk"+app.maskParentLayers[mp].lid).prop('checked', true);
-            }              
+            }
 
         } //end setThemeContinue
 
@@ -324,16 +320,15 @@
                 maskTextElem,
                 activeMaskLayers = [];
 
-                
             //jdm 1/3/14: set the default forest mask
             //TODO: There should be a more eloquent way to handle default mask
             if ($.isEmptyObject(options) && (app.masks.length==0)) {
                 for (var dm = 0; dm < app.defaultMasks.length; dm++) {
                     //console.log("setMaskByMask at line 247");
                     app.setMaskByMask(true, app.defaultMasks[dm]);
-                }                               
-            }                 
-            
+                }
+            }
+
             //jdm (11/1/13): fix for changing themes and accounting for active layers
             //we have changed a theme here, but we need to account for active layers.
             //This accounts for active mask on theme change also.
@@ -352,7 +347,7 @@
                         options.accordionGroup = this.accordionGroups[a];
                     }
                 }
-                
+
                 //options.layers = lids;
                 //loop through the layers active one accordingly
                 for (var i = app.map.getNumLayers()-1; i > 0; i--) {
@@ -412,10 +407,10 @@
                     (!accordionGroupOption && accGp.selectedInConfig)) {
                     accordionGroup = accGp;
                 }
-                                var g = app.addAccordionSection($layerPickerAccordion, accGp.label);
-                                var selectBoxLayers = [];
-                                var sublistItems = [];
-                                for (var i = 0, j = accGp.sublists.length; i < j; i++) {
+                var g = app.addAccordionSection($layerPickerAccordion, accGp.label);
+                var selectBoxLayers = [];
+                var sublistItems = [];
+                for (var i = 0, j = accGp.sublists.length; i < j; i++) {
                     var sublist = accGp.sublists[i];
                     var sublistObj = {
                         heading : sublist.label,
@@ -452,47 +447,44 @@
                         //jdm 5/28/13: if there is a mask for this layer then we will provide a status
                         //as to when that mask is active
                         var $testForMask = layer.mask;
-                                                var radioButton;
-                                                var dropdownBox;
+                        var radioButton;
+                        var dropdownBox;
                         if ($testForMask) {
                             maskLabelElem = document.createElement("label");
                             maskTextElem = document.createTextNode(""); //empty until active, if active then put (m)
                             maskLabelElem.setAttribute("id", "mask-status" + layer.lid);
                             maskLabelElem.appendChild(maskTextElem);
-                                                        sublistLayerItems.push([createLayerToggleCheckbox(layer),
-                                                                                 labelElem,
-                                                                                 createLayerPropertiesIcon(layer),
-                                                                                 maskLabelElem,brElem]);                                                                                                                 
+                            sublistLayerItems.push([createLayerToggleCheckbox(layer),
+                                                    labelElem,
+                                                    createLayerPropertiesIcon(layer),
+                                                    maskLabelElem,brElem]);
                         } else { //no mask for this layer (most will be of this type outside of FCAV)
                             // add the layer to the accordion group
                             if (sublist.type=="radiobutton") { //radio button type
-                                                                sublistLayerItems.push([radioButton=createLayerToggleRadioButton(layer, sublist.label.replace(/\s+/g, '')),
-                                                                        labelElem,
-                                                                        createLayerPropertiesIcon(layer),brElem]);                                                                              
-                                                                app.radioButtonList.push(radioButton);
-                                                                app.radioButtonLayers.push(layer);
-                                                        }
-                            else if (sublist.type=="dropdownbox") { //dropdownbox type
-                                                                // Using sublist.layers.length build up array of layer information to pass to 
-                                                                // the dropdownbox such that only one call to createLayerToggleDropdownBox.
-                                                                // Assumption #1: A dropdownbox is always preceded in the config file by a 
-                                                                // radiobutton and therefore the dropdownbox needs to know about its corresponding radiobutton group
-                                                                if (((selectBoxLayers.length+1)<sublist.layers.length) || (selectBoxLayers.length == undefined)){
-                                                                        selectBoxLayers.push(layer);
-                                    app.dropdownBoxLayers.push(layer);                                                                  
-                                                                }
-                                                                else {
-                                                                        selectBoxLayers.push(layer);
-                                                                        sublistLayerItems.push([dropdownBox=createLayerToggleDropdownBox(layer, selectBoxLayers, sublist.label.replace(/\s+/g, ''))]);
-                                                                        app.dropdownBoxList.push(dropdownBox);
-                                                                        app.dropdownBoxLayers.push(layer);                                                                      
-                                                                }
-                                                        }                                                       
-                                                        else { // assume checkbox type
-                                                                sublistLayerItems.push([createLayerToggleCheckbox(layer),
-                                                                        labelElem,
-                                                                        createLayerPropertiesIcon(layer),brElem]);                                                                                                                                              
-                                                        }
+                                sublistLayerItems.push([radioButton=createLayerToggleRadioButton(layer, sublist.label.replace(/\s+/g, '')),
+                                                        labelElem,
+                                                        createLayerPropertiesIcon(layer),brElem]);
+                                app.radioButtonList.push(radioButton);
+                                app.radioButtonLayers.push(layer);
+                            } else if (sublist.type=="dropdownbox") { //dropdownbox type
+                                // Using sublist.layers.length build up array of layer information to pass to 
+                                // the dropdownbox such that only one call to createLayerToggleDropdownBox.
+                                // Assumption #1: A dropdownbox is always preceded in the config file by a 
+                                // radiobutton and therefore the dropdownbox needs to know about its corresponding radiobutton group
+                                if (((selectBoxLayers.length+1)<sublist.layers.length) || (selectBoxLayers.length == undefined)){
+                                    selectBoxLayers.push(layer);
+                                    app.dropdownBoxLayers.push(layer);
+                                } else {
+                                    selectBoxLayers.push(layer);
+                                    sublistLayerItems.push([dropdownBox=createLayerToggleDropdownBox(layer, selectBoxLayers, sublist.label.replace(/\s+/g, ''))]);
+                                    app.dropdownBoxList.push(dropdownBox);
+                                    app.dropdownBoxLayers.push(layer);
+                                }
+                            } else { // assume checkbox type
+                                sublistLayerItems.push([createLayerToggleCheckbox(layer),
+                                                        labelElem,
+                                                        createLayerPropertiesIcon(layer),brElem]);
+                            }
                         }
 
                         // Decide whether to activate the layer.  If we received a layer list in the
@@ -503,8 +495,8 @@
                              (arrayContainsElement(options.layers, layer))) ||
                             ((options.layers === undefined) &&
                              layer.selectedInConfig) && (sublist.type!="radiobutton")) {
-                                //console.log("activate at line 449");
-                                layer.activate();
+                            //console.log("activate at line 449");
+                            layer.activate();
                         }
                         //we shouldn't have to re-activate an active layer on theme change
                         //But, rather just verify that it is checked as such
@@ -541,7 +533,7 @@
             }
 
             return defaultAccordionGroup;
-            
+
         }; //end setTheme
 
         this.shareUrl = function () {
@@ -578,7 +570,7 @@
                             layerAlphas.push(op);
                         }
                         var test = "";
-                    } else { 
+                    } else {
                         //otherwise add to layerLids
                         if (this.seldonLayer) {
                             layerLids.push(this.seldonLayer.lid);
@@ -741,13 +733,13 @@
                 deactivateActiveOpenLayersControls();
                 app.dragPanTool.activate();
             });
-                        
+
             //
             // print button
             //
             $("#btnPrint").click(function () {
                 printMap();
-            });                 
+            });
 
             //
             // zoom in button
@@ -901,46 +893,43 @@
 
         this.count = function (array, value) {
             var counter = 0;
-          for(var i=0;i<array.length;i++) {
-            if (array[i] === value) counter++;
-          }
-          return counter;
-        }        
-        
+            for(var i = 0; i < array.length; i++) {
+                if (array[i] === value) counter++;
+            }
+            return counter;
+        }
+
         this.addMaskToLegend = function (layer) {
-            var maskName = layer.lid.substring(layer.lid.indexOf("MaskFor"),layer.lid.length);            
+            var maskName = layer.lid.substring(layer.lid.indexOf("MaskFor"),layer.lid.length);
             //clear out old legend graphic if necessary
             if ($(document.getElementById("lgd" + maskName))) {
                 $(document.getElementById("lgd" + maskName)).remove();
-            }             
+            }
             layer.$legendItem = $(document.createElement("div")).attr("id", "lgd" + maskName)
             .prepend($(document.createElement("img")).attr("src", layer.legend))
             .prependTo($('#legend'))
             .click(function () {
                 app.setMaskByMask(false, maskName);
-            });        
+            });
         }
-        
-        this.removeMaskFromLegend = function (layer) {
-        
-        }
-        
+
+        this.removeMaskFromLegend = function (layer) {}
         //jdm: 11/27-12/5/14 - re-wrote to use Mask object,  doing things in a more
         //object oriented fashion!
         this.setMaskByMask = function (toggle, maskName) {
             if (toggle) {
-				//if ForestOnly grey out the sub-forest types
-				if (maskName == "MaskForForest") {
-					$( "#ConiferForest" ).attr("disabled", true);
-					$( "#DeciduousForest" ).attr("disabled", true);
-					$( "#MixedForest" ).attr("disabled", true);
-				}				
-				
-				//console.log("creating new mask "+ maskName);
+                //if ForestOnly grey out the sub-forest types
+                if (maskName == "MaskForForest") {
+                    $( "#ConiferForest" ).attr("disabled", true);
+                    $( "#DeciduousForest" ).attr("disabled", true);
+                    $( "#MixedForest" ).attr("disabled", true);
+                }
+
+                //console.log("creating new mask "+ maskName);
                 var mask = new Mask(maskName);
                 app.masks.push(mask);
-                
-                //Loop through app.map.layers making sure that 
+
+                //Loop through app.map.layers making sure that
                 //app.maskParentLayers is correct
                 for (var l = 0; l < app.map.layers.length; l++) {
                     if (app.map.layers[l].seldonLayer) {
@@ -953,7 +942,7 @@
                         }
                     }
                 }
-                
+
                 for (var mp = 0; mp < app.maskParentLayers.length; mp++) {
                     //console.log("creating maskLayer for "+ app.maskParentLayers[mp].name);
                      var maskLayer = new Layer({
@@ -965,7 +954,7 @@
                             identify         : app.maskParentLayers[mp].identify,
                             name             : app.maskParentLayers[mp].lid+maskName.replace("/",""),
                             mask             : 'false',
-                            legend           : app.maskParentLayers[mp].legend, 
+                            legend           : app.maskParentLayers[mp].legend,
                             index            : app.maskParentLayers[mp].index
                     });
                     maskLayer.parentLayer = app.maskParentLayers[mp];
@@ -976,18 +965,18 @@
                         app.maskParentLayers[mp].visible=="false";
                     }
                     $("#"+maskName.replace("MaskFor","")).get(0).checked = true;
-                    $('#mask-status'+ app.maskParentLayers[mp].lid).text("(m)")                        
-                    $("#chk"+app.maskParentLayers[mp].lid).prop('checked', true);                    
+                    $('#mask-status'+ app.maskParentLayers[mp].lid).text("(m)");
+                    $("#chk"+app.maskParentLayers[mp].lid).prop('checked', true);
                 }
             } //end if (toggle)
             else { //we have just turned off a mask
-				//if ForestOnly grey out the sub-forest types
-				if (maskName=="MaskForForest") {
-					$( "#ConiferForest" ).attr("disabled", false);
-					$( "#DeciduousForest" ).attr("disabled", false);
-					$( "#MixedForest" ).attr("disabled", false);
-				}                
-				//console.log("we have just turned off a mask "+ maskName);
+                //if ForestOnly grey out the sub-forest types
+                if (maskName=="MaskForForest") {
+                    $( "#ConiferForest" ).attr("disabled", false);
+                    $( "#DeciduousForest" ).attr("disabled", false);
+                    $( "#MixedForest" ).attr("disabled", false);
+                }
+                //console.log("we have just turned off a mask "+ maskName);
                 //Loop through app.masks and find maskName
                 //When you find it, deactivate all of its maskLayers
                 //Keep track of the number of mask in app.masks
@@ -1019,7 +1008,7 @@
                     }
                 }
             }
-            app.updateShareMapUrl();            
+            app.updateShareMapUrl();
         }; //end app.setMaskByMask()
 
         this.setMaskByLayer = function (toggle, parentLayer) {
@@ -1036,7 +1025,7 @@
                             identify         : parentLayer.identify,
                             name             : parentLayer.lid+app.masks[m].maskName.replace("/",""),
                             mask             : 'false',
-                            legend           : parentLayer.legend, 
+                            legend           : parentLayer.legend,
                             index            : parentLayer.index
                     });
                     maskLayer.parentLayer = parentLayer;
@@ -1047,7 +1036,7 @@
                         parentLayer.visible="false";
                     }
                     $("#"+app.masks[m].maskName.replace("MaskFor","")).get(0).checked = true;
-                    $('#mask-status'+ parentLayer.lid).text("(m)")                        
+                    $('#mask-status'+ parentLayer.lid).text("(m)");
                     $("#chk"+parentLayer.lid).prop('checked', true);
                 }
             }
@@ -1058,7 +1047,7 @@
                     var maskLayersToDelete = [];
                     for (var ml = 0; ml < app.masks[m].maskLayers.length; ml++) {
                         var currentMaskLayer = app.masks[m].maskLayers[ml];
-                        if (currentMaskLayer.parentLayer.lid==parentLayer.lid) {
+                        if (currentMaskLayer.parentLayer.lid == parentLayer.lid) {
                             currentMaskLayer.deactivate();
                             $('#mask-status'+ currentMaskLayer.parentLayer.lid).text("")
                             maskLayersToDelete.push(currentMaskLayer);
@@ -1070,14 +1059,13 @@
                 }
                 //remove from maskParentLayers and activate parentLayer
                 app.maskParentLayers.remove(parentLayer);
-                if (parentLayer.visible=="false") {
-                    parentLayer.visible="true";
-                }
-                else {
-                    parentLayer.visible=="true";
+                if (parentLayer.visible == "false") {
+                    parentLayer.visible = "true";
+                } else {
+                    parentLayer.visible == "true";
                     parentLayer.deactivate();
                 }
-                $('#mask-status'+ parentLayer.lid).text("")                        
+                $('#mask-status'+ parentLayer.lid).text("");
             }
             app.updateShareMapUrl();
         }; //end app.setMaskByLayer()
@@ -1309,12 +1297,11 @@
                                                         app.maxExtent.right, app.maxExtent.top);
             //console.log(maxExtentBounds);
             //console.log(initialExtent);
-            
+
             if (initialExtent === undefined) {
                 //take the extent coming from the config file
                 initialExtent = app.maxExtent;
-            }
-            else {
+            } else {
                 //take the extent of the share map url
                 maxExtentBounds = new OpenLayers.Bounds(initialExtent.left, initialExtent.bottom,
                                                         initialExtent.right, initialExtent.top);
@@ -1324,7 +1311,7 @@
                 cacheSize: 12,
                 moveDelay: 1000,
                 zoomDelay: 1000
-            });                                 
+            });
 
             app.map = new OpenLayers.Map('map', {
                 maxExtent:         maxExtentBounds,
@@ -1405,7 +1392,7 @@
         this.maskName = maskName;
         this.maskLayers = [];
     }
-    
+
     function Layer (settings) {
         EventEmitter.call(this);
         if (!settings) { return; }
@@ -1429,7 +1416,7 @@
             };
 
             options.singleTile = true;
-            options.ratio      = 1;            
+            options.ratio = 1;
 
             //console.log("new OpenLayers.Layer.WMS "+" of "+this.layers);
             if (this.type === "ArcGIS93Rest") {
@@ -1473,7 +1460,7 @@
             this.openLayersLayer.seldonLayer = this;
             return this.openLayersLayer;
         };
-        
+
         this.activate = function () {
             //console.log("app.map.addLayer "+this.name);
             app.map.addLayer(this.createOpenLayersLayer());
@@ -1482,19 +1469,18 @@
                 //Handle mask legend differently
                 // console.log("call app.addMaskToLegend()");
                 app.addMaskToLegend(this);
-            }
-            else {
+            } else {
                 this.addToLegend();
             }
-            
+
             this.emit("activate");
             this.visible="true";
             if ((this.mask == "true") && (this.lid.indexOf("MaskFor") == -1)) {
-                    if (app.masks.length>0) {
-                        app.setMaskByLayer(true,this);
-                    }
+                if (app.masks.length>0) {
+                    app.setMaskByLayer(true,this);
+                }
             }
-            
+
             //View order rules:
             //1. Vector layers (vlayers) always on top
             //2. otherwise things go by seldon layer index.
@@ -1507,13 +1493,11 @@
                             if (nextLayerDown.seldonLayer.index < lyrJustAdded.seldonLayer.index) {
                                 app.map.setLayerIndex(lyrJustAdded, i);
                             }
-                        }
-                        else {
+                        } else {
                             app.map.setLayerIndex(nextLayerDown, app.map.layers.length-1);
                         }
                     }
-                }
-                else {
+                } else {
                     app.map.setLayerIndex(lyrJustAdded, app.map.layers.length-1);
                 }
             }
@@ -1528,8 +1512,7 @@
                     app.map.removeLayer(this.openLayersLayer);
                     this.removeFromLegend();
                     this.visible="false";
-                }
-                else { //we are dealing with a inactive parent layer to mask
+                } else { //we are dealing with a inactive parent layer to mask
                     this.removeFromLegend();
                     app.setMaskByLayer(false,this);
                 }
@@ -1570,8 +1553,7 @@
                 if (this.lid.indexOf("MaskFor")>-1) {
                     // console.log("call app.removeMaskFromLegend()");
                     app.removeMaskFromLegend(this);
-                }
-                else {
+                } else {
                     this.$legendItem.remove();
                 }
             }
@@ -1595,7 +1577,7 @@
 
             //Handle transparency for mask
             //Still need to make this parent-layer specific
-            if (app.map != undefined) {                 
+            if (app.map != undefined) {
                 for (var i = app.map.getNumLayers()-2; i > 0; i--) {
                     var currentLayer = app.map.layers[i];
                     if (stringContainsChar(currentLayer.name, 'Mask')) {
@@ -1640,7 +1622,7 @@
     }
 
     seldon.init = function (config, projection, gisServerType, useProxyScript) {
-        
+
         //jdm: override of js remove function
         //This is very useful for removing items from array by value
         //See: http://michalbe.blogspot.com/2010/04/removing-item-with-given-value-from.html
@@ -1651,13 +1633,13 @@
            } else {
               return false;
            };
-        }         
-        
+        }
+
         // jrf: Overrides OpenLayers.Map.getCurrentSize since by default it does not
         //      account for padding, and seldon requires padding on the top and bottom
         //      for its layout.
         OpenLayers.Map.prototype.getCurrentSize = function () {
-            var size = new OpenLayers.Size(this.div.clientWidth, 
+            var size = new OpenLayers.Size(this.div.clientWidth,
                                            this.div.clientHeight);
 
             if (size.w == 0 && size.h == 0 || isNaN(size.w) && isNaN(size.h)) {
@@ -1674,7 +1656,7 @@
 
             return size;
         };
-        
+
         app = new seldon.App();
         var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
         app.launch(config, shareUrlInfo);
@@ -1828,35 +1810,34 @@
         }
         return wanted_lid;
     };
-    
-    
+
     function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
-                var selectBox = document.createElement("select"),$selectBox;
-                selectBox.setAttribute("id", selectBoxGroupName);
-                var options = [];
-                //Loop through selectBoxLayers adding to options accordingly
-                for (var i = 0; i < selectBoxLayers.length; i++) {
-                        // options.push(selectBoxLayers[i].layers+":"+selectBoxLayers[i].name);
+        var selectBox = document.createElement("select"),$selectBox;
+        selectBox.setAttribute("id", selectBoxGroupName);
+        var options = [];
+        //Loop through selectBoxLayers adding to options accordingly
+        for (var i = 0; i < selectBoxLayers.length; i++) {
+            // options.push(selectBoxLayers[i].layers+":"+selectBoxLayers[i].name);
             options.push(selectBoxLayers[i].name);
-                }
-                //Loop through options adding to the selectBox
-                for(var x in options) {
-                        if(options.hasOwnProperty(x)) {
-                                var option = document.createElement("option");
-                                option.value = x;
-                                option.appendChild(document.createTextNode(options[x]));
-                                selectBox.appendChild(option);
-                        }
-                }
+        }
+        //Loop through options adding to the selectBox
+        for (var x in options) {
+            if (options.hasOwnProperty(x)) {
+                var option = document.createElement("option");
+                option.value = x;
+                option.appendChild(document.createTextNode(options[x]));
+                selectBox.appendChild(option);
+            }
+        }
         //add one blank one at the top
         var option = document.createElement("option");
         option.value = options.length;
         option.appendChild(document.createTextNode("select..."));
-        selectBox.appendChild(option); 
+        selectBox.appendChild(option);
         selectBox.selectedIndex = options.length;
-                $selectBox = $(selectBox);
-                //Change event listener
-                $selectBox.change(function() {
+        $selectBox = $(selectBox);
+        //Change event listener
+        $selectBox.change(function () {
             var wanted_layer = undefined;
             var wanted_lid = undefined;
             var selectLayer = undefined;
@@ -1876,7 +1857,7 @@
                     wanted_layer = parseInt(selectLayer.layers)+parseInt(app.radioButtonLayers[i].layers);
                     wanted_lid = app.radioButtonLayers[i].lid+wanted_lid;
                 }
-            }                    
+            }
             if (selectLayer!=undefined) {
                 var checkBoxLayer = new Layer({
                     lid              : wanted_lid,
@@ -1887,29 +1868,29 @@
                     identify         : selectLayer.identify,
                     name             : wanted_lid,
                     mask             : selectLayer.mask,
-                    legend           : selectLayer.legend, 
-                    index                        : selectLayer.index
+                    legend           : selectLayer.legend,
+                    index            : selectLayer.index
                 });
-                checkBoxLayer.activate();  
+                checkBoxLayer.activate();
             }
             //Clear out any previously active layers, not needed any more
             for (var i = app.map.getNumLayers()-1; i > 0; i--) {
-                    var currLayer = app.map.layers[i];
-                    //Outer loop radio buttons
-                    for (var j = 0; j < app.radioButtonLayers.length; j++) {
-                        //Inner loop drop-down list
-                        for (var k = 0; k < app.dropdownBoxLayers.length; k++) {
-                            //console.log(app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid);
-                            if ((currLayer.seldonLayer.lid==app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid) &&
-                                (app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid!==getActiveDropdownBoxRadioLID()))
-                                currLayer.seldonLayer.deactivate();
-                        }                                
-                    }                            
-            }            
-                });             
-                return selectBox;
-        }
-        
+                var currLayer = app.map.layers[i];
+                //Outer loop radio buttons
+                for (var j = 0; j < app.radioButtonLayers.length; j++) {
+                    //Inner loop drop-down list
+                    for (var k = 0; k < app.dropdownBoxLayers.length; k++) {
+                        //console.log(app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid);
+                        if ((currLayer.seldonLayer.lid==app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid) &&
+                            (app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid!==getActiveDropdownBoxRadioLID()))
+                            currLayer.seldonLayer.deactivate();
+                    }
+                }
+            }
+        });
+        return selectBox;
+    }
+
     function createLayerToggleRadioButton (layer, radioGroupName) {
         // create the radio buttons
         var checkbox = document.createElement("input"),
@@ -1922,8 +1903,8 @@
         }
         checkbox.onchange = function () {
             //Loop through other radio buttons and deactivate those layers accordingly.
-                        $('input:radio').each(function() {
-                            if($(this).is(':checked')) {
+            $('input:radio').each(function() {
+                if($(this).is(':checked')) {
                     var wanted_layer = undefined;
                     var wanted_lid = undefined;
                     var selectLayer = undefined;
@@ -1942,7 +1923,7 @@
                             wanted_layer = parseInt(selectLayer.layers)+parseInt(app.radioButtonLayers[i].layers);
                             wanted_lid = app.radioButtonLayers[i].lid+wanted_lid;
                         }
-                    }                    
+                    }
                     if (selectLayer!=undefined) {
                         var checkBoxLayer = new Layer({
                             lid              : wanted_lid,
@@ -1953,28 +1934,27 @@
                             identify         : selectLayer.identify,
                             name             : wanted_lid,
                             mask             : selectLayer.mask,
-                            legend           : selectLayer.legend, 
-                            index                        : selectLayer.index
+                            legend           : selectLayer.legend,
+                            index            : selectLayer.index
                         });
-                        checkBoxLayer.activate();  
+                        checkBoxLayer.activate();
                     }
-                } 
-                                else {
-                                        for (var i = app.map.getNumLayers()-1; i > 0; i--) {
-                                                        var currLayer = app.map.layers[i];
-                                                        //Outer loop radio buttons
-                            for (var j = 0; j < app.radioButtonLayers.length; j++) {
-                                //Inner loop drop-down list
-                                for (var k = 0; k < app.dropdownBoxLayers.length; k++) {
-                                    //console.log(app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid);
-                                    if ((currLayer.seldonLayer.lid==app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid) &&
-                                        (app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid!==getActiveDropdownBoxRadioLID()))
-                                        currLayer.seldonLayer.deactivate();
-                                }                                
-                            }                            
-                                        }
-                                }       
-                        });
+                } else {
+                    for (var i = app.map.getNumLayers()-1; i > 0; i--) {
+                        var currLayer = app.map.layers[i];
+                        //Outer loop radio buttons
+                        for (var j = 0; j < app.radioButtonLayers.length; j++) {
+                            //Inner loop drop-down list
+                            for (var k = 0; k < app.dropdownBoxLayers.length; k++) {
+                                //console.log(app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid);
+                                if ((currLayer.seldonLayer.lid==app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid) &&
+                                    (app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid!==getActiveDropdownBoxRadioLID()))
+                                    currLayer.seldonLayer.deactivate();
+                            }
+                        }
+                    }
+                }
+            });
         }; //End checkbox.onchange
         $checkbox = $(checkbox);
         // listen for activate/deactivate events from the layer, and update the checkbox accordingly
@@ -1987,7 +1967,7 @@
         // return the new checkbox DOM element
         return checkbox;
         } //End createLayerToggleRadioButton
-        
+
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
         var checkbox = document.createElement("input"),
@@ -2062,7 +2042,7 @@
         $html.find('input.transparency-text').val(layer.transparency);
 
         // if ((layer.transparency>0) && (app.maskParents.indexOf(layer.lid) > -1)) {
-        if (layer.transparency>0) {        
+        if (layer.transparency > 0) {
             localTransparency = layer.transparency;
             layer.setTransparency(localTransparency);
         }
@@ -2076,7 +2056,7 @@
                 try {
                     layer.setTransparency(ui.value);
                 }
-                catch(err) { 
+                catch(err) {
                     var errTxt = err.message;
                     // layer.setTransparency($('input.transparency-text').val());
                 }
@@ -2233,21 +2213,21 @@
                 // which is EPSG:900913.
                 var coords = app.map.getLonLatFromPixel(e.xy);
                 //add marker
-                var styleMap = new OpenLayers.StyleMap({pointRadius: 4, 
-                                                        fillColor: "yellow", 
-                                                        fillOpacity: 0.75,});                           
+                var styleMap = new OpenLayers.StyleMap({pointRadius: 4,
+                                                        fillColor: "yellow",
+                                                        fillOpacity: 0.75,});
 
                 if (app.id_markerLayer) {
                     app.map.removeLayer(app.id_markerLayer);
                     app.id_markerLayer = undefined;
                 }
-                app.id_markerLayer = new OpenLayers.Layer.Vector("markerLayer", 
+                app.id_markerLayer = new OpenLayers.Layer.Vector("markerLayer",
                                                                  {styleMap: styleMap});
                 var feature = new OpenLayers.Feature.Vector(
                                                             new OpenLayers.Geometry.Point(coords.lon, coords.lat),
                                                             {some:'data'});
                 app.id_markerLayer.addFeatures(feature);
-                app.map.addLayer(app.id_markerLayer);                           
+                app.map.addLayer(app.id_markerLayer);
 
                 // Then loop over all the current (non-base) layers in the map to construct the
                 // GetFeatureInfo requests. There will be one request for each unique WMS layer
@@ -2350,7 +2330,7 @@
                                             layerTitle = layerTitle.substring(0, layerTitle.indexOf('MaskFor'));
                                         }
                                         //jdm: with this list back from getLayerResultsFromGML
-                                        //loop through and build up new table structure                                    
+                                        //loop through and build up new table structure
                                         newTableContents = (''
                                                             + '<tr>'
                                                             +       '<td><b>'+layerTitle+'</b></td>'
@@ -2454,11 +2434,11 @@
                 var lonlat = app.map.getLonLatFromPixel(e.xy);
                 lonlat.transform(app.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
 
-                var styleMap = new OpenLayers.StyleMap({pointRadius: 4, 
-                                                        fillColor: "yellow", 
-                                                        fillOpacity: 0.75,});                           
-                                
-                var markerLayer = new OpenLayers.Layer.Vector("markerLayer", 
+                var styleMap = new OpenLayers.StyleMap({pointRadius: 4,
+                                                        fillColor: "yellow",
+                                                        fillOpacity: 0.75,});
+
+                var markerLayer = new OpenLayers.Layer.Vector("markerLayer",
                                                               {styleMap: styleMap});
                 var feature = new OpenLayers.Feature.Vector(
                                                             new OpenLayers.Geometry.Point(coords.lon, coords.lat),
@@ -2545,7 +2525,7 @@
                 && (Math.abs(e1.right  - e2.right)  <= tolerance)
                 && (Math.abs(e1.top    - e2.top)    <= tolerance));
     }
-    
+
     // count everything
     function getCounts (arr) {
         var i = arr.length, // var to loop over
@@ -2597,7 +2577,7 @@
                     if ( moved && !silent ) {
                         this._trigger( "focus", event );
                     }
-                    return moved;            
+                    return moved;
                 }
             }
         }
@@ -2631,7 +2611,7 @@
                     }
                 }
             } //end try
-            catch(err) {                                        
+            catch(err) {
                 alert(err.message);
             }
         }
@@ -2659,9 +2639,9 @@
             close : function( event, ui ) {
                 $(this).remove();
             },
-        });             
+        });
 
-        OpenLayers.Request.POST({ 
+        OpenLayers.Request.POST({
             url: 'http://'+window.location.hostname+window.location.pathname+'cgi-bin/print.cgi',
             data: OpenLayers.Util.getParameterString({width:size.w,height:size.h,tiles:tiles_json,legends:legends_json}),
             headers:{'Content-Type':'application/x-www-form-urlencoded'},
