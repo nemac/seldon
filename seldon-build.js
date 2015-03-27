@@ -130,6 +130,33 @@ module.exports = function ($) {
 }
 
 },{}],3:[function(require,module,exports){
+function Theme (settings) {
+    this.accordionGroups = [];
+    if (!settings) { return; }
+    this.name  = settings.name;
+    this.label = settings.label;
+    this.index = settings.index;
+    this.zoom = settings.zoom;
+    this.xmin = settings.xmin;
+    this.ymin = settings.ymin;
+    this.xmax = settings.xmax;
+    this.ymax = settings.ymax;
+    this.getAccordionGroupIndex = function (accordionGroup) {
+        // return the index of a given AccordionGroup in this theme's list,
+        // or -1 if it is not in the list
+        var i;
+        for (i = 0; i < this.accordionGroups.length; ++i) {
+            if (this.accordionGroups[i] === accordionGroup) {
+                return i;
+            }
+        }
+        return -1;
+    };
+}
+
+module.exports = Theme;
+
+},{}],4:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -1725,29 +1752,7 @@ module.exports = function ($) {
 
     EventEmitter.declare(Layer);
 
-    function Theme (settings) {
-        this.accordionGroups = [];
-        if (!settings) { return; }
-        this.name  = settings.name;
-        this.label = settings.label;
-        this.index = settings.index;
-        this.zoom = settings.zoom;
-        this.xmin = settings.xmin;
-        this.ymin = settings.ymin;
-        this.xmax = settings.xmax;
-        this.ymax = settings.ymax;
-        this.getAccordionGroupIndex = function (accordionGroup) {
-            // return the index of a given AccordionGroup in this theme's list,
-            // or -1 if it is not in the list
-            var i;
-            for (i = 0; i < this.accordionGroups.length; ++i) {
-                if (this.accordionGroups[i] === accordionGroup) {
-                    return i;
-                }
-            }
-            return -1;
-        };
-    }
+    var Theme = require("./js/theme.js");
 
     function displayError (message) {
         //console.log(message);
@@ -2667,4 +2672,4 @@ module.exports = function ($) {
 
 }(jQuery));
 
-},{"./js/share.js":1,"./js/splash.js":2}]},{},[3]);
+},{"./js/share.js":1,"./js/splash.js":2,"./js/theme.js":3}]},{},[4]);
