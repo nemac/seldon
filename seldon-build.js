@@ -119,6 +119,24 @@ module.exports = function ($) {
 
 
 },{}],3:[function(require,module,exports){
+module.exports = function ($) {
+    var createLayerPropertiesDialog = require("./layer_dialog.js")($);
+
+    function createLayerPropertiesIcon (layer) {
+        var img = document.createElement("img");
+        img.id = layer.lid;
+        img.src = "icons/settings.png";
+        img.className = "layerPropertiesIcon";
+        img.onclick = function () {
+            createLayerPropertiesDialog(layer);
+        };
+        return img;
+    }
+
+    return createLayerPropertiesIcon;
+}
+
+},{"./layer_dialog.js":2}],4:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) {
         settings = {};
@@ -228,7 +246,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -249,7 +267,7 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -276,7 +294,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2122,18 +2140,9 @@ module.exports = Theme;
 
     var createLayerToggleCheckbox = require("./js/layer_checkbox.js")($);
 
-    function createLayerPropertiesIcon (layer) {
-        var img = document.createElement("img");
-        img.id = layer.lid;
-        img.src = "icons/settings.png";
-        img.className = "layerPropertiesIcon";
-        img.onclick = function () {
-            createLayerPropertiesDialog(layer);
-        };
-        return img;
-    }
-
     var createSplashScreen = require("./js/splash.js")($);
+
+    var createLayerPropertiesIcon = require("./js/layer_icon.js")($);
 
     var createLayerPropertiesDialog = require("./js/layer_dialog.js")($);
 
@@ -2687,4 +2696,4 @@ module.exports = Theme;
 
 }(jQuery));
 
-},{"./js/layer_checkbox.js":1,"./js/layer_dialog.js":2,"./js/share.js":3,"./js/splash.js":4,"./js/theme.js":5}]},{},[6]);
+},{"./js/layer_checkbox.js":1,"./js/layer_dialog.js":2,"./js/layer_icon.js":3,"./js/share.js":4,"./js/splash.js":5,"./js/theme.js":6}]},{},[7]);

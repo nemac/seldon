@@ -1843,18 +1843,9 @@
 
     var createLayerToggleCheckbox = require("./js/layer_checkbox.js")($);
 
-    function createLayerPropertiesIcon (layer) {
-        var img = document.createElement("img");
-        img.id = layer.lid;
-        img.src = "icons/settings.png";
-        img.className = "layerPropertiesIcon";
-        img.onclick = function () {
-            createLayerPropertiesDialog(layer);
-        };
-        return img;
-    }
-
     var createSplashScreen = require("./js/splash.js")($);
+
+    var createLayerPropertiesIcon = require("./js/layer_icon.js")($);
 
     var createLayerPropertiesDialog = require("./js/layer_dialog.js")($);
 
