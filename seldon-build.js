@@ -1,4 +1,41 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+// The following creates a new OpenLayers tool class called ClickTool
+// which calls a function whenever the user clicks in the map.  Each
+// instance of ClickTool corresponds to a specific callback function.
+// To create an instance of ClickTool:
+//
+//   tool = new ClickTool(function (e) {
+//       // this is the click callback function
+//   });
+//
+var ClickTool = OpenLayers.Class(OpenLayers.Control, {
+    defaultHandlerOptions: {
+        'single'          : true,
+        'double'          : false,
+        'pixelTolerance'  : 0,
+        'stopSingle'      : false,
+        'stopDouble'      : false
+    },
+
+    initialize: function (clickHandler) {
+        this.handlerOptions = OpenLayers.Util.extend(
+            {}, this.defaultHandlerOptions
+        );
+        OpenLayers.Control.prototype.initialize.apply(
+            this, arguments
+        );
+        this.displayClass = 'ClickTool';
+        this.handler = new OpenLayers.Handler.Click(
+            this, {
+                'click': clickHandler
+            }, this.handlerOptions
+        );
+    }
+});
+
+module.exports = ClickTool;
+
+},{}],2:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -28,7 +65,7 @@ module.exports = function ($) {
     return createLayerToggleCheckbox;
 }
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
     //This function gets called every time the layer properties icon gets clicked
 module.exports = function ($) {
     function createLayerPropertiesDialog (layer) {
@@ -118,7 +155,7 @@ module.exports = function ($) {
 }
 
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 module.exports = function ($) {
     var createLayerPropertiesDialog = require("./layer_dialog.js")($);
 
@@ -136,7 +173,7 @@ module.exports = function ($) {
     return createLayerPropertiesIcon;
 }
 
-},{"./layer_dialog.js":2}],4:[function(require,module,exports){
+},{"./layer_dialog.js":3}],5:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) {
         settings = {};
@@ -246,7 +283,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -267,7 +304,7 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -294,7 +331,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2156,39 +2193,7 @@ module.exports = Theme;
         app.multigraphTool.activate();
     }
 
-    // The following creates a new OpenLayers tool class called ClickTool
-    // which calls a function whenever the user clicks in the map.  Each
-    // instance of ClickTool corresponds to a specific callback function.
-    // To create an instance of ClickTool:
-    //
-    //   tool = new ClickTool(function (e) {
-    //       // this is the click callback function
-    //   });
-    //
-    var ClickTool = OpenLayers.Class(OpenLayers.Control, {
-        defaultHandlerOptions: {
-            'single'          : true,
-            'double'          : false,
-            'pixelTolerance'  : 0,
-            'stopSingle'      : false,
-            'stopDouble'      : false
-        },
-
-        initialize: function (clickHandler) {
-            this.handlerOptions = OpenLayers.Util.extend(
-                {}, this.defaultHandlerOptions
-            );
-            OpenLayers.Control.prototype.initialize.apply(
-                this, arguments
-            );
-            this.displayClass = 'ClickTool';
-            this.handler = new OpenLayers.Handler.Click(
-                this, {
-                    'click': clickHandler
-                }, this.handlerOptions
-            );
-        }
-    });
+    var ClickTool = require("./js/clicktool.js");
 
     // Return a string representing a GetFeatureInfo request URL for the current map,
     // based on the passed parameters:
@@ -2696,4 +2701,4 @@ module.exports = Theme;
 
 }(jQuery));
 
-},{"./js/layer_checkbox.js":1,"./js/layer_dialog.js":2,"./js/layer_icon.js":3,"./js/share.js":4,"./js/splash.js":5,"./js/theme.js":6}]},{},[7]);
+},{"./js/clicktool.js":1,"./js/layer_checkbox.js":2,"./js/layer_dialog.js":3,"./js/layer_icon.js":4,"./js/share.js":5,"./js/splash.js":6,"./js/theme.js":7}]},{},[8]);
