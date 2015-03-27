@@ -1,4 +1,34 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+module.exports = function ($) {
+    function createLayerToggleCheckbox (layer) {
+        // create the checkbox
+        var checkbox = document.createElement("input"),
+            $checkbox;
+        checkbox.type = "checkbox";
+        checkbox.id = "chk" + layer.lid;
+        checkbox.onclick = function () {
+            if ($(this).is(':checked')) {
+                layer.activate();
+            } else {
+                layer.deactivate();
+            }
+        };
+        $checkbox = $(checkbox);
+        // listen for activate/deactivate events from the layer, and update the checkbox accordingly
+        layer.addListener("activate", function () {
+            $checkbox.attr('checked', true);
+        });
+        layer.addListener("deactivate", function () {
+            $checkbox.attr('checked', false);
+        });
+        // return the new checkbox DOM element
+        return checkbox;
+    }
+
+    return createLayerToggleCheckbox;
+}
+
+},{}],2:[function(require,module,exports){
     //This function gets called every time the layer properties icon gets clicked
 module.exports = function ($) {
     function createLayerPropertiesDialog (layer) {
@@ -88,7 +118,7 @@ module.exports = function ($) {
 }
 
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) {
         settings = {};
@@ -198,7 +228,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -219,7 +249,7 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -246,7 +276,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2090,30 +2120,7 @@ module.exports = Theme;
         return checkbox;
         } //End createLayerToggleRadioButton
 
-    function createLayerToggleCheckbox (layer) {
-        // create the checkbox
-        var checkbox = document.createElement("input"),
-            $checkbox;
-        checkbox.type = "checkbox";
-        checkbox.id = "chk" + layer.lid;
-        checkbox.onclick = function () {
-            if ($(this).is(':checked')) {
-                layer.activate();
-            } else {
-                layer.deactivate();
-            }
-        };
-        $checkbox = $(checkbox);
-        // listen for activate/deactivate events from the layer, and update the checkbox accordingly
-        layer.addListener("activate", function () {
-            $checkbox.attr('checked', true);
-        });
-        layer.addListener("deactivate", function () {
-            $checkbox.attr('checked', false);
-        });
-        // return the new checkbox DOM element
-        return checkbox;
-    }
+    var createLayerToggleCheckbox = require("./js/layer_checkbox.js")($);
 
     function createLayerPropertiesIcon (layer) {
         var img = document.createElement("img");
@@ -2680,4 +2687,4 @@ module.exports = Theme;
 
 }(jQuery));
 
-},{"./js/layer_dialog.js":1,"./js/share.js":2,"./js/splash.js":3,"./js/theme.js":4}]},{},[5]);
+},{"./js/layer_checkbox.js":1,"./js/layer_dialog.js":2,"./js/share.js":3,"./js/splash.js":4,"./js/theme.js":5}]},{},[6]);
