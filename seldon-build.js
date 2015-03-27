@@ -1,4 +1,114 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+function ShareUrlInfo (settings) {
+    if (settings === undefined) {
+        settings = {};
+    }
+    this.themeName         = settings.themeName;
+    this.accordionGroupGid = settings.accordionGroupGid;
+    this.baseLayerName     = settings.baseLayerName;
+    this.extent            = settings.extent;
+    this.layerLids         = settings.layerLids;
+    this.layerMask         = settings.layerMask;
+    this.layerAlphas       = settings.layerAlphas;
+    if (this.extent === undefined) {
+        this.extent = {};
+    }
+    if (this.layerLids === undefined) {
+        this.layerLids = [];
+    }
+    if (this.layerMask === undefined) {
+        this.layerMask = [];
+    }
+    if (this.layerAlphas === undefined) {
+        this.layerAlphas = [];
+    }
+}
+
+ShareUrlInfo.parseUrl = function (url) {
+    var info = new ShareUrlInfo(),
+        vars = [],
+        hash,
+        q;
+
+    if (url === undefined) {
+        return undefined;
+    }
+    // Remove everything up to and including the first '?' char.
+    url = url.replace(/^[^\?]*\?/, '');
+
+    $.each(url.split('&'), function () {
+        var i = this.indexOf('='),
+            name, value;
+        if (i >= 0) {
+            name  = this.substring(0,i);
+            value = this.substring(i+1);
+        } else {
+            name  = this;
+            value = undefined;
+        }
+        vars[name] = value;
+    });
+
+    info.themeName         = vars.theme;
+    info.accordionGroupGid = vars.accgp;
+    info.baseLayerName     = vars.basemap;
+
+    if (vars.extent) {
+        var extentCoords = vars.extent.split(',');
+        info.extent = {
+            left   : extentCoords[0],
+            bottom : extentCoords[1],
+            right  : extentCoords[2],
+            top    : extentCoords[3]
+        };
+    }
+
+    if (vars.layers) {
+        $.each(vars.layers.split(','), function () {
+            info.layerLids.push(this);
+        });
+    }
+    if (vars.mask) {
+        $.each(vars.mask.split(','), function () {
+            info.layerMask.push(this);
+        });
+    }
+    if (vars.alphas) {
+        $.each(vars.alphas.split(','), function () {
+            info.layerAlphas.push(this);
+        });
+    }
+    if (info.themeName && info.baseLayerName) {
+        return info;
+    }
+    return undefined;
+};
+
+ShareUrlInfo.prototype.urlArgs = function () {
+    return Mustache.render(
+        (''
+         + 'theme={{{theme}}}'
+         + '&layers={{{layers}}}'
+         + '&mask={{{mask}}}'
+         + '&alphas={{{alphas}}}'
+         + '&accgp={{{accgp}}}'
+         + '&basemap={{{basemap}}}'
+         + '&extent={{{extent.left}}},{{{extent.bottom}}},{{{extent.right}}},{{{extent.top}}}'
+        ),
+        {
+            theme   : this.themeName,
+            layers  : this.layerLids.join(','),
+            mask    : this.layerMask.join(','),
+            alphas  : this.layerAlphas.join(','),
+            accgp   : this.accordionGroupGid,
+            basemap : this.baseLayerName,
+            extent  : this.extent
+        });
+};
+
+module.exports = ShareUrlInfo;
+
+},{}],2:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -19,7 +129,7 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -1709,112 +1819,7 @@ module.exports = function ($) {
         }
     }
 
-    function ShareUrlInfo (settings) {
-        if (settings === undefined) {
-            settings = {};
-        }
-        this.themeName         = settings.themeName;
-        this.accordionGroupGid = settings.accordionGroupGid;
-        this.baseLayerName     = settings.baseLayerName;
-        this.extent            = settings.extent;
-        this.layerLids         = settings.layerLids;
-        this.layerMask         = settings.layerMask;
-        this.layerAlphas       = settings.layerAlphas;
-        if (this.extent === undefined) {
-            this.extent = {};
-        }
-        if (this.layerLids === undefined) {
-            this.layerLids = [];
-        }
-        if (this.layerMask === undefined) {
-            this.layerMask = [];
-        }
-        if (this.layerAlphas === undefined) {
-            this.layerAlphas = [];
-        }
-    }
-
-    ShareUrlInfo.parseUrl = function (url) {
-        var info = new ShareUrlInfo(),
-            vars = [],
-            hash,
-            q;
-
-        if (url === undefined) {
-            return undefined;
-        }
-        // Remove everything up to and including the first '?' char.
-        url = url.replace(/^[^\?]*\?/, '');
-
-        $.each(url.split('&'), function () {
-            var i = this.indexOf('='),
-                name, value;
-            if (i >= 0) {
-                name  = this.substring(0,i);
-                value = this.substring(i+1);
-            } else {
-                name  = this;
-                value = undefined;
-            }
-            vars[name] = value;
-        });
-
-        info.themeName         = vars.theme;
-        info.accordionGroupGid = vars.accgp;
-        info.baseLayerName     = vars.basemap;
-
-        if (vars.extent) {
-            var extentCoords = vars.extent.split(',');
-            info.extent = {
-                left   : extentCoords[0],
-                bottom : extentCoords[1],
-                right  : extentCoords[2],
-                top    : extentCoords[3]
-            };
-        }
-
-        if (vars.layers) {
-            $.each(vars.layers.split(','), function () {
-                info.layerLids.push(this);
-            });
-        }
-        if (vars.mask) {
-            $.each(vars.mask.split(','), function () {
-                info.layerMask.push(this);
-            });
-        }
-        if (vars.alphas) {
-            $.each(vars.alphas.split(','), function () {
-                info.layerAlphas.push(this);
-            });
-        }
-        if (info.themeName && info.baseLayerName) {
-            return info;
-        }
-        return undefined;
-    };
-
-    ShareUrlInfo.prototype.urlArgs = function () {
-        return Mustache.render(
-            (''
-             + 'theme={{{theme}}}'
-             + '&layers={{{layers}}}'
-             + '&mask={{{mask}}}'
-             + '&alphas={{{alphas}}}'
-             + '&accgp={{{accgp}}}'
-             + '&basemap={{{basemap}}}'
-             + '&extent={{{extent.left}}},{{{extent.bottom}}},{{{extent.right}}},{{{extent.top}}}'
-            ),
-            {
-                theme   : this.themeName,
-                layers  : this.layerLids.join(','),
-                mask    : this.layerMask.join(','),
-                alphas  : this.layerAlphas.join(','),
-                accgp   : this.accordionGroupGid,
-                basemap : this.baseLayerName,
-                extent  : this.extent
-            });
-    };
+    var ShareUrlInfo = require("./js/share.js");
 
         function getActiveDropdownBoxRadioLID () {
         var wanted_lid = undefined;
@@ -2662,4 +2667,4 @@ module.exports = function ($) {
 
 }(jQuery));
 
-},{"./js/splash.js":1}]},{},[2]);
+},{"./js/share.js":1,"./js/splash.js":2}]},{},[3]);
