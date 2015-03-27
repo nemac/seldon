@@ -1,4 +1,94 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+    //This function gets called every time the layer properties icon gets clicked
+module.exports = function ($) {
+    function createLayerPropertiesDialog (layer) {
+        var localTransparency = 0;
+        var $html = $(''
+                      + '<div class="layer-properties-dialog">'
+                      +   '<table>'
+                      +     '<tr>'
+                      +       '<td>Transparency:</td>'
+                      +       '<td>'
+                      +         '<div class="transparency-slider"></div>'
+                      +       '</td>'
+                      +       '<td>'
+                      +        '<input class="transparency-text" type="text" size="2"/>%'
+                      +       '</td>'
+                      +     '</tr>'
+                      +   '</table>'
+                      + '</div>'
+                     );
+
+        $html.find('input.transparency-text').val(layer.transparency);
+
+        // if ((layer.transparency>0) && (app.maskParents.indexOf(layer.lid) > -1)) {
+        if (layer.transparency > 0) {
+            localTransparency = layer.transparency;
+            layer.setTransparency(localTransparency);
+        }
+
+        $html.find('.transparency-slider').slider({
+            min   : 0,
+            max   : 100,
+            step  : 1,
+            value : localTransparency,
+            slide : function(event, ui) {
+                try {
+                    layer.setTransparency(ui.value);
+                }
+                catch(err) {
+                    var errTxt = err.message;
+                    // layer.setTransparency($('input.transparency-text').val());
+                }
+            }
+        });
+        //This seems redundant as there is already a listener on the slider object
+        //So, for now I will comment this out
+        // layer.addListener("transparency", function (e) {
+        // $html.find('.transparency-slider').slider("value", e.value);
+        // });
+        $html.find('input.transparency-text').change(function () {
+            var $this = $(this),
+                newValueFloat = parseFloat($this.val());
+            if (isNaN(newValueFloat) || newValueFloat < 0 || newValueFloat > 100) {
+                $this.val(layer.transparency);
+                return;
+            }
+            layer.setTransparency($this.val());
+        });
+
+        layer.addListener("transparency", function (e) {
+            $html.find('input.transparency-text').val(e.value);
+        });
+
+        //jdm 5/14/13: add listener for mask functionality
+        //for every mask checkbox we check we getting a click event
+
+        $html.dialog({
+            zIndex    : 10050,
+            position  : "left",
+            autoOpen  : true,
+            hide      : "explode",
+            title     : layer.name,
+            width     : 'auto',
+            close     : function () {
+                $(this).dialog('destroy');
+                $html.remove();
+                createLayerPropertiesDialog.$html[layer.lid] = undefined;
+            }
+        });
+        createLayerPropertiesDialog.$html[layer.lid] = $html;
+    } //end function createLayerPropertiesDialog (layer)
+
+    // Object to be used as hash for tracking the $html objects created by createLayerPropertiesDialog;
+    // keys are layer lids:
+    createLayerPropertiesDialog.$html = {};
+
+    return createLayerPropertiesDialog;
+}
+
+
+},{}],2:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) {
         settings = {};
@@ -108,7 +198,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -129,7 +219,7 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -156,7 +246,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2038,89 +2128,7 @@ module.exports = Theme;
 
     var createSplashScreen = require("./js/splash.js")($);
 
-    //This function gets called every time the layer properties icon gets clicked
-    function createLayerPropertiesDialog (layer) {
-        var localTransparency = 0;
-        var $html = $(''
-                      + '<div class="layer-properties-dialog">'
-                      +   '<table>'
-                      +     '<tr>'
-                      +       '<td>Transparency:</td>'
-                      +       '<td>'
-                      +         '<div class="transparency-slider"></div>'
-                      +       '</td>'
-                      +       '<td>'
-                      +        '<input class="transparency-text" type="text" size="2"/>%'
-                      +       '</td>'
-                      +     '</tr>'
-                      +   '</table>'
-                      + '</div>'
-                     );
-
-        $html.find('input.transparency-text').val(layer.transparency);
-
-        // if ((layer.transparency>0) && (app.maskParents.indexOf(layer.lid) > -1)) {
-        if (layer.transparency > 0) {
-            localTransparency = layer.transparency;
-            layer.setTransparency(localTransparency);
-        }
-
-        $html.find('.transparency-slider').slider({
-            min   : 0,
-            max   : 100,
-            step  : 1,
-            value : localTransparency,
-            slide : function(event, ui) {
-                try {
-                    layer.setTransparency(ui.value);
-                }
-                catch(err) {
-                    var errTxt = err.message;
-                    // layer.setTransparency($('input.transparency-text').val());
-                }
-            }
-        });
-        //This seems redundant as there is already a listener on the slider object
-        //So, for now I will comment this out
-        // layer.addListener("transparency", function (e) {
-        // $html.find('.transparency-slider').slider("value", e.value);
-        // });
-        $html.find('input.transparency-text').change(function () {
-            var $this = $(this),
-                newValueFloat = parseFloat($this.val());
-            if (isNaN(newValueFloat) || newValueFloat < 0 || newValueFloat > 100) {
-                $this.val(layer.transparency);
-                return;
-            }
-            layer.setTransparency($this.val());
-        });
-
-        layer.addListener("transparency", function (e) {
-            $html.find('input.transparency-text').val(e.value);
-        });
-
-        //jdm 5/14/13: add listener for mask functionality
-        //for every mask checkbox we check we getting a click event
-
-        $html.dialog({
-            zIndex    : 10050,
-            position  : "left",
-            autoOpen  : true,
-            hide      : "explode",
-            title     : layer.name,
-            width     : 'auto',
-            close     : function () {
-                $(this).dialog('destroy');
-                $html.remove();
-                createLayerPropertiesDialog.$html[layer.lid] = undefined;
-            }
-        });
-        createLayerPropertiesDialog.$html[layer.lid] = $html;
-    } //end function createLayerPropertiesDialog (layer)
-
-    // Object to be used as hash for tracking the $html objects created by createLayerPropertiesDialog;
-    // keys are layer lids:
-    createLayerPropertiesDialog.$html = {};
+    var createLayerPropertiesDialog = require("./js/layer_dialog.js")($);
 
     function activateIdentifyTool () {
         deactivateActiveOpenLayersControls();
@@ -2672,4 +2680,4 @@ module.exports = Theme;
 
 }(jQuery));
 
-},{"./js/share.js":1,"./js/splash.js":2,"./js/theme.js":3}]},{},[4]);
+},{"./js/layer_dialog.js":1,"./js/share.js":2,"./js/splash.js":3,"./js/theme.js":4}]},{},[5]);
