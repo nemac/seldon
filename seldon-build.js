@@ -1529,6 +1529,7 @@ module.exports = function ($) {
 
 },{}],24:[function(require,module,exports){
 module.exports = function ($) {
+    var createArcGIS93RestParams = require("./create_arcgis_rest_params.js")($);
     var AccordionGroup = require("./accordion_group.js");
     var AccordionGroupSublist = require("./accordion_group_sublist.js");
     var BaseLayer = require("./baselayer.js");
@@ -1754,7 +1755,7 @@ module.exports = function ($) {
     return parseConfig;
 }
 
-},{"./accordion_group.js":1,"./accordion_group_sublist.js":2,"./baselayer.js":4,"./identify.js":9,"./layer.js":14,"./multigraph.js":21,"./theme.js":31}],25:[function(require,module,exports){
+},{"./accordion_group.js":1,"./accordion_group_sublist.js":2,"./baselayer.js":4,"./create_arcgis_rest_params.js":6,"./identify.js":9,"./layer.js":14,"./multigraph.js":21,"./theme.js":31}],25:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap () {
         // go through all layers, and collect a list of objects
@@ -2776,7 +2777,6 @@ module.exports = Theme;
     }
 
     seldon.init = require("./js/init.js")(app);
-    var createArcGIS93RestParams = require("./js/create_arcgis_rest_params.js")($);
     var Mask = require("./js/mask.js");
     var Layer = require("./js/layer.js")($, app);
     var ShareUrlInfo = require("./js/share.js");
@@ -2801,4 +2801,4 @@ module.exports = Theme;
 
 }(jQuery));
 
-},{"./js/clicktool.js":5,"./js/create_arcgis_rest_params.js":6,"./js/extents_equal.js":8,"./js/init.js":11,"./js/init_openlayers.js":12,"./js/launch.js":13,"./js/layer.js":14,"./js/mask.js":20,"./js/overrides.js":23,"./js/parse_config.js":24,"./js/print.js":25,"./js/set_theme.js":27,"./js/share.js":28,"./js/stringContainsChar.js":30}]},{},[32]);
+},{"./js/clicktool.js":5,"./js/extents_equal.js":8,"./js/init.js":11,"./js/init_openlayers.js":12,"./js/launch.js":13,"./js/layer.js":14,"./js/mask.js":20,"./js/overrides.js":23,"./js/parse_config.js":24,"./js/print.js":25,"./js/set_theme.js":27,"./js/share.js":28,"./js/stringContainsChar.js":30}]},{},[32]);

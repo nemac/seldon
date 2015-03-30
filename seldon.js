@@ -480,7 +480,6 @@
     }
 
     seldon.init = require("./js/init.js")(app);
-    var createArcGIS93RestParams = require("./js/create_arcgis_rest_params.js")($);
     var Mask = require("./js/mask.js");
     var Layer = require("./js/layer.js")($, app);
     var ShareUrlInfo = require("./js/share.js");

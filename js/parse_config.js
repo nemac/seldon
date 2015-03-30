@@ -1,4 +1,5 @@
 module.exports = function ($) {
+    var createArcGIS93RestParams = require("./create_arcgis_rest_params.js")($);
     var AccordionGroup = require("./accordion_group.js");
     var AccordionGroupSublist = require("./accordion_group_sublist.js");
     var BaseLayer = require("./baselayer.js");
