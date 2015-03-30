@@ -217,73 +217,9 @@
 
         this.setTheme = require("./js/set_theme.js")($);
 
-        this.shareUrl = function () {
-            if (!this.currentTheme) { return undefined; }
-            if (!this.currentAccordionGroup) { return undefined; }
-            if (!this.currentBaseLayer) { return undefined; }
+        this.shareUrl = require("./js/share_url.js")($);
 
-            var extent      = this.map.getExtent(),
-                layerLids   = [],
-                layerAlphas = [],
-                layerMask   = [],
-                url;
-
-            if (!extent) { return undefined; }
-
-            $.each(this.map.layers, function () {
-                var op;
-                if (! this.isBaseLayer) {
-                    if (this.opacity === 1) {
-                        op = "1";
-                    } else if (this.opacity === 0) {
-                        op = "0";
-                    } else {
-                        op = sprintf("%.2f", this.opacity);
-                    }
-                    if (stringContainsChar(this.name, 'MaskFor')) {
-                        //if this layer is a mask add to layerMask list
-                        if (layerMask.indexOf(this.seldonLayer.lid.substring(this.seldonLayer.lid.indexOf("MaskFor"),this.seldonLayer.lid.length).replace("MaskFor","")) == -1) {
-                            layerMask.push(this.seldonLayer.lid.substring(this.seldonLayer.lid.indexOf("MaskFor"),this.seldonLayer.lid.length).replace("MaskFor",""));
-                        }
-                        //make sure the parent to the layerMask stays on the share map url
-                        if (layerLids.indexOf(this.name.substring(0, this.name.indexOf("MaskFor"))) == -1) {
-                            layerLids.push(this.name.substring(0, this.name.indexOf("MaskFor")));
-                            layerAlphas.push(op);
-                        }
-                        var test = "";
-                    } else {
-                        //otherwise add to layerLids
-                        if (this.seldonLayer) {
-                            layerLids.push(this.seldonLayer.lid);
-                            layerAlphas.push(op);
-                        }
-                    } //end
-                }
-            });
-
-            url = window.location.toString();
-            url = url.replace(/\?.*$/, '');
-            url = url.replace(/\/$/, '');
-            url = url.replace("#", '');
-            return url + '?' + (new ShareUrlInfo({
-                themeName         : this.currentTheme.name,
-                layerLids         : layerLids,
-                layerMask         : layerMask,
-                layerAlphas       : layerAlphas,
-                accordionGroupGid : this.currentAccordionGroup.gid,
-                baseLayerName     : this.currentBaseLayer.name,
-                extent            : extent
-            })).urlArgs();
-        };
-
-        this.updateShareMapUrl = function () {
-            if (this.currentTheme) {
-                var url = this.shareUrl();
-                if (url) {
-                    $('#mapToolsDialog textarea.shareMapUrl').val(url);
-                }
-            }
-        };
+        this.updateShareMapUrl = require("./js/update_share_url.js")($);
 
         this.launch = require("./js/launch.js")($);
 
@@ -482,9 +418,7 @@
     seldon.init = require("./js/init.js")(app);
     var Mask = require("./js/mask.js");
     var Layer = require("./js/layer.js")($, app);
-    var ShareUrlInfo = require("./js/share.js");
     var ClickTool = require("./js/clicktool.js");
-    var stringContainsChar = require("./js/stringContainsChar.js");
     var extentsAreEqual = require("./js/extents_equal.js");
     var printMap = require("./js/print.js")($, app);
     require("./js/overrides.js")($);
@@ -498,8 +432,8 @@
     seldon.Layer                             = Layer;
 //    seldon.Theme                             = Theme;
 //    seldon.createWMSGetFeatureInfoRequestURL = createWMSGetFeatureInfoRequestURL;
-    seldon.stringContainsChar                = stringContainsChar;
-    seldon.ShareUrlInfo                      = ShareUrlInfo;
+//    seldon.stringContainsChar                = stringContainsChar;
+//    seldon.ShareUrlInfo                      = ShareUrlInfo;
     window.seldon                            = seldon;
 
 }(jQuery));

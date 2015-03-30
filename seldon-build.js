@@ -432,7 +432,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":5,"./stringContainsChar.js":30}],10:[function(require,module,exports){
+},{"./clicktool.js":5,"./stringContainsChar.js":31}],10:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -841,7 +841,7 @@ module.exports = function ($) {
     return launch;
 }
 
-},{"./deactivate_controls.js":7,"./identify_activate.js":10,"./multigraph_activate.js":22,"./splash.js":29}],14:[function(require,module,exports){
+},{"./deactivate_controls.js":7,"./identify_activate.js":10,"./multigraph_activate.js":22,"./splash.js":30}],14:[function(require,module,exports){
 module.exports = function ($, app) {
     function Layer (settings) {
         EventEmitter.call(this);
@@ -1755,7 +1755,7 @@ module.exports = function ($) {
     return parseConfig;
 }
 
-},{"./accordion_group.js":1,"./accordion_group_sublist.js":2,"./baselayer.js":4,"./create_arcgis_rest_params.js":6,"./identify.js":9,"./layer.js":14,"./multigraph.js":21,"./theme.js":31}],25:[function(require,module,exports){
+},{"./accordion_group.js":1,"./accordion_group_sublist.js":2,"./baselayer.js":4,"./create_arcgis_rest_params.js":6,"./identify.js":9,"./layer.js":14,"./multigraph.js":21,"./theme.js":32}],25:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap () {
         // go through all layers, and collect a list of objects
@@ -2241,6 +2241,73 @@ module.exports = ShareUrlInfo;
 
 },{}],29:[function(require,module,exports){
 module.exports = function ($) {
+    var stringContainsChar = require("./stringContainsChar.js");
+    var ShareUrlInfo = require("./share.js");
+
+    function shareUrl () {
+        if (!this.currentTheme) { return undefined; }
+        if (!this.currentAccordionGroup) { return undefined; }
+        if (!this.currentBaseLayer) { return undefined; }
+
+        var extent      = this.map.getExtent(),
+            layerLids   = [],
+            layerAlphas = [],
+            layerMask   = [],
+            url;
+
+        if (!extent) { return undefined; }
+
+        $.each(this.map.layers, function () {
+            var op;
+            if (! this.isBaseLayer) {
+                if (this.opacity === 1) {
+                    op = "1";
+                } else if (this.opacity === 0) {
+                    op = "0";
+                } else {
+                    op = sprintf("%.2f", this.opacity);
+                }
+                if (stringContainsChar(this.name, 'MaskFor')) {
+                    //if this layer is a mask add to layerMask list
+                    if (layerMask.indexOf(this.seldonLayer.lid.substring(this.seldonLayer.lid.indexOf("MaskFor"),this.seldonLayer.lid.length).replace("MaskFor","")) == -1) {
+                        layerMask.push(this.seldonLayer.lid.substring(this.seldonLayer.lid.indexOf("MaskFor"),this.seldonLayer.lid.length).replace("MaskFor",""));
+                    }
+                    //make sure the parent to the layerMask stays on the share map url
+                    if (layerLids.indexOf(this.name.substring(0, this.name.indexOf("MaskFor"))) == -1) {
+                        layerLids.push(this.name.substring(0, this.name.indexOf("MaskFor")));
+                        layerAlphas.push(op);
+                    }
+                    var test = "";
+                } else {
+                    //otherwise add to layerLids
+                    if (this.seldonLayer) {
+                        layerLids.push(this.seldonLayer.lid);
+                        layerAlphas.push(op);
+                    }
+                } //end
+            }
+        });
+
+        url = window.location.toString();
+        url = url.replace(/\?.*$/, '');
+        url = url.replace(/\/$/, '');
+        url = url.replace("#", '');
+        return url + '?' + (new ShareUrlInfo({
+            themeName         : this.currentTheme.name,
+            layerLids         : layerLids,
+            layerMask         : layerMask,
+            layerAlphas       : layerAlphas,
+            accordionGroupGid : this.currentAccordionGroup.gid,
+            baseLayerName     : this.currentBaseLayer.name,
+            extent            : extent
+        })).urlArgs();
+    };
+
+    return shareUrl;
+}
+
+},{"./share.js":28,"./stringContainsChar.js":31}],30:[function(require,module,exports){
+module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
             $document    = $(document),
@@ -2260,14 +2327,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -2294,7 +2361,21 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],32:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
+module.exports = function ($) {
+    function updateShareMapUrl () {
+        if (this.currentTheme) {
+            var url = this.shareUrl();
+            if (url) {
+                $('#mapToolsDialog textarea.shareMapUrl').val(url);
+            }
+        }
+    }
+
+    return updateShareMapUrl;
+}
+
+},{}],34:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2514,73 +2595,9 @@ module.exports = Theme;
 
         this.setTheme = require("./js/set_theme.js")($);
 
-        this.shareUrl = function () {
-            if (!this.currentTheme) { return undefined; }
-            if (!this.currentAccordionGroup) { return undefined; }
-            if (!this.currentBaseLayer) { return undefined; }
+        this.shareUrl = require("./js/share_url.js")($);
 
-            var extent      = this.map.getExtent(),
-                layerLids   = [],
-                layerAlphas = [],
-                layerMask   = [],
-                url;
-
-            if (!extent) { return undefined; }
-
-            $.each(this.map.layers, function () {
-                var op;
-                if (! this.isBaseLayer) {
-                    if (this.opacity === 1) {
-                        op = "1";
-                    } else if (this.opacity === 0) {
-                        op = "0";
-                    } else {
-                        op = sprintf("%.2f", this.opacity);
-                    }
-                    if (stringContainsChar(this.name, 'MaskFor')) {
-                        //if this layer is a mask add to layerMask list
-                        if (layerMask.indexOf(this.seldonLayer.lid.substring(this.seldonLayer.lid.indexOf("MaskFor"),this.seldonLayer.lid.length).replace("MaskFor","")) == -1) {
-                            layerMask.push(this.seldonLayer.lid.substring(this.seldonLayer.lid.indexOf("MaskFor"),this.seldonLayer.lid.length).replace("MaskFor",""));
-                        }
-                        //make sure the parent to the layerMask stays on the share map url
-                        if (layerLids.indexOf(this.name.substring(0, this.name.indexOf("MaskFor"))) == -1) {
-                            layerLids.push(this.name.substring(0, this.name.indexOf("MaskFor")));
-                            layerAlphas.push(op);
-                        }
-                        var test = "";
-                    } else {
-                        //otherwise add to layerLids
-                        if (this.seldonLayer) {
-                            layerLids.push(this.seldonLayer.lid);
-                            layerAlphas.push(op);
-                        }
-                    } //end
-                }
-            });
-
-            url = window.location.toString();
-            url = url.replace(/\?.*$/, '');
-            url = url.replace(/\/$/, '');
-            url = url.replace("#", '');
-            return url + '?' + (new ShareUrlInfo({
-                themeName         : this.currentTheme.name,
-                layerLids         : layerLids,
-                layerMask         : layerMask,
-                layerAlphas       : layerAlphas,
-                accordionGroupGid : this.currentAccordionGroup.gid,
-                baseLayerName     : this.currentBaseLayer.name,
-                extent            : extent
-            })).urlArgs();
-        };
-
-        this.updateShareMapUrl = function () {
-            if (this.currentTheme) {
-                var url = this.shareUrl();
-                if (url) {
-                    $('#mapToolsDialog textarea.shareMapUrl').val(url);
-                }
-            }
-        };
+        this.updateShareMapUrl = require("./js/update_share_url.js")($);
 
         this.launch = require("./js/launch.js")($);
 
@@ -2779,9 +2796,7 @@ module.exports = Theme;
     seldon.init = require("./js/init.js")(app);
     var Mask = require("./js/mask.js");
     var Layer = require("./js/layer.js")($, app);
-    var ShareUrlInfo = require("./js/share.js");
     var ClickTool = require("./js/clicktool.js");
-    var stringContainsChar = require("./js/stringContainsChar.js");
     var extentsAreEqual = require("./js/extents_equal.js");
     var printMap = require("./js/print.js")($, app);
     require("./js/overrides.js")($);
@@ -2795,10 +2810,10 @@ module.exports = Theme;
     seldon.Layer                             = Layer;
 //    seldon.Theme                             = Theme;
 //    seldon.createWMSGetFeatureInfoRequestURL = createWMSGetFeatureInfoRequestURL;
-    seldon.stringContainsChar                = stringContainsChar;
-    seldon.ShareUrlInfo                      = ShareUrlInfo;
+//    seldon.stringContainsChar                = stringContainsChar;
+//    seldon.ShareUrlInfo                      = ShareUrlInfo;
     window.seldon                            = seldon;
 
 }(jQuery));
 
-},{"./js/clicktool.js":5,"./js/extents_equal.js":8,"./js/init.js":11,"./js/init_openlayers.js":12,"./js/launch.js":13,"./js/layer.js":14,"./js/mask.js":20,"./js/overrides.js":23,"./js/parse_config.js":24,"./js/print.js":25,"./js/set_theme.js":27,"./js/share.js":28,"./js/stringContainsChar.js":30}]},{},[32]);
+},{"./js/clicktool.js":5,"./js/extents_equal.js":8,"./js/init.js":11,"./js/init_openlayers.js":12,"./js/launch.js":13,"./js/layer.js":14,"./js/mask.js":20,"./js/overrides.js":23,"./js/parse_config.js":24,"./js/print.js":25,"./js/set_theme.js":27,"./js/share_url.js":29,"./js/update_share_url.js":33}]},{},[34]);
