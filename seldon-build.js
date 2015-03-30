@@ -173,6 +173,105 @@ module.exports = function (app, activeBtn) {
 }
 
 },{}],9:[function(require,module,exports){
+function printSavedExtents () {
+    // This function is for debugging only and is not normally used.  It returns an HTML
+    // table showing the current savedExtents list, and the current position within the list.
+    var html = "<table>";
+    var len = this.savedExtents.length;
+    var i, e;
+    for (i = len-1; i >= 0; --i) {
+        e = this.savedExtents[i];
+        html += Mustache.render('<tr><td>{{{marker}}}</td><td>{{{number}}}</td>'
+                                + '<td>left:{{{left}}}, bottom:{{{bottom}}}, right:{{{right}}}, top:{{{top}}}</td></tr>',
+                                {
+                                    marker : (i === this.currentSavedExtentIndex) ? "==&gt;" : "",
+                                    number : i,
+                                    left : e.left,
+                                    bottom : e.bottom,
+                                    right : e.right,
+                                    top : e.top
+                                });
+    }
+    html += "</table>";
+    return html;
+}
+
+module.exports = printSavedExtents;
+
+},{}],10:[function(require,module,exports){
+var extentsAreEqual = require("./extents_equal.js");
+
+// save the current extent into the savedExtents array, if it is different from
+// the "current" one.  It is important to only save it if it differs from the
+// current one, because sometimes OpenLayers fires multiple events when the extent
+// changes, causing this function to be called multiple times with the same
+// extent
+function saveCurrentExtent () {
+    var newExtent,
+        currentSavedExtent,
+        newSavedExtents,
+        i;
+
+    newExtent = (function (extent) {
+        return { left : extent.left, bottom : extent.bottom, right : extent.right, top : extent.top };
+    }(this.map.getExtent()));
+
+    if (this.currentSavedExtentIndex >= 0) {
+        currentSavedExtent = this.savedExtents[this.currentSavedExtentIndex];
+        if (extentsAreEqual(currentSavedExtent, newExtent)) {
+            return;
+        }
+    }
+
+    // chop off the list after the current position
+    newSavedExtents = [];
+    for (i = 0; i <= this.currentSavedExtentIndex; ++i) {
+        newSavedExtents.push(this.savedExtents[i]);
+    }
+    this.savedExtents = newSavedExtents;
+
+    // append current extent to the list
+    this.savedExtents.push(newExtent);
+    ++this.currentSavedExtentIndex;
+}
+
+module.exports = saveCurrentExtent;
+
+},{"./extents_equal.js":14}],11:[function(require,module,exports){
+function zoomToExtent (extent, save) {
+    if (save === undefined) {
+        save = true;
+    }
+    var bounds = new OpenLayers.Bounds(extent.left, extent.bottom, extent.right, extent.top);
+    this.map.zoomToExtent(bounds, true);
+    if (save) {
+        this.saveCurrentExtent();
+    }
+}
+
+module.exports = zoomToExtent;
+
+},{}],12:[function(require,module,exports){
+function zoomToNextExtent () {
+    if (this.currentSavedExtentIndex < this.savedExtents.length-1) {
+        ++this.currentSavedExtentIndex;
+        this.zoomToExtent(this.savedExtents[this.currentSavedExtentIndex], false);
+    }
+}
+
+module.exports = zoomToNextExtent;
+
+},{}],13:[function(require,module,exports){
+function zoomToPreviousExtent () {
+    if (this.currentSavedExtentIndex > 0) {
+        --this.currentSavedExtentIndex;
+        this.zoomToExtent(this.savedExtents[this.currentSavedExtentIndex], false);
+    }
+}
+
+module.exports = zoomToPreviousExtent;
+
+},{}],14:[function(require,module,exports){
 function extentsAreEqual (e1, e2) {
     var tolerance = 0.001;
     return ((Math.abs(e1.left - e2.left)        <= tolerance)
@@ -183,7 +282,7 @@ function extentsAreEqual (e1, e2) {
 
 module.exports = extentsAreEqual;
 
-},{}],10:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js'),
         stringContainsChar = require('./stringContainsChar.js');
@@ -454,7 +553,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":6,"./stringContainsChar.js":34}],11:[function(require,module,exports){
+},{"./clicktool.js":6,"./stringContainsChar.js":39}],16:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -466,7 +565,7 @@ module.exports = function (app, activeBtn) {
     return activateIdentifyTool;
 }
 
-},{"./deactivate_controls.js":8}],12:[function(require,module,exports){
+},{"./deactivate_controls.js":8}],17:[function(require,module,exports){
 module.exports = function (app) {
     var ShareUrlInfo = require('./share.js');
 
@@ -482,7 +581,7 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":31}],13:[function(require,module,exports){
+},{"./share.js":36}],18:[function(require,module,exports){
 function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
     var app = this;
 
@@ -560,7 +659,7 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
 
 module.exports = initOpenLayers;
 
-},{}],14:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 module.exports = function ($) {
     var createSplashScreen = require("./splash.js")($);
 
@@ -864,7 +963,7 @@ module.exports = function ($) {
     return launch;
 }
 
-},{"./deactivate_controls.js":8,"./identify_activate.js":11,"./multigraph_activate.js":23,"./print.js":26,"./splash.js":33}],15:[function(require,module,exports){
+},{"./deactivate_controls.js":8,"./identify_activate.js":16,"./multigraph_activate.js":28,"./print.js":31,"./splash.js":38}],20:[function(require,module,exports){
 module.exports = function ($, app) {
     var stringContainsChar = require('./stringContainsChar.js');
 
@@ -1071,7 +1170,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{"./stringContainsChar.js":34}],16:[function(require,module,exports){
+},{"./stringContainsChar.js":39}],21:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -1101,7 +1200,7 @@ module.exports = function ($) {
     return createLayerToggleCheckbox;
 }
 
-},{}],17:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
     //This function gets called every time the layer properties icon gets clicked
 module.exports = function ($) {
     function createLayerPropertiesDialog (layer) {
@@ -1191,7 +1290,7 @@ module.exports = function ($) {
 }
 
 
-},{}],18:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 module.exports = function ($) {
     var createLayerPropertiesDialog = require("./layer_dialog.js")($);
 
@@ -1209,7 +1308,7 @@ module.exports = function ($) {
     return createLayerPropertiesIcon;
 }
 
-},{"./layer_dialog.js":17}],19:[function(require,module,exports){
+},{"./layer_dialog.js":22}],24:[function(require,module,exports){
 module.exports = function ($, app) {
     var Layer = require('./layer.js')($, app);
 
@@ -1293,7 +1392,7 @@ module.exports = function ($, app) {
     return createLayerToggleRadioButton;
 }
 
-},{"./layer.js":15}],20:[function(require,module,exports){
+},{"./layer.js":20}],25:[function(require,module,exports){
 module.exports = function ($, app) {
     function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
         var selectBox = document.createElement("select"),$selectBox;
@@ -1395,7 +1494,7 @@ module.exports = function ($, app) {
     return createLayerToggleDropdownBox;
 }
 
-},{}],21:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 function Mask (maskName) {
     window.EventEmitter.call(this);
     this.maskName = maskName;
@@ -1404,7 +1503,7 @@ function Mask (maskName) {
 
 module.exports = Mask;
 
-},{}],22:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js');
 
@@ -1485,7 +1584,7 @@ module.exports = function ($, app) {
     return createMultigraphTool;
 }
 
-},{"./clicktool.js":6}],23:[function(require,module,exports){
+},{"./clicktool.js":6}],28:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -1497,7 +1596,7 @@ module.exports = function (app, activeBtn) {
     return activateMultigraphTool;
 }
 
-},{"./deactivate_controls.js":8}],24:[function(require,module,exports){
+},{"./deactivate_controls.js":8}],29:[function(require,module,exports){
 module.exports = function ($) {
     //jdm: override of js remove function
     //This is very useful for removing items from array by value
@@ -1552,7 +1651,7 @@ module.exports = function ($) {
     }));
 }
 
-},{}],25:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 module.exports = function ($) {
     var createArcGIS93RestParams = require("./create_arcgis_rest_params.js")($);
     var AccordionGroup = require("./accordion_group.js");
@@ -1780,7 +1879,7 @@ module.exports = function ($) {
     return parseConfig;
 }
 
-},{"./accordion_group.js":1,"./accordion_group_sublist.js":2,"./baselayer.js":5,"./create_arcgis_rest_params.js":7,"./identify.js":10,"./layer.js":15,"./multigraph.js":22,"./theme.js":35}],26:[function(require,module,exports){
+},{"./accordion_group.js":1,"./accordion_group_sublist.js":2,"./baselayer.js":5,"./create_arcgis_rest_params.js":7,"./identify.js":15,"./layer.js":20,"./multigraph.js":27,"./theme.js":40}],31:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap () {
         // go through all layers, and collect a list of objects
@@ -1854,7 +1953,7 @@ module.exports = function ($, app) {
     return printMap;
 };
 
-},{}],27:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 function RepeatingOperation (op, yieldEveryIteration) {
     var count = 0;
     var instance = this;
@@ -1870,7 +1969,7 @@ function RepeatingOperation (op, yieldEveryIteration) {
 
 module.exports = RepeatingOperation;
 
-},{}],28:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 module.exports = function ($) {
     function setMaskByLayer (toggle, parentLayer) {
         var Layer = require("./layer.js")($, this);
@@ -1936,7 +2035,7 @@ module.exports = function ($) {
     return setMaskByLayer;
 }
 
-},{"./layer.js":15}],29:[function(require,module,exports){
+},{"./layer.js":20}],34:[function(require,module,exports){
 module.exports = function ($) {
     var Mask = require("./mask.js");
 
@@ -2040,7 +2139,7 @@ module.exports = function ($) {
     return setMaskByMask;
 }
 
-},{"./layer.js":15,"./mask.js":21}],30:[function(require,module,exports){
+},{"./layer.js":20,"./mask.js":26}],35:[function(require,module,exports){
 module.exports = function ($) {
     var RepeatingOperation = require("./repeating_operation.js");
     var ShareUrlInfo = require("./share.js");
@@ -2324,7 +2423,7 @@ module.exports = function ($) {
     return setTheme;
 }
 
-},{"./array_contains_element.js":4,"./layer_checkbox.js":16,"./layer_icon.js":18,"./layer_radio.js":19,"./layer_select.js":20,"./repeating_operation.js":27,"./share.js":31}],31:[function(require,module,exports){
+},{"./array_contains_element.js":4,"./layer_checkbox.js":21,"./layer_icon.js":23,"./layer_radio.js":24,"./layer_select.js":25,"./repeating_operation.js":32,"./share.js":36}],36:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) {
         settings = {};
@@ -2434,7 +2533,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],32:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 module.exports = function ($) {
     var stringContainsChar = require("./stringContainsChar.js");
     var ShareUrlInfo = require("./share.js");
@@ -2501,7 +2600,7 @@ module.exports = function ($) {
     return shareUrl;
 }
 
-},{"./share.js":31,"./stringContainsChar.js":34}],33:[function(require,module,exports){
+},{"./share.js":36,"./stringContainsChar.js":39}],38:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -2522,14 +2621,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],34:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],35:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -2556,7 +2655,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],36:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 module.exports = function ($) {
     function updateShareMapUrl () {
         if (this.currentTheme) {
@@ -2570,7 +2669,7 @@ module.exports = function ($) {
     return updateShareMapUrl;
 }
 
-},{}],37:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2622,58 +2721,11 @@ module.exports = function ($) {
         // index of the "current" extent in the above array:
         this.currentSavedExtentIndex = -1;
 
-        // save the current extent into the savedExtents array, if it is different from
-        // the "current" one.  It is important to only save it if it differs from the
-        // current one, because sometimes OpenLayers fires multiple events when the extent
-        // changes, causing this function to be called multiple times with the same
-        // extent
-        this.saveCurrentExtent = function () {
-            var newExtent,
-                currentSavedExtent,
-                newSavedExtents,
-                i;
-
-            newExtent = (function (extent) {
-                return { left : extent.left, bottom : extent.bottom, right : extent.right, top : extent.top };
-            }(this.map.getExtent()));
-
-            if (this.currentSavedExtentIndex >= 0) {
-                currentSavedExtent = this.savedExtents[this.currentSavedExtentIndex];
-                if (extentsAreEqual(currentSavedExtent, newExtent)) {
-                    return;
-                }
-            }
-
-            // chop off the list after the current position
-            newSavedExtents = [];
-            for (i = 0; i <= this.currentSavedExtentIndex; ++i) {
-                newSavedExtents.push(this.savedExtents[i]);
-            }
-            this.savedExtents = newSavedExtents;
-
-            // append current extent to the list
-            this.savedExtents.push(newExtent);
-            ++this.currentSavedExtentIndex;
-        };
-
-        this.zoomToExtent = function (extent, save) {
-            if (save === undefined) {
-                save = true;
-            }
-            var bounds = new OpenLayers.Bounds(extent.left, extent.bottom, extent.right, extent.top);
-            this.map.zoomToExtent(bounds, true);
-            if (save) {
-                this.saveCurrentExtent();
-            }
-            //$('#extentOutput').empty().append($(this.printSavedExtents()));
-        };
-
-        this.zoomToPreviousExtent = function () {
-            if (this.currentSavedExtentIndex > 0) {
-                --this.currentSavedExtentIndex;
-                this.zoomToExtent(this.savedExtents[this.currentSavedExtentIndex], false);
-            }
-        };
+        this.saveCurrentExtent = require("./js/extent_save.js");
+        this.zoomToExtent = require("./js/extent_zoom.js");
+        this.zoomToPreviousExtent = require("./js/extent_zoom_previous.js");
+        this.zoomToNextExtent = require("./js/extent_zoom_next.js");
+        this.printSavedExtents = require("./js/extent_print.js");
 
         this.checkForExistingItemInArray = function (arr,item) {
             var isItemInArray = false;
@@ -2683,36 +2735,6 @@ module.exports = function ($) {
                 }
             }
             return isItemInArray;
-        };
-
-        this.zoomToNextExtent = function () {
-            if (this.currentSavedExtentIndex < this.savedExtents.length-1) {
-                ++this.currentSavedExtentIndex;
-                this.zoomToExtent(this.savedExtents[this.currentSavedExtentIndex], false);
-            }
-        };
-
-        this.printSavedExtents = function () {
-            // This function is for debugging only and is not normally used.  It returns an HTML
-            // table showing the current savedExtents list, and the current position within the list.
-            var html = "<table>";
-            var len = this.savedExtents.length;
-            var i, e;
-            for (i = len-1; i >= 0; --i) {
-                e = this.savedExtents[i];
-                html += Mustache.render('<tr><td>{{{marker}}}</td><td>{{{number}}}</td>'
-                                        + '<td>left:{{{left}}}, bottom:{{{bottom}}}, right:{{{right}}}, top:{{{top}}}</td></tr>',
-                                        {
-                                            marker : (i === this.currentSavedExtentIndex) ? "==&gt;" : "",
-                                            number : i,
-                                            left : e.left,
-                                            bottom : e.bottom,
-                                            right : e.right,
-                                            top : e.top
-                                        });
-            }
-            html += "</table>";
-            return html;
         };
 
         this.setBaseLayer = function (baseLayer) {
@@ -2824,7 +2846,6 @@ module.exports = function ($) {
     }
 
     seldon.init = require("./js/init.js")(app);
-    var extentsAreEqual = require("./js/extents_equal.js");
     require("./js/overrides.js")($);
 
     //
@@ -2842,4 +2863,4 @@ module.exports = function ($) {
 
 }(jQuery));
 
-},{"./js/add_mask_legend.js":3,"./js/extents_equal.js":9,"./js/init.js":12,"./js/init_openlayers.js":13,"./js/launch.js":14,"./js/overrides.js":24,"./js/parse_config.js":25,"./js/set_mask_by_layer.js":28,"./js/set_mask_by_mask.js":29,"./js/set_theme.js":30,"./js/share_url.js":32,"./js/update_share_url.js":36}]},{},[37]);
+},{"./js/add_mask_legend.js":3,"./js/extent_print.js":9,"./js/extent_save.js":10,"./js/extent_zoom.js":11,"./js/extent_zoom_next.js":12,"./js/extent_zoom_previous.js":13,"./js/init.js":17,"./js/init_openlayers.js":18,"./js/launch.js":19,"./js/overrides.js":29,"./js/parse_config.js":30,"./js/set_mask_by_layer.js":33,"./js/set_mask_by_mask.js":34,"./js/set_theme.js":35,"./js/share_url.js":37,"./js/update_share_url.js":41}]},{},[42]);
