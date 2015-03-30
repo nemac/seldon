@@ -68,45 +68,11 @@
         this.setBaseLayer = require("./js/set_base_layer.js")($);
 
         // Begin Accordion Group Specific Functions
-        this.setAccordionGroup = function (accordionGroup) {
-            this.currentAccordionGroup = accordionGroup;
-            this.emit("accordiongroupchange");
-        };
-
-        this.clearAccordionSections = function (accordionGroup) {
-            $(accordionGroup).empty();
-            $(accordionGroup).data('listAccordion').sections = [];
-            $(accordionGroup).accordion('refresh');
-        };
-
-        this.addAccordionSection = function (accordionGroup, title) {
-            var sectionObj = {
-                title          : title,
-                titleElement   : $('<h3>' + title + '</h3>'),
-                contentElement : $('<div></div>'),
-                sublists    : []
-            };
-            $(accordionGroup).data('listAccordion').sections.push(sectionObj);
-            $(accordionGroup).append(sectionObj.titleElement)
-                .append(sectionObj.contentElement);
-            $(accordionGroup).accordion('refresh');
-            return sectionObj;
-        }
-
-        this.addAccordionSublists = function (g, items) {
-            $(g.contentElement).append(items);
-        }
-
-        this.addAccordionSublistItems = function (s, items) {
-            var contents = $('<div class="layer"></div>');
-            contents.append(items);
-            var layer = {
-                name : name,
-                contentElement : contents
-            };
-            s.items.push(layer);
-            s.contentElement.append(layer.contentElement);
-        }
+        this.setAccordionGroup = require("./js/accordion_group_set.js");
+        this.clearAccordionSections = require("./js/accordion_clear.js")($);
+        this.addAccordionSection = require("./js/accordion_section_add.js")($);
+        this.addAccordionSublists = require("./js/accordion_sublist_add.js")($);
+        this.addAccordionSublistItems = require("./js/accordion_sublist_item_add.js")($);
 
         // End Accordion Group Specific Functions
 

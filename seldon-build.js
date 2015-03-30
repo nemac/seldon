@@ -1,4 +1,15 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+module.exports = function ($) {
+     function clearAccordionSections (accordionGroup) {
+        $(accordionGroup).empty();
+        $(accordionGroup).data('listAccordion').sections = [];
+        $(accordionGroup).accordion('refresh');
+    };
+
+    return clearAccordionSections;
+}
+
+},{}],2:[function(require,module,exports){
 function AccordionGroup (settings) {
     if (!settings) { return; }
     this.sublists         = [];
@@ -10,7 +21,15 @@ function AccordionGroup (settings) {
 
 module.exports = AccordionGroup;
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
+function setAccordionGroup (accordionGroup) {
+    this.currentAccordionGroup = accordionGroup;
+    this.emit("accordiongroupchange");
+}
+
+module.exports = setAccordionGroup;
+
+},{}],4:[function(require,module,exports){
 function AccordionGroupSublist (settings) {
     if (!settings) { return; }
     this.layers = [];
@@ -20,7 +39,51 @@ function AccordionGroupSublist (settings) {
 
 module.exports = AccordionGroupSublist;
 
-},{}],3:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
+module.exports = function ($) {
+    function addAccordionSection (accordionGroup, title) {
+        var sectionObj = {
+            title          : title,
+            titleElement   : $('<h3>' + title + '</h3>'),
+            contentElement : $('<div></div>'),
+            sublists    : []
+        };
+        $(accordionGroup).data('listAccordion').sections.push(sectionObj);
+        $(accordionGroup).append(sectionObj.titleElement)
+            .append(sectionObj.contentElement);
+        $(accordionGroup).accordion('refresh');
+        return sectionObj;
+    }
+
+    return addAccordionSection;
+}
+
+},{}],6:[function(require,module,exports){
+module.exports = function ($) {
+    function addAccordionSublists (g, items) {
+        $(g.contentElement).append(items);
+    }
+
+    return addAccordionSublists;
+}
+
+},{}],7:[function(require,module,exports){
+module.exports = function ($) {
+    function addAccordionSublistItems (s, items) {
+        var contents = $('<div class="layer"></div>');
+        contents.append(items);
+        var layer = {
+            name : name,
+            contentElement : contents
+        };
+        s.items.push(layer);
+        s.contentElement.append(layer.contentElement);
+    }
+
+    return addAccordionSublistItems;
+}
+
+},{}],8:[function(require,module,exports){
 module.exports = function ($) {
      function addMaskToLegend (layer) {
          var app = this;
@@ -42,7 +105,7 @@ module.exports = function ($) {
 }
 
 
-},{}],4:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 function arrayContainsElement (array, element) {
     var i;
     if (array === undefined) {
@@ -58,7 +121,7 @@ function arrayContainsElement (array, element) {
 
 module.exports = arrayContainsElement;
 
-},{}],5:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 function BaseLayer (settings) {
     if (!settings) { return; }
     this.name  = settings.name;
@@ -69,7 +132,7 @@ function BaseLayer (settings) {
 
 module.exports = BaseLayer;
 
-},{}],6:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 // The following creates a new OpenLayers tool class called ClickTool
 // which calls a function whenever the user clicks in the map.  Each
 // instance of ClickTool corresponds to a specific callback function.
@@ -106,7 +169,7 @@ var ClickTool = OpenLayers.Class(OpenLayers.Control, {
 
 module.exports = ClickTool;
 
-},{}],7:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 module.exports = function ($) {
     function createArcGIS93RestParams ($layer) {
         //  $layer is a jQuery object corresponding to a <restLayer> section in the config file.
@@ -149,7 +212,7 @@ module.exports = function ($) {
     return createArcGIS93RestParams;
 }
 
-},{}],8:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     function deactivateActiveOpenLayersControls () {
         var controls,
@@ -172,7 +235,7 @@ module.exports = function (app, activeBtn) {
     return deactivateActiveOpenLayersControls;
 }
 
-},{}],9:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 function printSavedExtents () {
     // This function is for debugging only and is not normally used.  It returns an HTML
     // table showing the current savedExtents list, and the current position within the list.
@@ -198,7 +261,7 @@ function printSavedExtents () {
 
 module.exports = printSavedExtents;
 
-},{}],10:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var extentsAreEqual = require("./extents_equal.js");
 
 // save the current extent into the savedExtents array, if it is different from
@@ -237,7 +300,7 @@ function saveCurrentExtent () {
 
 module.exports = saveCurrentExtent;
 
-},{"./extents_equal.js":14}],11:[function(require,module,exports){
+},{"./extents_equal.js":19}],16:[function(require,module,exports){
 function zoomToExtent (extent, save) {
     if (save === undefined) {
         save = true;
@@ -251,7 +314,7 @@ function zoomToExtent (extent, save) {
 
 module.exports = zoomToExtent;
 
-},{}],12:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 function zoomToNextExtent () {
     if (this.currentSavedExtentIndex < this.savedExtents.length-1) {
         ++this.currentSavedExtentIndex;
@@ -261,7 +324,7 @@ function zoomToNextExtent () {
 
 module.exports = zoomToNextExtent;
 
-},{}],13:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 function zoomToPreviousExtent () {
     if (this.currentSavedExtentIndex > 0) {
         --this.currentSavedExtentIndex;
@@ -271,7 +334,7 @@ function zoomToPreviousExtent () {
 
 module.exports = zoomToPreviousExtent;
 
-},{}],14:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 function extentsAreEqual (e1, e2) {
     var tolerance = 0.001;
     return ((Math.abs(e1.left - e2.left)        <= tolerance)
@@ -282,7 +345,7 @@ function extentsAreEqual (e1, e2) {
 
 module.exports = extentsAreEqual;
 
-},{}],15:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js'),
         stringContainsChar = require('./stringContainsChar.js');
@@ -553,7 +616,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":6,"./stringContainsChar.js":40}],16:[function(require,module,exports){
+},{"./clicktool.js":11,"./stringContainsChar.js":45}],21:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -565,7 +628,7 @@ module.exports = function (app, activeBtn) {
     return activateIdentifyTool;
 }
 
-},{"./deactivate_controls.js":8}],17:[function(require,module,exports){
+},{"./deactivate_controls.js":13}],22:[function(require,module,exports){
 module.exports = function (app) {
     var ShareUrlInfo = require('./share.js');
 
@@ -581,7 +644,7 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":37}],18:[function(require,module,exports){
+},{"./share.js":42}],23:[function(require,module,exports){
 function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
     var app = this;
 
@@ -659,7 +722,7 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
 
 module.exports = initOpenLayers;
 
-},{}],19:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 module.exports = function ($) {
     var createSplashScreen = require("./splash.js")($);
 
@@ -963,7 +1026,7 @@ module.exports = function ($) {
     return launch;
 }
 
-},{"./deactivate_controls.js":8,"./identify_activate.js":16,"./multigraph_activate.js":28,"./print.js":31,"./splash.js":39}],20:[function(require,module,exports){
+},{"./deactivate_controls.js":13,"./identify_activate.js":21,"./multigraph_activate.js":33,"./print.js":36,"./splash.js":44}],25:[function(require,module,exports){
 module.exports = function ($, app) {
     var stringContainsChar = require('./stringContainsChar.js');
 
@@ -1170,7 +1233,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{"./stringContainsChar.js":40}],21:[function(require,module,exports){
+},{"./stringContainsChar.js":45}],26:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -1200,7 +1263,7 @@ module.exports = function ($) {
     return createLayerToggleCheckbox;
 }
 
-},{}],22:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
     //This function gets called every time the layer properties icon gets clicked
 module.exports = function ($) {
     function createLayerPropertiesDialog (layer) {
@@ -1290,7 +1353,7 @@ module.exports = function ($) {
 }
 
 
-},{}],23:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 module.exports = function ($) {
     var createLayerPropertiesDialog = require("./layer_dialog.js")($);
 
@@ -1308,7 +1371,7 @@ module.exports = function ($) {
     return createLayerPropertiesIcon;
 }
 
-},{"./layer_dialog.js":22}],24:[function(require,module,exports){
+},{"./layer_dialog.js":27}],29:[function(require,module,exports){
 module.exports = function ($, app) {
     var Layer = require('./layer.js')($, app);
 
@@ -1392,7 +1455,7 @@ module.exports = function ($, app) {
     return createLayerToggleRadioButton;
 }
 
-},{"./layer.js":20}],25:[function(require,module,exports){
+},{"./layer.js":25}],30:[function(require,module,exports){
 module.exports = function ($, app) {
     function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
         var selectBox = document.createElement("select"),$selectBox;
@@ -1494,7 +1557,7 @@ module.exports = function ($, app) {
     return createLayerToggleDropdownBox;
 }
 
-},{}],26:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 function Mask (maskName) {
     window.EventEmitter.call(this);
     this.maskName = maskName;
@@ -1503,7 +1566,7 @@ function Mask (maskName) {
 
 module.exports = Mask;
 
-},{}],27:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js');
 
@@ -1584,7 +1647,7 @@ module.exports = function ($, app) {
     return createMultigraphTool;
 }
 
-},{"./clicktool.js":6}],28:[function(require,module,exports){
+},{"./clicktool.js":11}],33:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -1596,7 +1659,7 @@ module.exports = function (app, activeBtn) {
     return activateMultigraphTool;
 }
 
-},{"./deactivate_controls.js":8}],29:[function(require,module,exports){
+},{"./deactivate_controls.js":13}],34:[function(require,module,exports){
 module.exports = function ($) {
     //jdm: override of js remove function
     //This is very useful for removing items from array by value
@@ -1651,7 +1714,7 @@ module.exports = function ($) {
     }));
 }
 
-},{}],30:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 module.exports = function ($) {
     var createArcGIS93RestParams = require("./create_arcgis_rest_params.js")($);
     var AccordionGroup = require("./accordion_group.js");
@@ -1879,7 +1942,7 @@ module.exports = function ($) {
     return parseConfig;
 }
 
-},{"./accordion_group.js":1,"./accordion_group_sublist.js":2,"./baselayer.js":5,"./create_arcgis_rest_params.js":7,"./identify.js":15,"./layer.js":20,"./multigraph.js":27,"./theme.js":41}],31:[function(require,module,exports){
+},{"./accordion_group.js":2,"./accordion_group_sublist.js":4,"./baselayer.js":10,"./create_arcgis_rest_params.js":12,"./identify.js":20,"./layer.js":25,"./multigraph.js":32,"./theme.js":46}],36:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap () {
         // go through all layers, and collect a list of objects
@@ -1953,7 +2016,7 @@ module.exports = function ($, app) {
     return printMap;
 };
 
-},{}],32:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 function RepeatingOperation (op, yieldEveryIteration) {
     var count = 0;
     var instance = this;
@@ -1969,7 +2032,7 @@ function RepeatingOperation (op, yieldEveryIteration) {
 
 module.exports = RepeatingOperation;
 
-},{}],33:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 module.exports = function ($) {
     function setBaseLayer (baseLayer) {
         var app = this;
@@ -2005,7 +2068,7 @@ module.exports = function ($) {
 }
 
 
-},{}],34:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 module.exports = function ($) {
     function setMaskByLayer (toggle, parentLayer) {
         var Layer = require("./layer.js")($, this);
@@ -2071,7 +2134,7 @@ module.exports = function ($) {
     return setMaskByLayer;
 }
 
-},{"./layer.js":20}],35:[function(require,module,exports){
+},{"./layer.js":25}],40:[function(require,module,exports){
 module.exports = function ($) {
     var Mask = require("./mask.js");
 
@@ -2175,7 +2238,7 @@ module.exports = function ($) {
     return setMaskByMask;
 }
 
-},{"./layer.js":20,"./mask.js":26}],36:[function(require,module,exports){
+},{"./layer.js":25,"./mask.js":31}],41:[function(require,module,exports){
 module.exports = function ($) {
     var RepeatingOperation = require("./repeating_operation.js");
     var ShareUrlInfo = require("./share.js");
@@ -2459,7 +2522,7 @@ module.exports = function ($) {
     return setTheme;
 }
 
-},{"./array_contains_element.js":4,"./layer_checkbox.js":21,"./layer_icon.js":23,"./layer_radio.js":24,"./layer_select.js":25,"./repeating_operation.js":32,"./share.js":37}],37:[function(require,module,exports){
+},{"./array_contains_element.js":9,"./layer_checkbox.js":26,"./layer_icon.js":28,"./layer_radio.js":29,"./layer_select.js":30,"./repeating_operation.js":37,"./share.js":42}],42:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) {
         settings = {};
@@ -2569,7 +2632,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],38:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 module.exports = function ($) {
     var stringContainsChar = require("./stringContainsChar.js");
     var ShareUrlInfo = require("./share.js");
@@ -2636,7 +2699,7 @@ module.exports = function ($) {
     return shareUrl;
 }
 
-},{"./share.js":37,"./stringContainsChar.js":40}],39:[function(require,module,exports){
+},{"./share.js":42,"./stringContainsChar.js":45}],44:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -2657,14 +2720,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],40:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],41:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -2691,7 +2754,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],42:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 module.exports = function ($) {
     function updateShareMapUrl () {
         if (this.currentTheme) {
@@ -2705,7 +2768,7 @@ module.exports = function ($) {
     return updateShareMapUrl;
 }
 
-},{}],43:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2776,45 +2839,11 @@ module.exports = function ($) {
         this.setBaseLayer = require("./js/set_base_layer.js")($);
 
         // Begin Accordion Group Specific Functions
-        this.setAccordionGroup = function (accordionGroup) {
-            this.currentAccordionGroup = accordionGroup;
-            this.emit("accordiongroupchange");
-        };
-
-        this.clearAccordionSections = function (accordionGroup) {
-            $(accordionGroup).empty();
-            $(accordionGroup).data('listAccordion').sections = [];
-            $(accordionGroup).accordion('refresh');
-        };
-
-        this.addAccordionSection = function (accordionGroup, title) {
-            var sectionObj = {
-                title          : title,
-                titleElement   : $('<h3>' + title + '</h3>'),
-                contentElement : $('<div></div>'),
-                sublists    : []
-            };
-            $(accordionGroup).data('listAccordion').sections.push(sectionObj);
-            $(accordionGroup).append(sectionObj.titleElement)
-                .append(sectionObj.contentElement);
-            $(accordionGroup).accordion('refresh');
-            return sectionObj;
-        }
-
-        this.addAccordionSublists = function (g, items) {
-            $(g.contentElement).append(items);
-        }
-
-        this.addAccordionSublistItems = function (s, items) {
-            var contents = $('<div class="layer"></div>');
-            contents.append(items);
-            var layer = {
-                name : name,
-                contentElement : contents
-            };
-            s.items.push(layer);
-            s.contentElement.append(layer.contentElement);
-        }
+        this.setAccordionGroup = require("./js/accordion_group_set.js");
+        this.clearAccordionSections = require("./js/accordion_clear.js")($);
+        this.addAccordionSection = require("./js/accordion_section_add.js")($);
+        this.addAccordionSublists = require("./js/accordion_sublist_add.js")($);
+        this.addAccordionSublistItems = require("./js/accordion_sublist_item_add.js")($);
 
         // End Accordion Group Specific Functions
 
@@ -2871,4 +2900,4 @@ module.exports = function ($) {
 
 }(jQuery));
 
-},{"./js/add_mask_legend.js":3,"./js/extent_print.js":9,"./js/extent_save.js":10,"./js/extent_zoom.js":11,"./js/extent_zoom_next.js":12,"./js/extent_zoom_previous.js":13,"./js/init.js":17,"./js/init_openlayers.js":18,"./js/launch.js":19,"./js/overrides.js":29,"./js/parse_config.js":30,"./js/set_base_layer.js":33,"./js/set_mask_by_layer.js":34,"./js/set_mask_by_mask.js":35,"./js/set_theme.js":36,"./js/share_url.js":38,"./js/update_share_url.js":42}]},{},[43]);
+},{"./js/accordion_clear.js":1,"./js/accordion_group_set.js":3,"./js/accordion_section_add.js":5,"./js/accordion_sublist_add.js":6,"./js/accordion_sublist_item_add.js":7,"./js/add_mask_legend.js":8,"./js/extent_print.js":14,"./js/extent_save.js":15,"./js/extent_zoom.js":16,"./js/extent_zoom_next.js":17,"./js/extent_zoom_previous.js":18,"./js/init.js":22,"./js/init_openlayers.js":23,"./js/launch.js":24,"./js/overrides.js":34,"./js/parse_config.js":35,"./js/set_base_layer.js":38,"./js/set_mask_by_layer.js":39,"./js/set_mask_by_mask.js":40,"./js/set_theme.js":41,"./js/share_url.js":43,"./js/update_share_url.js":47}]},{},[48]);
