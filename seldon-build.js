@@ -306,7 +306,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":1,"./stringContainsChar.js":9}],3:[function(require,module,exports){
+},{"./clicktool.js":1,"./stringContainsChar.js":10}],3:[function(require,module,exports){
 module.exports = function ($, app) {
     function Layer (settings) {
         EventEmitter.call(this);
@@ -648,6 +648,87 @@ module.exports = function ($) {
 }
 
 },{"./layer_dialog.js":5}],7:[function(require,module,exports){
+module.exports = function ($, app) {
+    var ClickTool = require('./clicktool.js');
+
+    app.graphCount = 0;
+
+    function createMultigraphTool ($configXML) {
+        var muglPrefix = $configXML.find("tools tool[name=Phenograph]").attr("muglPrefix");
+        if (muglPrefix === undefined || muglPrefix === "") {
+            //console.log("WARNING: no muglPrefix for Phenograph tool found; Phenographs will not work");
+        }
+        return new ClickTool(
+            function (e) {
+                // This function gets called when the user clicks a point in the map while the
+                // Multigraph tool is active.  The argument `e` is the click event; the coordinates
+                // of the clicked point are (e.x, e.y).
+                app.graphCount++;
+                var offset = 10 * (app.graphCount-1);
+
+                // This coords object is not really in lon/lat; it's in the display projection of the map,
+                // which is EPSG:900913.
+                var coords = app.map.getLonLatFromPixel(e.xy);
+
+                // Here we convert it to actual lon/lat:
+                var lonlat = app.map.getLonLatFromPixel(e.xy);
+                lonlat.transform(app.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
+
+                var styleMap = new OpenLayers.StyleMap({pointRadius: 4,
+                                                        fillColor: "yellow",
+                                                        fillOpacity: 0.75,});
+
+                var markerLayer = new OpenLayers.Layer.Vector("markerLayer",
+                                                              {styleMap: styleMap});
+                var feature = new OpenLayers.Feature.Vector(
+                                                            new OpenLayers.Geometry.Point(coords.lon, coords.lat),
+                                                            {some:'data'});
+                markerLayer.addFeatures(feature);
+                app.map.addLayer(markerLayer);
+
+                var popup = $(document.createElement('div'));
+                popup.id = "#seldonMultigraphMessageDiv"+app.graphCount+"";
+
+                if (!window.multigraph.core.browserHasCanvasSupport() && !window.multigraph.core.browserHasSVGSupport()) {
+                    popup.html('<div id="seldonMultigraph'+app.graphCount+'" style="width: 600px; height: 300px;" ></div>');
+                } else {
+                    popup.html('<div class="multigraphLoader"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="seldonMultigraph'+app.graphCount+'" style="width: 600px; height: 300px;" ></div>');
+                }
+                popup.dialog({
+                    width     : 600,
+                    resizable : false,
+                    position  : { my: "center+" + offset + " center+" + offset, at: "center", of: window },
+                    title     : Mustache.render('MODIS NDVI for Lat: {{{lat}}} Lon: {{{lon}}}',
+                                                {
+                                                    lat : sprintf("%.4f", lonlat.lat),
+                                                    lon : sprintf("%.4f", lonlat.lon)
+                                                }
+                    ),
+                    close : function( event, ui ) {
+                        // app.graphCount--;
+                        app.map.removeLayer(markerLayer);
+                        $(this).remove();
+                    },
+                });
+
+                var seldonMultigraph = $('#seldonMultigraph'+app.graphCount+''),
+                    promise = seldonMultigraph.multigraph({
+                        //NOTE: coords.lon and coords.lat on the next line are really x,y coords in EPSG:900913, not lon/lat:
+                        'mugl'   : muglPrefix + coords.lon + "," + coords.lat,
+                        'swf'    : "libs/seldon/libs/Multigraph.swf"
+                    });
+                seldonMultigraph.multigraph('done', function (m) {
+                    if (m) {
+                        $(m.div()).parent().children(".multigraphLoader").remove();
+                    }
+                });
+            });
+    }
+
+    return createMultigraphTool;
+}
+
+},{"./clicktool.js":1}],8:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) {
         settings = {};
@@ -757,7 +838,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -778,14 +859,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -812,7 +893,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2483,79 +2564,7 @@ module.exports = Theme;
 
     var createIdentifyTool = require('./js/identify.js')($, app);
 
-    seldon.graphCount = 0;
-
-    function createMultigraphTool ($configXML) {
-        var muglPrefix = $configXML.find("tools tool[name=Phenograph]").attr("muglPrefix");
-        if (muglPrefix === undefined || muglPrefix === "") {
-            //console.log("WARNING: no muglPrefix for Phenograph tool found; Phenographs will not work");
-        }
-        return new ClickTool(
-            function (e) {
-                // This function gets called when the user clicks a point in the map while the
-                // Multigraph tool is active.  The argument `e` is the click event; the coordinates
-                // of the clicked point are (e.x, e.y).
-                seldon.graphCount++;
-                var offset = 10 * (seldon.graphCount-1);
-
-                // This coords object is not really in lon/lat; it's in the display projection of the map,
-                // which is EPSG:900913.
-                var coords = app.map.getLonLatFromPixel(e.xy);
-
-                // Here we convert it to actual lon/lat:
-                var lonlat = app.map.getLonLatFromPixel(e.xy);
-                lonlat.transform(app.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
-
-                var styleMap = new OpenLayers.StyleMap({pointRadius: 4,
-                                                        fillColor: "yellow",
-                                                        fillOpacity: 0.75,});
-
-                var markerLayer = new OpenLayers.Layer.Vector("markerLayer",
-                                                              {styleMap: styleMap});
-                var feature = new OpenLayers.Feature.Vector(
-                                                            new OpenLayers.Geometry.Point(coords.lon, coords.lat),
-                                                            {some:'data'});
-                markerLayer.addFeatures(feature);
-                app.map.addLayer(markerLayer);
-
-                var popup = $(document.createElement('div'));
-                popup.id = "#seldonMultigraphMessageDiv"+seldon.graphCount+"";
-
-                if (!window.multigraph.core.browserHasCanvasSupport() && !window.multigraph.core.browserHasSVGSupport()) {
-                    popup.html('<div id="seldonMultigraph'+seldon.graphCount+'" style="width: 600px; height: 300px;" ></div>');
-                } else {
-                    popup.html('<div class="multigraphLoader"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="seldonMultigraph'+seldon.graphCount+'" style="width: 600px; height: 300px;" ></div>');
-                }
-                popup.dialog({
-                    width     : 600,
-                    resizable : false,
-                    position  : { my: "center+" + offset + " center+" + offset, at: "center", of: window },
-                    title     : Mustache.render('MODIS NDVI for Lat: {{{lat}}} Lon: {{{lon}}}',
-                                                {
-                                                    lat : sprintf("%.4f", lonlat.lat),
-                                                    lon : sprintf("%.4f", lonlat.lon)
-                                                }
-                    ),
-                    close : function( event, ui ) {
-                        // seldon.graphCount--;
-                        app.map.removeLayer(markerLayer);
-                        $(this).remove();
-                    },
-                });
-
-                var seldonMultigraph = $('#seldonMultigraph'+seldon.graphCount+''),
-                    promise = seldonMultigraph.multigraph({
-                        //NOTE: coords.lon and coords.lat on the next line are really x,y coords in EPSG:900913, not lon/lat:
-                        'mugl'   : muglPrefix + coords.lon + "," + coords.lat,
-                        'swf'    : "libs/seldon/libs/Multigraph.swf"
-                    });
-                seldonMultigraph.multigraph('done', function (m) {
-                    if (m) {
-                        $(m.div()).parent().children(".multigraphLoader").remove();
-                    }
-                });
-            });
-    }
+    var createMultigraphTool = require('./js/multigraph.js')($, app);
 
     var stringContainsChar = require('./js/stringContainsChar.js');
 
@@ -2724,4 +2733,4 @@ module.exports = Theme;
 
 }(jQuery));
 
-},{"./js/clicktool.js":1,"./js/identify.js":2,"./js/layer.js":3,"./js/layer_checkbox.js":4,"./js/layer_dialog.js":5,"./js/layer_icon.js":6,"./js/share.js":7,"./js/splash.js":8,"./js/stringContainsChar.js":9,"./js/theme.js":10}]},{},[11]);
+},{"./js/clicktool.js":1,"./js/identify.js":2,"./js/layer.js":3,"./js/layer_checkbox.js":4,"./js/layer_dialog.js":5,"./js/layer_icon.js":6,"./js/multigraph.js":7,"./js/share.js":8,"./js/splash.js":9,"./js/stringContainsChar.js":10,"./js/theme.js":11}]},{},[12]);
