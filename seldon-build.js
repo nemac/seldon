@@ -432,7 +432,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":5,"./stringContainsChar.js":29}],10:[function(require,module,exports){
+},{"./clicktool.js":5,"./stringContainsChar.js":30}],10:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -460,7 +460,7 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":27}],12:[function(require,module,exports){
+},{"./share.js":28}],12:[function(require,module,exports){
 function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
     var app = this;
 
@@ -539,6 +539,309 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
 module.exports = initOpenLayers;
 
 },{}],13:[function(require,module,exports){
+module.exports = function ($) {
+    var createSplashScreen = require("./splash.js")($);
+
+    var activeBtn = [];
+
+    function launch (configFile, shareUrlInfo) {
+        var deactivateActiveOpenLayersControls = require("./deactivate_controls.js")(this, activeBtn);
+        var activateIdentifyTool = require("./identify_activate.js")(this, activeBtn);
+        var activateMultigraphTool = require("./multigraph_activate.js")(this, activeBtn);
+
+        var app = this;
+
+        $.ajax({
+            url: configFile,
+            dataType: "xml",
+            success: function (configXML) {
+                app.parseConfig(configXML, shareUrlInfo);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert(textStatus);
+            }
+        });
+
+        //
+        // layerPicker button:
+        //
+        $("#btnTglLyrPick").click(function () {
+            var $layerPickerDialog = $("#layerPickerDialog");
+            if ($layerPickerDialog.dialog('isOpen')) {
+                $layerPickerDialog.dialog('close');
+            } else {
+                $layerPickerDialog.dialog('open');
+            }
+        });
+
+        //
+        // turn layerPickerDialog div into a jQuery UI dialog:
+        //
+        $("#layerPickerDialog").dialog({
+            zIndex   : 10050,
+            position : { my : "left top", at: "left+5 top+100"},
+            autoOpen : true,
+            hide     : "fade"
+        });
+
+        app.addListener("accordiongroupchange", function () {
+            if (app.currentTheme) {
+                $('#layerPickerAccordion').accordion({
+                        active      : app.currentTheme.getAccordionGroupIndex(app.currentAccordionGroup),
+                        collapsible : true
+                });
+            }
+        });
+
+        //
+        // mapTools button:
+        //
+        $("#btnTglMapTools").click(function () {
+            var $mapToolsDialog = $("#mapToolsDialog");
+            if ($mapToolsDialog.dialog('isOpen')) {
+                $mapToolsDialog.dialog('close');
+            } else {
+                $mapToolsDialog.dialog('open');
+            }
+        });
+
+        //
+        // turn mapToolsDialog div into a jQuery UI dialog:
+        //
+        $("#mapToolsDialog").dialog({
+            zIndex   : 10050,
+            position : { my : "right top", at: "right-5 top+100"},
+            autoOpen : true,
+            hide     : "fade"
+        });
+        app.addListener("themechange", function () {
+            app.updateShareMapUrl();
+        });
+        app.addListener("baselayerchange", function () {
+            app.updateShareMapUrl();
+        });
+        app.addListener("accordiongroupchange", function () {
+            app.updateShareMapUrl();
+        });
+        app.addListener("extentchange", function () {
+            app.saveCurrentExtent();
+            app.updateShareMapUrl();
+            app.map.setOptions({maxExtent: app.map.getExtent()});
+        });
+
+        //
+        // mapTools accordion
+        //
+        var $mapToolsAccordion = $("#mapToolsAccordion"),
+            accordionGroupIndexToOpen = 0;
+
+        //    initialize
+        $mapToolsAccordion.accordion({
+            heightStyle : 'content',
+            collapsible : true
+        });
+
+        //    find the 'legend' layer in the mapTools accordion, and make sure it is initially turned on
+        $mapToolsAccordion.find('div').each(function (i) {
+            if (this.id === "legend") {
+                accordionGroupIndexToOpen = i;
+                return false;
+            }
+            return true;
+        });
+        $mapToolsAccordion.accordion('option', 'active', accordionGroupIndexToOpen);
+
+        //
+        // base layer combo change handler
+        //
+        $('#baseCombo').change(function () {
+            var i = parseInt($(this).val(), 10);
+            app.setBaseLayer(app.baseLayers[i]);
+        });
+        app.addListener("baselayerchange", function () {
+            $('#baseCombo').val(app.currentBaseLayer.index);
+        });
+
+        //
+        // theme layer combo change handler
+        //
+        $('#themeCombo').change(function () {
+            var i = parseInt($(this).val(), 10);
+            app.setTheme(app.themes[i]);
+        });
+        app.addListener("themechange", function () {
+            $('#themeCombo').val(app.currentTheme.index);
+        });
+
+        //
+        // pan button
+        //
+        $("#btnPan").click(function () {
+            deactivateActiveOpenLayersControls();
+            app.dragPanTool.activate();
+        });
+
+        //
+        // print button
+        //
+        $("#btnPrint").click(function () {
+            printMap();
+        });
+
+        //
+        // zoom in button
+        //
+        $("#btnZoomIn").click(function () {
+            deactivateActiveOpenLayersControls();
+            app.zoomInTool.activate();
+            activeBtn = $(this);
+            activeBtn.children().addClass('icon-active');
+        });
+
+        //
+        // zoom out button
+        //
+        $("#btnZoomOut").click(function () {
+            deactivateActiveOpenLayersControls();
+            app.zoomOutTool.activate();
+            activeBtn = $(this);
+            activeBtn.children().addClass('icon-active');
+        });
+
+        //
+        // zoom to full extent button
+        //
+        $("#btnZoomExtent").click(function () {
+            app.zoomToExtent(app.maxExtent);
+        });
+
+        //
+        // identify button
+        //
+        $("#btnID").click(function () {
+            activateIdentifyTool();
+            activeBtn = $(this);
+            activeBtn.children().addClass('icon-active');
+        });
+
+        //
+        // about button
+        //
+        $("#btnAbout").click(function () {
+            // I don't think the following line is needed. but am leaving it in
+            // just in case - jrf
+            //                deactivateActiveOpenLayersControls();
+            var splashScreen = $("#splashScreenContainer");
+            if (splashScreen.dialog("isOpen")) {
+                splashScreen.dialog("close");
+            } else {
+                splashScreen.dialog("open");
+            }
+        });
+
+        //
+        // previous extent button
+        //
+        $("#btnPrev").click(function () {
+            app.zoomToPreviousExtent();
+        });
+
+        //
+        // next extent button
+        //
+        $("#btnNext").click(function () {
+            app.zoomToNextExtent();
+        });
+
+        //
+        // multigraph button
+        //
+        $("#btnMultiGraph").click(function () {
+            activateMultigraphTool();
+            activeBtn = $(this);
+            activeBtn.children().addClass('icon-active');
+        });
+
+        //
+        // splash screen
+        //
+        createSplashScreen();
+
+        //Find Area
+        var $findArea = $('#findArea');
+        $findArea.findArea();
+        areasList = $findArea.findArea('getAreasList');
+        $findArea.autocomplete({
+            source: areasList
+        });
+        $findArea.keypress(function (e) {
+            if (e.which == 13) {
+                var areaExtent = $findArea.findArea('getAreaExtent', $findArea.val(), areasList);
+                app.zoomToExtent(areaExtent);
+            }
+        });
+
+        //jdm: 7/9/12 - for global mask functionality
+        $(function () {
+            $('.mask-toggle').on('click', function () {
+                if ($(this).is(':checked')) {
+                    //console.log("setMaskByMask at line 789");
+                    app.setMaskByMask(true, this.value);
+                } else {
+                    app.setMaskByMask(false, this.value);
+                }
+            });
+        });
+
+        $('textarea').focus(function () {
+            var $this = $(this);
+
+            $this.select();
+
+            // webkit issue
+            window.setTimeout(function () {
+                $this.select();
+            }, 1);
+
+            function mouseUpHandler () {
+                // Prevent further mouseup intervention
+                $this.off("mouseup", mouseUpHandler);
+                return false;
+            }
+
+            $this.mouseup(mouseUpHandler);
+        });
+
+        // closes accordion tools by default on small browsers
+        if ($(window).width() < 650) {
+            $('#mapToolsDialog').dialog('close');
+            $('#layerPickerDialog').dialog('close');
+        }
+
+        // closes and reopens accordion tools on mobile devices. They tend to lose their proper
+        // position otherwise.
+        if (window.addEventListener) {
+            window.addEventListener("orientationchange", function () {
+                var $mapToolsDialog    = $('#mapToolsDialog'),
+                    $layerPickerDialog = $('#layerPickerDialog');
+
+                window.scroll(0, 0);
+                if ($mapToolsDialog.dialog('isOpen')) {
+                    $mapToolsDialog.dialog('close').dialog('open');
+                }
+
+                if ($layerPickerDialog.dialog('isOpen')) {
+                    $layerPickerDialog.dialog('close').dialog('open');
+                }
+            }, false);
+        }
+
+    };
+
+    return launch;
+}
+
+},{"./deactivate_controls.js":7,"./identify_activate.js":10,"./multigraph_activate.js":22,"./splash.js":29}],14:[function(require,module,exports){
 module.exports = function ($, app) {
     function Layer (settings) {
         EventEmitter.call(this);
@@ -743,7 +1046,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -773,7 +1076,7 @@ module.exports = function ($) {
     return createLayerToggleCheckbox;
 }
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
     //This function gets called every time the layer properties icon gets clicked
 module.exports = function ($) {
     function createLayerPropertiesDialog (layer) {
@@ -863,7 +1166,7 @@ module.exports = function ($) {
 }
 
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 module.exports = function ($) {
     var createLayerPropertiesDialog = require("./layer_dialog.js")($);
 
@@ -881,7 +1184,7 @@ module.exports = function ($) {
     return createLayerPropertiesIcon;
 }
 
-},{"./layer_dialog.js":15}],17:[function(require,module,exports){
+},{"./layer_dialog.js":16}],18:[function(require,module,exports){
 module.exports = function ($, app) {
     var Layer = require('./layer.js')($, app);
 
@@ -965,7 +1268,7 @@ module.exports = function ($, app) {
     return createLayerToggleRadioButton;
 }
 
-},{"./layer.js":13}],18:[function(require,module,exports){
+},{"./layer.js":14}],19:[function(require,module,exports){
 module.exports = function ($, app) {
     function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
         var selectBox = document.createElement("select"),$selectBox;
@@ -1067,7 +1370,7 @@ module.exports = function ($, app) {
     return createLayerToggleDropdownBox;
 }
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 function Mask (maskName) {
     window.EventEmitter.call(this);
     this.maskName = maskName;
@@ -1076,7 +1379,7 @@ function Mask (maskName) {
 
 module.exports = Mask;
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js');
 
@@ -1157,7 +1460,7 @@ module.exports = function ($, app) {
     return createMultigraphTool;
 }
 
-},{"./clicktool.js":5}],21:[function(require,module,exports){
+},{"./clicktool.js":5}],22:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -1169,7 +1472,7 @@ module.exports = function (app, activeBtn) {
     return activateMultigraphTool;
 }
 
-},{"./deactivate_controls.js":7}],22:[function(require,module,exports){
+},{"./deactivate_controls.js":7}],23:[function(require,module,exports){
 module.exports = function ($) {
     //jdm: override of js remove function
     //This is very useful for removing items from array by value
@@ -1224,7 +1527,7 @@ module.exports = function ($) {
     }));
 }
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 module.exports = function ($) {
     var AccordionGroup = require("./accordion_group.js");
     var AccordionGroupSublist = require("./accordion_group_sublist.js");
@@ -1451,7 +1754,7 @@ module.exports = function ($) {
     return parseConfig;
 }
 
-},{"./accordion_group.js":1,"./accordion_group_sublist.js":2,"./baselayer.js":4,"./identify.js":9,"./layer.js":13,"./multigraph.js":20,"./theme.js":30}],24:[function(require,module,exports){
+},{"./accordion_group.js":1,"./accordion_group_sublist.js":2,"./baselayer.js":4,"./identify.js":9,"./layer.js":14,"./multigraph.js":21,"./theme.js":31}],25:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap () {
         // go through all layers, and collect a list of objects
@@ -1525,7 +1828,7 @@ module.exports = function ($, app) {
     return printMap;
 };
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 function RepeatingOperation (op, yieldEveryIteration) {
     var count = 0;
     var instance = this;
@@ -1541,7 +1844,7 @@ function RepeatingOperation (op, yieldEveryIteration) {
 
 module.exports = RepeatingOperation;
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 module.exports = function ($) {
     var RepeatingOperation = require("./repeating_operation.js");
     var ShareUrlInfo = require("./share.js");
@@ -1825,7 +2128,7 @@ module.exports = function ($) {
     return setTheme;
 }
 
-},{"./array_contains_element.js":3,"./layer_checkbox.js":14,"./layer_icon.js":16,"./layer_radio.js":17,"./layer_select.js":18,"./repeating_operation.js":25,"./share.js":27}],27:[function(require,module,exports){
+},{"./array_contains_element.js":3,"./layer_checkbox.js":15,"./layer_icon.js":17,"./layer_radio.js":18,"./layer_select.js":19,"./repeating_operation.js":26,"./share.js":28}],28:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) {
         settings = {};
@@ -1935,7 +2238,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -1956,14 +2259,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -1990,13 +2293,12 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 (function ($) {
     "use strict";
 
     var EventEmitter = window.EventEmitter,
         seldon = {},
-        activeBtn = [],
         areasList = [],
         app;
 
@@ -2279,292 +2581,7 @@ module.exports = Theme;
             }
         };
 
-        this.launch = function (configFile, shareUrlInfo) {
-            var app = this;
-
-            $.ajax({
-                url: configFile,
-                dataType: "xml",
-                success: function (configXML) {
-                    app.parseConfig(configXML, shareUrlInfo);
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    alert(textStatus);
-                }
-            });
-
-            //
-            // layerPicker button:
-            //
-            $("#btnTglLyrPick").click(function () {
-                var $layerPickerDialog = $("#layerPickerDialog");
-                if ($layerPickerDialog.dialog('isOpen')) {
-                    $layerPickerDialog.dialog('close');
-                } else {
-                    $layerPickerDialog.dialog('open');
-                }
-            });
-
-            //
-            // turn layerPickerDialog div into a jQuery UI dialog:
-            //
-            $("#layerPickerDialog").dialog({ zIndex   : 10050,
-                                             position : { my : "left top", at: "left+5 top+100"},
-                                             autoOpen : true,
-                                             hide     : "fade"
-                                           });
-            app.addListener("accordiongroupchange", function () {
-                if (app.currentTheme) {
-                    $('#layerPickerAccordion').accordion({
-                            active      : app.currentTheme.getAccordionGroupIndex(app.currentAccordionGroup),
-                            collapsible : true
-                    });
-                }
-            });
-
-            //
-            // mapTools button:
-            //
-            $("#btnTglMapTools").click(function () {
-                var $mapToolsDialog = $("#mapToolsDialog");
-                if ($mapToolsDialog.dialog('isOpen')) {
-                    $mapToolsDialog.dialog('close');
-                } else {
-                    $mapToolsDialog.dialog('open');
-                }
-            });
-
-            //
-            // turn mapToolsDialog div into a jQuery UI dialog:
-            //
-            $("#mapToolsDialog").dialog({ zIndex   : 10050,
-                                          position : { my : "right top", at: "right-5 top+100"},
-                                          autoOpen : true,
-                                          hide     : "fade"
-                                        });
-            app.addListener("themechange", function () {
-                app.updateShareMapUrl();
-            });
-            app.addListener("baselayerchange", function () {
-                app.updateShareMapUrl();
-            });
-            app.addListener("accordiongroupchange", function () {
-                app.updateShareMapUrl();
-            });
-            app.addListener("extentchange", function () {
-                app.saveCurrentExtent();
-                app.updateShareMapUrl();
-                app.map.setOptions({maxExtent: app.map.getExtent()});
-            });
-
-            //
-            // mapTools accordion
-            //
-            var $mapToolsAccordion = $("#mapToolsAccordion"),
-                accordionGroupIndexToOpen = 0;
-
-            //    initialize
-            $mapToolsAccordion.accordion({
-                heightStyle : 'content',
-                collapsible : true
-            });
-
-            //    find the 'legend' layer in the mapTools accordion, and make sure it is initially turned on
-            $mapToolsAccordion.find('div').each(function (i) {
-                if (this.id === "legend") {
-                    accordionGroupIndexToOpen = i;
-                    return false;
-                }
-                return true;
-            });
-            $mapToolsAccordion.accordion('option', 'active', accordionGroupIndexToOpen);
-
-            //
-            // base layer combo change handler
-            //
-            $('#baseCombo').change(function () {
-                var i = parseInt($(this).val(), 10);
-                app.setBaseLayer(app.baseLayers[i]);
-            });
-            app.addListener("baselayerchange", function () {
-                $('#baseCombo').val(app.currentBaseLayer.index);
-            });
-
-            //
-            // theme layer combo change handler
-            //
-            $('#themeCombo').change(function () {
-                var i = parseInt($(this).val(), 10);
-                app.setTheme(app.themes[i]);
-            });
-            app.addListener("themechange", function () {
-                $('#themeCombo').val(app.currentTheme.index);
-            });
-
-            //
-            // pan button
-            //
-            $("#btnPan").click(function () {
-                deactivateActiveOpenLayersControls();
-                app.dragPanTool.activate();
-            });
-
-            //
-            // print button
-            //
-            $("#btnPrint").click(function () {
-                printMap();
-            });
-
-            //
-            // zoom in button
-            //
-            $("#btnZoomIn").click(function () {
-                deactivateActiveOpenLayersControls();
-                app.zoomInTool.activate();
-                activeBtn = $(this);
-                activeBtn.children().addClass('icon-active');
-            });
-
-            //
-            // zoom out button
-            //
-            $("#btnZoomOut").click(function () {
-                deactivateActiveOpenLayersControls();
-                app.zoomOutTool.activate();
-                activeBtn = $(this);
-                activeBtn.children().addClass('icon-active');
-            });
-
-            //
-            // zoom to full extent button
-            //
-            $("#btnZoomExtent").click(function () {
-                app.zoomToExtent(app.maxExtent);
-            });
-
-            //
-            // identify button
-            //
-            $("#btnID").click(function () {
-                activateIdentifyTool();
-                activeBtn = $(this);
-                activeBtn.children().addClass('icon-active');
-            });
-
-            //
-            // about button
-            //
-            $("#btnAbout").click(function () {
-                // I don't think the following line is needed. but am leaving it in
-                // just in case - jrf
-                //                deactivateActiveOpenLayersControls();
-                var splashScreen = $("#splashScreenContainer");
-                if (splashScreen.dialog("isOpen")) {
-                    splashScreen.dialog("close");
-                } else {
-                    splashScreen.dialog("open");
-                }
-            });
-
-            //
-            // previous extent button
-            //
-            $("#btnPrev").click(function () {
-                app.zoomToPreviousExtent();
-            });
-
-            //
-            // next extent button
-            //
-            $("#btnNext").click(function () {
-                app.zoomToNextExtent();
-            });
-
-            //
-            // multigraph button
-            //
-            $("#btnMultiGraph").click(function () {
-                activateMultigraphTool();
-                activeBtn = $(this);
-                activeBtn.children().addClass('icon-active');
-            });
-
-            //
-            // splash screen
-            //
-            createSplashScreen();
-
-            //Find Area
-            var $findArea = $('#findArea');
-            $findArea.findArea();
-            areasList = $findArea.findArea('getAreasList');
-            $findArea.autocomplete({
-                source: areasList
-            });
-            $findArea.keypress(function (e) {
-                if (e.which == 13) {
-                    var areaExtent = $findArea.findArea('getAreaExtent', $findArea.val(), areasList);
-                    app.zoomToExtent(areaExtent);
-                }
-            });
-
-            //jdm: 7/9/12 - for global mask functionality
-            $(function () {
-                $('.mask-toggle').on('click', function () {
-                    if ($(this).is(':checked')) {
-                        //console.log("setMaskByMask at line 789");
-                        app.setMaskByMask(true, this.value);
-                    } else {
-                        app.setMaskByMask(false, this.value);
-                    }
-                });
-            });
-
-            $('textarea').focus(function () {
-                var $this = $(this);
-
-                $this.select();
-
-                // webkit issue
-                window.setTimeout(function () {
-                    $this.select();
-                }, 1);
-
-                function mouseUpHandler () {
-                    // Prevent further mouseup intervention
-                    $this.off("mouseup", mouseUpHandler);
-                    return false;
-                }
-
-                $this.mouseup(mouseUpHandler);
-            });
-
-            // closes accordion tools by default on small browsers
-            if ($(window).width() < 650) {
-                $('#mapToolsDialog').dialog('close');
-                $('#layerPickerDialog').dialog('close');
-            }
-
-            // closes and reopens accordion tools on mobile devices. They tend to lose their proper
-            // position otherwise.
-            if (window.addEventListener) {
-                window.addEventListener("orientationchange", function () {
-                    var $mapToolsDialog    = $('#mapToolsDialog'),
-                        $layerPickerDialog = $('#layerPickerDialog');
-
-                    window.scroll(0, 0);
-                    if ($mapToolsDialog.dialog('isOpen')) {
-                        $mapToolsDialog.dialog('close').dialog('open');
-                    }
-
-                    if ($layerPickerDialog.dialog('isOpen')) {
-                        $layerPickerDialog.dialog('close').dialog('open');
-                    }
-                }, false);
-            }
-
-        }; //end app.launch()
+        this.launch = require("./js/launch.js")($);
 
         this.count = function (array, value) {
             var counter = 0;
@@ -2763,11 +2780,7 @@ module.exports = Theme;
     var Mask = require("./js/mask.js");
     var Layer = require("./js/layer.js")($, app);
     var ShareUrlInfo = require("./js/share.js");
-    var createSplashScreen = require("./js/splash.js")($);
     var ClickTool = require("./js/clicktool.js");
-    var deactivateActiveOpenLayersControls = require("./js/deactivate_controls.js")(app, activeBtn);
-    var activateIdentifyTool = require("./js/identify_activate.js")(app, activeBtn);
-    var activateMultigraphTool = require("./js/multigraph_activate.js")(app, activeBtn);
     var stringContainsChar = require("./js/stringContainsChar.js");
     var extentsAreEqual = require("./js/extents_equal.js");
     var printMap = require("./js/print.js")($, app);
@@ -2788,4 +2801,4 @@ module.exports = Theme;
 
 }(jQuery));
 
-},{"./js/clicktool.js":5,"./js/create_arcgis_rest_params.js":6,"./js/deactivate_controls.js":7,"./js/extents_equal.js":8,"./js/identify_activate.js":10,"./js/init.js":11,"./js/init_openlayers.js":12,"./js/layer.js":13,"./js/mask.js":19,"./js/multigraph_activate.js":21,"./js/overrides.js":22,"./js/parse_config.js":23,"./js/print.js":24,"./js/set_theme.js":26,"./js/share.js":27,"./js/splash.js":28,"./js/stringContainsChar.js":29}]},{},[31]);
+},{"./js/clicktool.js":5,"./js/create_arcgis_rest_params.js":6,"./js/extents_equal.js":8,"./js/init.js":11,"./js/init_openlayers.js":12,"./js/launch.js":13,"./js/layer.js":14,"./js/mask.js":20,"./js/overrides.js":23,"./js/parse_config.js":24,"./js/print.js":25,"./js/set_theme.js":27,"./js/share.js":28,"./js/stringContainsChar.js":30}]},{},[32]);
