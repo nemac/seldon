@@ -1324,12 +1324,7 @@
 
     var AccordionGroupSublist = require('./js/accordion_group_sublist.js');
 
-    function Mask (maskName) {
-        EventEmitter.call(this);
-        this.maskName = maskName;
-        this.maskLayers = [];
-    }
-
+    var Mask = require("./js/mask.js");
     var Layer = require("./js/layer.js")($, app);
 
     var Theme = require("./js/theme.js");

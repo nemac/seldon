@@ -432,7 +432,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":5,"./stringContainsChar.js":25}],10:[function(require,module,exports){
+},{"./clicktool.js":5,"./stringContainsChar.js":26}],10:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -460,7 +460,7 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":23}],12:[function(require,module,exports){
+},{"./share.js":24}],12:[function(require,module,exports){
 module.exports = function ($, app) {
     function Layer (settings) {
         EventEmitter.call(this);
@@ -990,6 +990,15 @@ module.exports = function ($, app) {
 }
 
 },{}],18:[function(require,module,exports){
+function Mask (maskName) {
+    window.EventEmitter.call(this);
+    this.maskName = maskName;
+    this.maskLayers = [];
+}
+
+module.exports = Mask;
+
+},{}],19:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js');
 
@@ -1070,7 +1079,7 @@ module.exports = function ($, app) {
     return createMultigraphTool;
 }
 
-},{"./clicktool.js":5}],19:[function(require,module,exports){
+},{"./clicktool.js":5}],20:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -1082,7 +1091,7 @@ module.exports = function (app, activeBtn) {
     return activateMultigraphTool;
 }
 
-},{"./deactivate_controls.js":7}],20:[function(require,module,exports){
+},{"./deactivate_controls.js":7}],21:[function(require,module,exports){
 module.exports = function ($) {
     //jdm: override of js remove function
     //This is very useful for removing items from array by value
@@ -1137,7 +1146,7 @@ module.exports = function ($) {
     }));
 }
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap () {
         // go through all layers, and collect a list of objects
@@ -1211,7 +1220,7 @@ module.exports = function ($, app) {
     return printMap;
 };
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 function RepeatingOperation (op, yieldEveryIteration) {
     var count = 0;
     var instance = this;
@@ -1227,7 +1236,7 @@ function RepeatingOperation (op, yieldEveryIteration) {
 
 module.exports = RepeatingOperation;
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) {
         settings = {};
@@ -1337,7 +1346,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -1358,14 +1367,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -1392,7 +1401,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2719,12 +2728,7 @@ module.exports = Theme;
 
     var AccordionGroupSublist = require('./js/accordion_group_sublist.js');
 
-    function Mask (maskName) {
-        EventEmitter.call(this);
-        this.maskName = maskName;
-        this.maskLayers = [];
-    }
-
+    var Mask = require("./js/mask.js");
     var Layer = require("./js/layer.js")($, app);
 
     var Theme = require("./js/theme.js");
@@ -2780,4 +2784,4 @@ module.exports = Theme;
 
 }(jQuery));
 
-},{"./js/accordion_group.js":1,"./js/accordion_group_sublist.js":2,"./js/array_contains_element.js":3,"./js/baselayer.js":4,"./js/clicktool.js":5,"./js/create_arcgis_rest_params.js":6,"./js/deactivate_controls.js":7,"./js/extents_equal.js":8,"./js/identify.js":9,"./js/identify_activate.js":10,"./js/init.js":11,"./js/layer.js":12,"./js/layer_checkbox.js":13,"./js/layer_dialog.js":14,"./js/layer_icon.js":15,"./js/layer_radio.js":16,"./js/layer_select.js":17,"./js/multigraph.js":18,"./js/multigraph_activate.js":19,"./js/overrides.js":20,"./js/print.js":21,"./js/repeating_operation.js":22,"./js/share.js":23,"./js/splash.js":24,"./js/stringContainsChar.js":25,"./js/theme.js":26}]},{},[27]);
+},{"./js/accordion_group.js":1,"./js/accordion_group_sublist.js":2,"./js/array_contains_element.js":3,"./js/baselayer.js":4,"./js/clicktool.js":5,"./js/create_arcgis_rest_params.js":6,"./js/deactivate_controls.js":7,"./js/extents_equal.js":8,"./js/identify.js":9,"./js/identify_activate.js":10,"./js/init.js":11,"./js/layer.js":12,"./js/layer_checkbox.js":13,"./js/layer_dialog.js":14,"./js/layer_icon.js":15,"./js/layer_radio.js":16,"./js/layer_select.js":17,"./js/mask.js":18,"./js/multigraph.js":19,"./js/multigraph_activate.js":20,"./js/overrides.js":21,"./js/print.js":22,"./js/repeating_operation.js":23,"./js/share.js":24,"./js/splash.js":25,"./js/stringContainsChar.js":26,"./js/theme.js":27}]},{},[28]);
