@@ -553,7 +553,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":6,"./stringContainsChar.js":39}],16:[function(require,module,exports){
+},{"./clicktool.js":6,"./stringContainsChar.js":40}],16:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -581,7 +581,7 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":36}],18:[function(require,module,exports){
+},{"./share.js":37}],18:[function(require,module,exports){
 function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
     var app = this;
 
@@ -963,7 +963,7 @@ module.exports = function ($) {
     return launch;
 }
 
-},{"./deactivate_controls.js":8,"./identify_activate.js":16,"./multigraph_activate.js":28,"./print.js":31,"./splash.js":38}],20:[function(require,module,exports){
+},{"./deactivate_controls.js":8,"./identify_activate.js":16,"./multigraph_activate.js":28,"./print.js":31,"./splash.js":39}],20:[function(require,module,exports){
 module.exports = function ($, app) {
     var stringContainsChar = require('./stringContainsChar.js');
 
@@ -1170,7 +1170,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{"./stringContainsChar.js":39}],21:[function(require,module,exports){
+},{"./stringContainsChar.js":40}],21:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -1879,7 +1879,7 @@ module.exports = function ($) {
     return parseConfig;
 }
 
-},{"./accordion_group.js":1,"./accordion_group_sublist.js":2,"./baselayer.js":5,"./create_arcgis_rest_params.js":7,"./identify.js":15,"./layer.js":20,"./multigraph.js":27,"./theme.js":40}],31:[function(require,module,exports){
+},{"./accordion_group.js":1,"./accordion_group_sublist.js":2,"./baselayer.js":5,"./create_arcgis_rest_params.js":7,"./identify.js":15,"./layer.js":20,"./multigraph.js":27,"./theme.js":41}],31:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap () {
         // go through all layers, and collect a list of objects
@@ -1971,6 +1971,42 @@ module.exports = RepeatingOperation;
 
 },{}],33:[function(require,module,exports){
 module.exports = function ($) {
+    function setBaseLayer (baseLayer) {
+        var app = this;
+        if (baseLayer.name.indexOf("Google") > -1) {
+            var layer = new OpenLayers.Layer.Google("Google Streets");
+            app.map.removeLayer(app.map.layers[0]);
+            app.currentBaseLayer = baseLayer;
+            app.map.addLayers([layer]);
+            app.map.setLayerIndex(layer, 0);
+            app.emit("baselayerchange");
+        } else { //assuming esri base layer at this point
+            $.ajax({
+                url: baseLayer.url + '?f=json&pretty=true',
+                dataType: "jsonp",
+                success:  function (layerInfo) {
+                    var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
+                        layerInfo: layerInfo
+                    });
+                    app.map.removeLayer(app.map.layers[0]);
+                    app.currentBaseLayer = baseLayer;
+                    app.map.addLayers([layer]);
+                    app.map.setLayerIndex(layer, 0);
+                    app.emit("baselayerchange");
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert(textStatus);
+                }
+            });
+        }
+    }
+
+    return setBaseLayer;
+}
+
+
+},{}],34:[function(require,module,exports){
+module.exports = function ($) {
     function setMaskByLayer (toggle, parentLayer) {
         var Layer = require("./layer.js")($, this);
 
@@ -2035,7 +2071,7 @@ module.exports = function ($) {
     return setMaskByLayer;
 }
 
-},{"./layer.js":20}],34:[function(require,module,exports){
+},{"./layer.js":20}],35:[function(require,module,exports){
 module.exports = function ($) {
     var Mask = require("./mask.js");
 
@@ -2139,7 +2175,7 @@ module.exports = function ($) {
     return setMaskByMask;
 }
 
-},{"./layer.js":20,"./mask.js":26}],35:[function(require,module,exports){
+},{"./layer.js":20,"./mask.js":26}],36:[function(require,module,exports){
 module.exports = function ($) {
     var RepeatingOperation = require("./repeating_operation.js");
     var ShareUrlInfo = require("./share.js");
@@ -2423,7 +2459,7 @@ module.exports = function ($) {
     return setTheme;
 }
 
-},{"./array_contains_element.js":4,"./layer_checkbox.js":21,"./layer_icon.js":23,"./layer_radio.js":24,"./layer_select.js":25,"./repeating_operation.js":32,"./share.js":36}],36:[function(require,module,exports){
+},{"./array_contains_element.js":4,"./layer_checkbox.js":21,"./layer_icon.js":23,"./layer_radio.js":24,"./layer_select.js":25,"./repeating_operation.js":32,"./share.js":37}],37:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) {
         settings = {};
@@ -2533,7 +2569,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 module.exports = function ($) {
     var stringContainsChar = require("./stringContainsChar.js");
     var ShareUrlInfo = require("./share.js");
@@ -2600,7 +2636,7 @@ module.exports = function ($) {
     return shareUrl;
 }
 
-},{"./share.js":36,"./stringContainsChar.js":39}],38:[function(require,module,exports){
+},{"./share.js":37,"./stringContainsChar.js":40}],39:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -2621,14 +2657,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -2655,7 +2691,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 module.exports = function ($) {
     function updateShareMapUrl () {
         if (this.currentTheme) {
@@ -2669,7 +2705,7 @@ module.exports = function ($) {
     return updateShareMapUrl;
 }
 
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2737,35 +2773,7 @@ module.exports = function ($) {
             return isItemInArray;
         };
 
-        this.setBaseLayer = function (baseLayer) {
-            var app = this;
-            if (baseLayer.name.indexOf("Google") > -1) {
-                var layer = new OpenLayers.Layer.Google("Google Streets");
-                app.map.removeLayer(app.map.layers[0]);
-                app.currentBaseLayer = baseLayer;
-                app.map.addLayers([layer]);
-                app.map.setLayerIndex(layer, 0);
-                app.emit("baselayerchange");
-            } else { //assuming esri base layer at this point
-                $.ajax({
-                    url: baseLayer.url + '?f=json&pretty=true',
-                    dataType: "jsonp",
-                    success:  function (layerInfo) {
-                        var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
-                            layerInfo: layerInfo
-                        });
-                        app.map.removeLayer(app.map.layers[0]);
-                        app.currentBaseLayer = baseLayer;
-                        app.map.addLayers([layer]);
-                        app.map.setLayerIndex(layer, 0);
-                        app.emit("baselayerchange");
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert(textStatus);
-                    }
-                });
-            }
-        };
+        this.setBaseLayer = require("./js/set_base_layer.js")($);
 
         // Begin Accordion Group Specific Functions
         this.setAccordionGroup = function (accordionGroup) {
@@ -2863,4 +2871,4 @@ module.exports = function ($) {
 
 }(jQuery));
 
-},{"./js/add_mask_legend.js":3,"./js/extent_print.js":9,"./js/extent_save.js":10,"./js/extent_zoom.js":11,"./js/extent_zoom_next.js":12,"./js/extent_zoom_previous.js":13,"./js/init.js":17,"./js/init_openlayers.js":18,"./js/launch.js":19,"./js/overrides.js":29,"./js/parse_config.js":30,"./js/set_mask_by_layer.js":33,"./js/set_mask_by_mask.js":34,"./js/set_theme.js":35,"./js/share_url.js":37,"./js/update_share_url.js":41}]},{},[42]);
+},{"./js/add_mask_legend.js":3,"./js/extent_print.js":9,"./js/extent_save.js":10,"./js/extent_zoom.js":11,"./js/extent_zoom_next.js":12,"./js/extent_zoom_previous.js":13,"./js/init.js":17,"./js/init_openlayers.js":18,"./js/launch.js":19,"./js/overrides.js":29,"./js/parse_config.js":30,"./js/set_base_layer.js":33,"./js/set_mask_by_layer.js":34,"./js/set_mask_by_mask.js":35,"./js/set_theme.js":36,"./js/share_url.js":38,"./js/update_share_url.js":42}]},{},[43]);
