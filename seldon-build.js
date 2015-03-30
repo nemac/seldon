@@ -432,7 +432,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":5,"./stringContainsChar.js":24}],10:[function(require,module,exports){
+},{"./clicktool.js":5,"./stringContainsChar.js":25}],10:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -449,41 +449,6 @@ module.exports = function (app) {
     var ShareUrlInfo = require('./share.js');
 
     function init (config, projection, gisServerType, useProxyScript) {
-
-        //jdm: override of js remove function
-        //This is very useful for removing items from array by value
-        //See: http://michalbe.blogspot.com/2010/04/removing-item-with-given-value-from.html
-        Array.prototype.remove = function(value) {
-            if (this.indexOf(value)!==-1) {
-               this.splice(this.indexOf(value), 1);
-               return true;
-           } else {
-              return false;
-           };
-        }
-
-        // jrf: Overrides OpenLayers.Map.getCurrentSize since by default it does not
-        //      account for padding, and seldon requires padding on the top and bottom
-        //      for its layout.
-        OpenLayers.Map.prototype.getCurrentSize = function () {
-            var size = new OpenLayers.Size(this.div.clientWidth,
-                                           this.div.clientHeight);
-
-            if (size.w == 0 && size.h == 0 || isNaN(size.w) && isNaN(size.h)) {
-                size.w = this.div.offsetWidth;
-                size.h = this.div.offsetHeight;
-            }
-            if (size.w == 0 && size.h == 0 || isNaN(size.w) && isNaN(size.h)) {
-                size.w = parseInt(this.div.style.width, 10);
-                size.h = parseInt(this.div.style.height, 10);
-            }
-
-            // getCurrentSize now accounts for padding
-            size.h = size.h - parseInt($(this.div).css("padding-top"), 10) - parseInt($(this.div).css("padding-bottom"), 10);
-
-            return size;
-        };
-
         var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
         app.launch(config, shareUrlInfo);
         seldon.app = app;
@@ -495,7 +460,7 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":22}],12:[function(require,module,exports){
+},{"./share.js":23}],12:[function(require,module,exports){
 module.exports = function ($, app) {
     function Layer (settings) {
         EventEmitter.call(this);
@@ -1116,6 +1081,61 @@ module.exports = function (app, activeBtn) {
 }
 
 },{"./deactivate_controls.js":7}],20:[function(require,module,exports){
+module.exports = function ($) {
+    //jdm: override of js remove function
+    //This is very useful for removing items from array by value
+    //See: http://michalbe.blogspot.com/2010/04/removing-item-with-given-value-from.html
+    Array.prototype.remove = function(value) {
+        if (this.indexOf(value)!==-1) {
+           this.splice(this.indexOf(value), 1);
+           return true;
+       } else {
+          return false;
+       };
+    }
+
+    // jrf: Overrides OpenLayers.Map.getCurrentSize since by default it does not
+    //      account for padding, and seldon requires padding on the top and bottom
+    //      for its layout.
+    OpenLayers.Map.prototype.getCurrentSize = function () {
+        var size = new OpenLayers.Size(this.div.clientWidth,
+                                       this.div.clientHeight);
+
+        if (size.w == 0 && size.h == 0 || isNaN(size.w) && isNaN(size.h)) {
+            size.w = this.div.offsetWidth;
+            size.h = this.div.offsetHeight;
+        }
+        if (size.w == 0 && size.h == 0 || isNaN(size.w) && isNaN(size.h)) {
+            size.w = parseInt(this.div.style.width, 10);
+            size.h = parseInt(this.div.style.height, 10);
+        }
+
+        // getCurrentSize now accounts for padding
+        size.h = size.h - parseInt($(this.div).css("padding-top"), 10) - parseInt($(this.div).css("padding-bottom"), 10);
+
+        return size;
+    };
+
+    // Override of offending jquery ui original method per ticket
+    // https://github.com/nemac/seldon/issues/18
+    // see http://bugs.jqueryui.com/ticket/9364
+    // and http://www.markliublog.com/override-jquery-ui-widget.html
+    $.widget("ui.dialog", $.extend({}, $.ui.dialog.prototype, {
+        _moveToTop: function(arg) { //_methodName is the new method or override method
+            if (arg) {
+                if (arg.handleObj.type!="mousedown") {
+                    var moved = !!this.uiDialog.nextAll(":visible").insertBefore( this.uiDialog ).length;
+                    if ( moved && !silent ) {
+                        this._trigger( "focus", event );
+                    }
+                    return moved;
+                }
+            }
+        }
+    }));
+}
+
+},{}],21:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap () {
         // go through all layers, and collect a list of objects
@@ -1189,7 +1209,7 @@ module.exports = function ($, app) {
     return printMap;
 };
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 function RepeatingOperation (op, yieldEveryIteration) {
     var count = 0;
     var instance = this;
@@ -1205,7 +1225,7 @@ function RepeatingOperation (op, yieldEveryIteration) {
 
 module.exports = RepeatingOperation;
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) {
         settings = {};
@@ -1315,7 +1335,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -1336,14 +1356,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -1370,7 +1390,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2755,26 +2775,9 @@ module.exports = Theme;
     seldon.ShareUrlInfo                      = ShareUrlInfo;
     window.seldon                            = seldon;
 
-    // Override of offending jquery ui original method per ticket
-    // https://github.com/nemac/seldon/issues/18
-    // see http://bugs.jqueryui.com/ticket/9364
-    // and http://www.markliublog.com/override-jquery-ui-widget.html
-    $.widget("ui.dialog", $.extend({}, $.ui.dialog.prototype, {
-        _moveToTop: function(arg) { //_methodName is the new method or override method
-            if (arg) {
-                if (arg.handleObj.type!="mousedown") {
-                    var moved = !!this.uiDialog.nextAll(":visible").insertBefore( this.uiDialog ).length;
-                    if ( moved && !silent ) {
-                        this._trigger( "focus", event );
-                    }
-                    return moved;
-                }
-            }
-        }
-    }));
-
     var printMap = require('./js/print.js')($, app);
+    require('./js/overrides.js')($);
 
 }(jQuery));
 
-},{"./js/accordion_group.js":1,"./js/accordion_group_sublist.js":2,"./js/array_contains_element.js":3,"./js/baselayer.js":4,"./js/clicktool.js":5,"./js/create_arcgis_rest_params.js":6,"./js/deactivate_controls.js":7,"./js/extents_equal.js":8,"./js/identify.js":9,"./js/identify_activate.js":10,"./js/init.js":11,"./js/layer.js":12,"./js/layer_checkbox.js":13,"./js/layer_dialog.js":14,"./js/layer_icon.js":15,"./js/layer_radio.js":16,"./js/layer_select.js":17,"./js/multigraph.js":18,"./js/multigraph_activate.js":19,"./js/print.js":20,"./js/repeating_operation.js":21,"./js/share.js":22,"./js/splash.js":23,"./js/stringContainsChar.js":24,"./js/theme.js":25}]},{},[26]);
+},{"./js/accordion_group.js":1,"./js/accordion_group_sublist.js":2,"./js/array_contains_element.js":3,"./js/baselayer.js":4,"./js/clicktool.js":5,"./js/create_arcgis_rest_params.js":6,"./js/deactivate_controls.js":7,"./js/extents_equal.js":8,"./js/identify.js":9,"./js/identify_activate.js":10,"./js/init.js":11,"./js/layer.js":12,"./js/layer_checkbox.js":13,"./js/layer_dialog.js":14,"./js/layer_icon.js":15,"./js/layer_radio.js":16,"./js/layer_select.js":17,"./js/multigraph.js":18,"./js/multigraph_activate.js":19,"./js/overrides.js":20,"./js/print.js":21,"./js/repeating_operation.js":22,"./js/share.js":23,"./js/splash.js":24,"./js/stringContainsChar.js":25,"./js/theme.js":26}]},{},[27]);
