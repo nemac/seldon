@@ -1389,26 +1389,9 @@
 
     seldon.init = require('./js/init.js')(app);
 
-    function deactivateActiveOpenLayersControls () {
-        var controls,
-            i;
-        for (i = 0; i < app.map.controls.length; i++) {
-            controls = app.map.controls[i];
-            if ((controls.active === true) &&
-                (
-                 (controls.displayClass === "olControlZoomBox")           ||
-                 (controls.displayClass === "olControlWMSGetFeatureInfo") ||
-                 (controls.displayClass === "ClickTool")
-                )) {
-
-                controls.deactivate();
-                if (activeBtn.length > 0){ //weve already activated a three-state button
-                    activeBtn.children().removeClass('icon-active');
-                    activeBtn = [];
-                }
-            }
-        }
-    }
+    var deactivateActiveOpenLayersControls = require('./js/deactivate_controls.js')(app, activeBtn);
+    var activateIdentifyTool = require('./js/identify_activate.js')(app, activeBtn);
+    var activateMultigraphTool = require('./js/multigraph_activate.js')(app, activeBtn);
 
     var ShareUrlInfo = require("./js/share.js");
 
@@ -1422,16 +1405,6 @@
 
     var createLayerPropertiesDialog = require("./js/layer_dialog.js")($);
 
-    function activateIdentifyTool () {
-        deactivateActiveOpenLayersControls();
-        app.identifyTool.activate();
-    }
-
-    function activateMultigraphTool () {
-        deactivateActiveOpenLayersControls();
-        app.multigraphTool.activate();
-    }
-
     var ClickTool = require("./js/clicktool.js");
 
     var createIdentifyTool = require('./js/identify.js')($, app);
@@ -1440,26 +1413,8 @@
 
     var stringContainsChar = require('./js/stringContainsChar.js');
 
-    function arrayContainsElement (array, element) {
-        var i;
-        if (array === undefined) {
-            return false;
-        }
-        for (i = 0; i < array.length; ++i) {
-            if (array[i] === element) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    function extentsAreEqual (e1, e2) {
-        var tolerance = 0.001;
-        return ((Math.abs(e1.left - e2.left)        <= tolerance)
-                && (Math.abs(e1.bottom - e2.bottom) <= tolerance)
-                && (Math.abs(e1.right  - e2.right)  <= tolerance)
-                && (Math.abs(e1.top    - e2.top)    <= tolerance));
-    }
+    var arrayContainsElement = require('./js/array_contains_element.js');
+    var extentsAreEqual = require('./js/extents_equal.js');
 
     //
     // exports, for testing:

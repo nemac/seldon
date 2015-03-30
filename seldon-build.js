@@ -21,6 +21,22 @@ function AccordionGroupSublist (settings) {
 module.exports = AccordionGroupSublist;
 
 },{}],3:[function(require,module,exports){
+function arrayContainsElement (array, element) {
+    var i;
+    if (array === undefined) {
+        return false;
+    }
+    for (i = 0; i < array.length; ++i) {
+        if (array[i] === element) {
+            return true;
+        }
+    }
+    return false;
+}
+
+module.exports = arrayContainsElement;
+
+},{}],4:[function(require,module,exports){
 function BaseLayer (settings) {
     if (!settings) { return; }
     this.name  = settings.name;
@@ -31,7 +47,7 @@ function BaseLayer (settings) {
 
 module.exports = BaseLayer;
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 // The following creates a new OpenLayers tool class called ClickTool
 // which calls a function whenever the user clicks in the map.  Each
 // instance of ClickTool corresponds to a specific callback function.
@@ -68,7 +84,41 @@ var ClickTool = OpenLayers.Class(OpenLayers.Control, {
 
 module.exports = ClickTool;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
+module.exports = function (app, activeBtn) {
+    function deactivateActiveOpenLayersControls () {
+        var controls,
+            i;
+        for (i = 0; i < app.map.controls.length; i++) {
+            controls = app.map.controls[i];
+            if ((controls.active === true) &&
+                (
+                 (controls.displayClass === "olControlZoomBox")           ||
+                 (controls.displayClass === "olControlWMSGetFeatureInfo") ||
+                 (controls.displayClass === "ClickTool")
+                )) {
+
+                controls.deactivate();
+                $('.icon-active').removeClass('icon-active');
+            }
+        }
+    }
+
+    return deactivateActiveOpenLayersControls;
+}
+
+},{}],7:[function(require,module,exports){
+function extentsAreEqual (e1, e2) {
+    var tolerance = 0.001;
+    return ((Math.abs(e1.left - e2.left)        <= tolerance)
+            && (Math.abs(e1.bottom - e2.bottom) <= tolerance)
+            && (Math.abs(e1.right  - e2.right)  <= tolerance)
+            && (Math.abs(e1.top    - e2.top)    <= tolerance));
+}
+
+module.exports = extentsAreEqual;
+
+},{}],8:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js'),
         stringContainsChar = require('./stringContainsChar.js');
@@ -339,7 +389,19 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":4,"./stringContainsChar.js":17}],6:[function(require,module,exports){
+},{"./clicktool.js":5,"./stringContainsChar.js":22}],9:[function(require,module,exports){
+module.exports = function (app, activeBtn) {
+    var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
+
+    function activateIdentifyTool () {
+        deactivateActiveOpenLayersControls();
+        app.identifyTool.activate();
+    }
+
+    return activateIdentifyTool;
+}
+
+},{"./deactivate_controls.js":6}],10:[function(require,module,exports){
 module.exports = function (app) {
     var ShareUrlInfo = require('./share.js');
 
@@ -390,7 +452,7 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":15}],7:[function(require,module,exports){
+},{"./share.js":20}],11:[function(require,module,exports){
 module.exports = function ($, app) {
     function Layer (settings) {
         EventEmitter.call(this);
@@ -593,7 +655,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{}],8:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -623,7 +685,7 @@ module.exports = function ($) {
     return createLayerToggleCheckbox;
 }
 
-},{}],9:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
     //This function gets called every time the layer properties icon gets clicked
 module.exports = function ($) {
     function createLayerPropertiesDialog (layer) {
@@ -713,7 +775,7 @@ module.exports = function ($) {
 }
 
 
-},{}],10:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 module.exports = function ($) {
     var createLayerPropertiesDialog = require("./layer_dialog.js")($);
 
@@ -731,7 +793,7 @@ module.exports = function ($) {
     return createLayerPropertiesIcon;
 }
 
-},{"./layer_dialog.js":9}],11:[function(require,module,exports){
+},{"./layer_dialog.js":13}],15:[function(require,module,exports){
 module.exports = function ($, app) {
     var Layer = require('./layer.js')($, app);
 
@@ -815,7 +877,7 @@ module.exports = function ($, app) {
     return createLayerToggleRadioButton;
 }
 
-},{"./layer.js":7}],12:[function(require,module,exports){
+},{"./layer.js":11}],16:[function(require,module,exports){
 module.exports = function ($, app) {
     function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
         var selectBox = document.createElement("select"),$selectBox;
@@ -917,7 +979,7 @@ module.exports = function ($, app) {
     return createLayerToggleDropdownBox;
 }
 
-},{}],13:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js');
 
@@ -998,7 +1060,19 @@ module.exports = function ($, app) {
     return createMultigraphTool;
 }
 
-},{"./clicktool.js":4}],14:[function(require,module,exports){
+},{"./clicktool.js":5}],18:[function(require,module,exports){
+module.exports = function (app, activeBtn) {
+    var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
+
+    function activateMultigraphTool () {
+        deactivateActiveOpenLayersControls();
+        app.multigraphTool.activate();
+    }
+
+    return activateMultigraphTool;
+}
+
+},{"./deactivate_controls.js":6}],19:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap () {
         // go through all layers, and collect a list of objects
@@ -1072,7 +1146,7 @@ module.exports = function ($, app) {
     return printMap;
 };
 
-},{}],15:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) {
         settings = {};
@@ -1182,7 +1256,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],16:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -1203,14 +1277,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],17:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],18:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -1237,7 +1311,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],19:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2629,26 +2703,9 @@ module.exports = Theme;
 
     seldon.init = require('./js/init.js')(app);
 
-    function deactivateActiveOpenLayersControls () {
-        var controls,
-            i;
-        for (i = 0; i < app.map.controls.length; i++) {
-            controls = app.map.controls[i];
-            if ((controls.active === true) &&
-                (
-                 (controls.displayClass === "olControlZoomBox")           ||
-                 (controls.displayClass === "olControlWMSGetFeatureInfo") ||
-                 (controls.displayClass === "ClickTool")
-                )) {
-
-                controls.deactivate();
-                if (activeBtn.length > 0){ //weve already activated a three-state button
-                    activeBtn.children().removeClass('icon-active');
-                    activeBtn = [];
-                }
-            }
-        }
-    }
+    var deactivateActiveOpenLayersControls = require('./js/deactivate_controls.js')(app, activeBtn);
+    var activateIdentifyTool = require('./js/identify_activate.js')(app, activeBtn);
+    var activateMultigraphTool = require('./js/multigraph_activate.js')(app, activeBtn);
 
     var ShareUrlInfo = require("./js/share.js");
 
@@ -2662,16 +2719,6 @@ module.exports = Theme;
 
     var createLayerPropertiesDialog = require("./js/layer_dialog.js")($);
 
-    function activateIdentifyTool () {
-        deactivateActiveOpenLayersControls();
-        app.identifyTool.activate();
-    }
-
-    function activateMultigraphTool () {
-        deactivateActiveOpenLayersControls();
-        app.multigraphTool.activate();
-    }
-
     var ClickTool = require("./js/clicktool.js");
 
     var createIdentifyTool = require('./js/identify.js')($, app);
@@ -2680,26 +2727,8 @@ module.exports = Theme;
 
     var stringContainsChar = require('./js/stringContainsChar.js');
 
-    function arrayContainsElement (array, element) {
-        var i;
-        if (array === undefined) {
-            return false;
-        }
-        for (i = 0; i < array.length; ++i) {
-            if (array[i] === element) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    function extentsAreEqual (e1, e2) {
-        var tolerance = 0.001;
-        return ((Math.abs(e1.left - e2.left)        <= tolerance)
-                && (Math.abs(e1.bottom - e2.bottom) <= tolerance)
-                && (Math.abs(e1.right  - e2.right)  <= tolerance)
-                && (Math.abs(e1.top    - e2.top)    <= tolerance));
-    }
+    var arrayContainsElement = require('./js/array_contains_element.js');
+    var extentsAreEqual = require('./js/extents_equal.js');
 
     //
     // exports, for testing:
@@ -2736,4 +2765,4 @@ module.exports = Theme;
 
 }(jQuery));
 
-},{"./js/accordion_group.js":1,"./js/accordion_group_sublist.js":2,"./js/baselayer.js":3,"./js/clicktool.js":4,"./js/identify.js":5,"./js/init.js":6,"./js/layer.js":7,"./js/layer_checkbox.js":8,"./js/layer_dialog.js":9,"./js/layer_icon.js":10,"./js/layer_radio.js":11,"./js/layer_select.js":12,"./js/multigraph.js":13,"./js/print.js":14,"./js/share.js":15,"./js/splash.js":16,"./js/stringContainsChar.js":17,"./js/theme.js":18}]},{},[19]);
+},{"./js/accordion_group.js":1,"./js/accordion_group_sublist.js":2,"./js/array_contains_element.js":3,"./js/baselayer.js":4,"./js/clicktool.js":5,"./js/deactivate_controls.js":6,"./js/extents_equal.js":7,"./js/identify.js":8,"./js/identify_activate.js":9,"./js/init.js":10,"./js/layer.js":11,"./js/layer_checkbox.js":12,"./js/layer_dialog.js":13,"./js/layer_icon.js":14,"./js/layer_radio.js":15,"./js/layer_select.js":16,"./js/multigraph.js":17,"./js/multigraph_activate.js":18,"./js/print.js":19,"./js/share.js":20,"./js/splash.js":21,"./js/stringContainsChar.js":22,"./js/theme.js":23}]},{},[24]);
