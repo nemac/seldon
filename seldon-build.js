@@ -1405,10 +1405,6 @@ module.exports = Theme;
 (function ($) {
     "use strict";
 
-    var RepeatingOperation = require('./js/repeating_operation.js');
-
-    var createArcGIS93RestParams = require('./js/create_arcgis_rest_params.js')($);
-
     var EventEmitter = window.EventEmitter,
         seldon = {},
         activeBtn = [],
@@ -2722,49 +2718,37 @@ module.exports = Theme;
 
     app = new seldon.App();
 
-    var BaseLayer = require('./js/baselayer.js');
-
-    var AccordionGroup = require('./js/accordion_group.js');
-
-    var AccordionGroupSublist = require('./js/accordion_group_sublist.js');
-
-    var Mask = require("./js/mask.js");
-    var Layer = require("./js/layer.js")($, app);
-
-    var Theme = require("./js/theme.js");
-
     function displayError (message) {
         //console.log(message);
     }
 
-    seldon.init = require('./js/init.js')(app);
-
-    var deactivateActiveOpenLayersControls = require('./js/deactivate_controls.js')(app, activeBtn);
-    var activateIdentifyTool = require('./js/identify_activate.js')(app, activeBtn);
-    var activateMultigraphTool = require('./js/multigraph_activate.js')(app, activeBtn);
-
+    seldon.init = require("./js/init.js")(app);
+    var RepeatingOperation = require("./js/repeating_operation.js");
+    var createArcGIS93RestParams = require("./js/create_arcgis_rest_params.js")($);
+    var AccordionGroup = require("./js/accordion_group.js");
+    var AccordionGroupSublist = require("./js/accordion_group_sublist.js");
+    var Mask = require("./js/mask.js");
+    var Layer = require("./js/layer.js")($, app);
+    var BaseLayer = require("./js/baselayer.js");
+    var Theme = require("./js/theme.js");
     var ShareUrlInfo = require("./js/share.js");
-
     var createLayerToggleDropdownBox = require("./js/layer_select.js")($, app);
     var createLayerToggleRadioButton = require("./js/layer_radio.js")($, app);
     var createLayerToggleCheckbox = require("./js/layer_checkbox.js")($);
-
     var createSplashScreen = require("./js/splash.js")($);
-
     var createLayerPropertiesIcon = require("./js/layer_icon.js")($);
-
     var createLayerPropertiesDialog = require("./js/layer_dialog.js")($);
-
     var ClickTool = require("./js/clicktool.js");
-
-    var createIdentifyTool = require('./js/identify.js')($, app);
-
-    var createMultigraphTool = require('./js/multigraph.js')($, app);
-
-    var stringContainsChar = require('./js/stringContainsChar.js');
-
-    var arrayContainsElement = require('./js/array_contains_element.js');
-    var extentsAreEqual = require('./js/extents_equal.js');
+    var createIdentifyTool = require("./js/identify.js")($, app);
+    var createMultigraphTool = require("./js/multigraph.js")($, app);
+    var deactivateActiveOpenLayersControls = require("./js/deactivate_controls.js")(app, activeBtn);
+    var activateIdentifyTool = require("./js/identify_activate.js")(app, activeBtn);
+    var activateMultigraphTool = require("./js/multigraph_activate.js")(app, activeBtn);
+    var stringContainsChar = require("./js/stringContainsChar.js");
+    var arrayContainsElement = require("./js/array_contains_element.js");
+    var extentsAreEqual = require("./js/extents_equal.js");
+    var printMap = require("./js/print.js")($, app);
+    require("./js/overrides.js")($);
 
     //
     // exports, for testing:
@@ -2778,9 +2762,6 @@ module.exports = Theme;
     seldon.stringContainsChar                = stringContainsChar;
     seldon.ShareUrlInfo                      = ShareUrlInfo;
     window.seldon                            = seldon;
-
-    var printMap = require('./js/print.js')($, app);
-    require('./js/overrides.js')($);
 
 }(jQuery));
 
