@@ -1697,6 +1697,8 @@ module.exports = Theme;
     };
     EventEmitter.declare(seldon.App);
 
+    app = new seldon.App();
+
     function BaseLayer (settings) {
         if (!settings) { return; }
         this.name  = settings.name;
@@ -1780,7 +1782,7 @@ module.exports = Theme;
                                             );
             }
 
-            var loadingimage = $('<img class="layer-loader-image ' + this.name + '" src="icons/ajax-loader.gif"/>');
+            var loadingimage = $('<img class="layer-loader-image ' + this.name + '" src="icons/loading.gif"/>');
             $("#map").append(loadingimage);
             this.openLayersLayer.loadingimage = loadingimage;
 
@@ -1969,7 +1971,7 @@ module.exports = Theme;
             return size;
         };
 
-        app = new seldon.App();
+//        app = new seldon.App();
         var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
         app.launch(config, shareUrlInfo);
         seldon.app = app;

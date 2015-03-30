@@ -1363,6 +1363,8 @@
     };
     EventEmitter.declare(seldon.App);
 
+    app = new seldon.App();
+
     function BaseLayer (settings) {
         if (!settings) { return; }
         this.name  = settings.name;
@@ -1635,7 +1637,6 @@
             return size;
         };
 
-        app = new seldon.App();
         var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
         app.launch(config, shareUrlInfo);
         seldon.app = app;
