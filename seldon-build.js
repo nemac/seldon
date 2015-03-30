@@ -306,7 +306,58 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":1,"./stringContainsChar.js":13}],3:[function(require,module,exports){
+},{"./clicktool.js":1,"./stringContainsChar.js":14}],3:[function(require,module,exports){
+module.exports = function (app) {
+    var ShareUrlInfo = require('./share.js');
+
+    function init (config, projection, gisServerType, useProxyScript) {
+
+        //jdm: override of js remove function
+        //This is very useful for removing items from array by value
+        //See: http://michalbe.blogspot.com/2010/04/removing-item-with-given-value-from.html
+        Array.prototype.remove = function(value) {
+            if (this.indexOf(value)!==-1) {
+               this.splice(this.indexOf(value), 1);
+               return true;
+           } else {
+              return false;
+           };
+        }
+
+        // jrf: Overrides OpenLayers.Map.getCurrentSize since by default it does not
+        //      account for padding, and seldon requires padding on the top and bottom
+        //      for its layout.
+        OpenLayers.Map.prototype.getCurrentSize = function () {
+            var size = new OpenLayers.Size(this.div.clientWidth,
+                                           this.div.clientHeight);
+
+            if (size.w == 0 && size.h == 0 || isNaN(size.w) && isNaN(size.h)) {
+                size.w = this.div.offsetWidth;
+                size.h = this.div.offsetHeight;
+            }
+            if (size.w == 0 && size.h == 0 || isNaN(size.w) && isNaN(size.h)) {
+                size.w = parseInt(this.div.style.width, 10);
+                size.h = parseInt(this.div.style.height, 10);
+            }
+
+            // getCurrentSize now accounts for padding
+            size.h = size.h - parseInt($(this.div).css("padding-top"), 10) - parseInt($(this.div).css("padding-bottom"), 10);
+
+            return size;
+        };
+
+        var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
+        app.launch(config, shareUrlInfo);
+        seldon.app = app;
+        seldon.projection = projection;
+        seldon.gisServerType = gisServerType;
+        seldon.useProxyScript = useProxyScript;
+    }
+
+    return init;
+}
+
+},{"./share.js":12}],4:[function(require,module,exports){
 module.exports = function ($, app) {
     function Layer (settings) {
         EventEmitter.call(this);
@@ -509,7 +560,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -539,7 +590,7 @@ module.exports = function ($) {
     return createLayerToggleCheckbox;
 }
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
     //This function gets called every time the layer properties icon gets clicked
 module.exports = function ($) {
     function createLayerPropertiesDialog (layer) {
@@ -629,7 +680,7 @@ module.exports = function ($) {
 }
 
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 module.exports = function ($) {
     var createLayerPropertiesDialog = require("./layer_dialog.js")($);
 
@@ -647,7 +698,7 @@ module.exports = function ($) {
     return createLayerPropertiesIcon;
 }
 
-},{"./layer_dialog.js":5}],7:[function(require,module,exports){
+},{"./layer_dialog.js":6}],8:[function(require,module,exports){
 module.exports = function ($, app) {
     var Layer = require('./layer.js')($, app);
 
@@ -731,7 +782,7 @@ module.exports = function ($, app) {
     return createLayerToggleRadioButton;
 }
 
-},{"./layer.js":3}],8:[function(require,module,exports){
+},{"./layer.js":4}],9:[function(require,module,exports){
 module.exports = function ($, app) {
     function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
         var selectBox = document.createElement("select"),$selectBox;
@@ -833,7 +884,7 @@ module.exports = function ($, app) {
     return createLayerToggleDropdownBox;
 }
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js');
 
@@ -914,7 +965,7 @@ module.exports = function ($, app) {
     return createMultigraphTool;
 }
 
-},{"./clicktool.js":1}],10:[function(require,module,exports){
+},{"./clicktool.js":1}],11:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap () {
         // go through all layers, and collect a list of objects
@@ -988,7 +1039,7 @@ module.exports = function ($, app) {
     return printMap;
 };
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) {
         settings = {};
@@ -1098,7 +1149,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -1119,14 +1170,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -1153,7 +1204,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2561,49 +2612,7 @@ module.exports = Theme;
         //console.log(message);
     }
 
-    seldon.init = function (config, projection, gisServerType, useProxyScript) {
-
-        //jdm: override of js remove function
-        //This is very useful for removing items from array by value
-        //See: http://michalbe.blogspot.com/2010/04/removing-item-with-given-value-from.html
-        Array.prototype.remove = function(value) {
-            if (this.indexOf(value)!==-1) {
-               this.splice(this.indexOf(value), 1);
-               return true;
-           } else {
-              return false;
-           };
-        }
-
-        // jrf: Overrides OpenLayers.Map.getCurrentSize since by default it does not
-        //      account for padding, and seldon requires padding on the top and bottom
-        //      for its layout.
-        OpenLayers.Map.prototype.getCurrentSize = function () {
-            var size = new OpenLayers.Size(this.div.clientWidth,
-                                           this.div.clientHeight);
-
-            if (size.w == 0 && size.h == 0 || isNaN(size.w) && isNaN(size.h)) {
-                size.w = this.div.offsetWidth;
-                size.h = this.div.offsetHeight;
-            }
-            if (size.w == 0 && size.h == 0 || isNaN(size.w) && isNaN(size.h)) {
-                size.w = parseInt(this.div.style.width, 10);
-                size.h = parseInt(this.div.style.height, 10);
-            }
-
-            // getCurrentSize now accounts for padding
-            size.h = size.h - parseInt($(this.div).css("padding-top"), 10) - parseInt($(this.div).css("padding-bottom"), 10);
-
-            return size;
-        };
-
-        var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
-        app.launch(config, shareUrlInfo);
-        seldon.app = app;
-        seldon.projection = projection;
-        seldon.gisServerType = gisServerType;
-        seldon.useProxyScript = useProxyScript;
-    };
+    seldon.init = require('./js/init.js')(app);
 
     function deactivateActiveOpenLayersControls () {
         var controls,
@@ -2754,4 +2763,4 @@ module.exports = Theme;
 
 }(jQuery));
 
-},{"./js/clicktool.js":1,"./js/identify.js":2,"./js/layer.js":3,"./js/layer_checkbox.js":4,"./js/layer_dialog.js":5,"./js/layer_icon.js":6,"./js/layer_radio.js":7,"./js/layer_select.js":8,"./js/multigraph.js":9,"./js/print.js":10,"./js/share.js":11,"./js/splash.js":12,"./js/stringContainsChar.js":13,"./js/theme.js":14}]},{},[15]);
+},{"./js/clicktool.js":1,"./js/identify.js":2,"./js/init.js":3,"./js/layer.js":4,"./js/layer_checkbox.js":5,"./js/layer_dialog.js":6,"./js/layer_icon.js":7,"./js/layer_radio.js":8,"./js/layer_select.js":9,"./js/multigraph.js":10,"./js/print.js":11,"./js/share.js":12,"./js/splash.js":13,"./js/stringContainsChar.js":14,"./js/theme.js":15}]},{},[16]);
