@@ -432,7 +432,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":5,"./stringContainsChar.js":28}],10:[function(require,module,exports){
+},{"./clicktool.js":5,"./stringContainsChar.js":29}],10:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -460,7 +460,85 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":26}],12:[function(require,module,exports){
+},{"./share.js":27}],12:[function(require,module,exports){
+function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
+    var app = this;
+
+    if (baseLayer.name.indexOf("Google") > -1) {
+        var layer = new OpenLayers.Layer.Google("Google Streets", {numZoomLevels: 20});
+    } else { //assume arcgis
+        var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
+            layerInfo: baseLayerInfo
+        });
+    }
+
+    var maxExtentBounds = new OpenLayers.Bounds(app.maxExtent.left, app.maxExtent.bottom,
+                                                app.maxExtent.right, app.maxExtent.top);
+
+    if (initialExtent === undefined) {
+        //take the extent coming from the config file
+        initialExtent = app.maxExtent;
+    } else {
+        //take the extent of the share map url
+        maxExtentBounds = new OpenLayers.Bounds(initialExtent.left, initialExtent.bottom,
+                                                initialExtent.right, initialExtent.top);
+    }
+
+    app.tileManager = new OpenLayers.TileManager({
+        cacheSize: 12,
+        moveDelay: 1000,
+        zoomDelay: 1000
+    });
+
+    app.map = new OpenLayers.Map('map', {
+        maxExtent:         maxExtentBounds,
+        units:             'm',
+        resolutions:       layer.resolutions,
+        numZoomLevels:     layer.numZoomLevels,
+        tileSize:          layer.tileSize,
+        tileManager:       app.tileManager,
+        controls: [
+            new OpenLayers.Control.Navigation({
+                dragPanOptions: {
+                    enableKinetic: true
+                }
+            }),
+            new OpenLayers.Control.Attribution(),
+            app.zoomInTool,
+            app.zoomOutTool,
+            app.identifyTool,
+            app.multigraphTool
+        ],
+        eventListeners:
+        {
+            "moveend": function() { app.emit("extentchange"); },
+            "zoomend": function() { app.emit("extentchange"); }
+        },
+        zoom: 1,
+        projection: new OpenLayers.Projection(seldon.projection)
+    });
+
+    // set the base layer, but bypass setBaseLayer() here, because that function initiates an ajax request
+    // to fetch the layerInfo, which in this case we already have
+    app.currentBaseLayer = baseLayer;
+    app.emit("baselayerchange");
+    app.map.addControl(new OpenLayers.Control.ScaleLine({bottomOutUnits: 'mi'}));
+    app.map.addLayers([layer]);
+    app.map.setLayerIndex(layer, 0);
+    app.setAccordionGroup(app.setTheme(theme, themeOptions));
+    app.zoomToExtent(initialExtent);
+    app.map.events.register("mousemove", app.map, function (e) {
+        var pixel = app.map.events.getMousePosition(e);
+        var lonlat = app.map.getLonLatFromPixel(pixel);
+        lonlat = lonlat.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
+        OpenLayers.Util.getElement("latLonTracker").innerHTML = "Lat: " + sprintf("%.5f", lonlat.lat) + " Lon: " + sprintf("%.5f", lonlat.lon) + "";
+    });
+    app.map.addControl(new OpenLayers.Control.PanZoomBar());
+}
+
+module.exports = initOpenLayers;
+
+},{}],13:[function(require,module,exports){
 module.exports = function ($, app) {
     function Layer (settings) {
         EventEmitter.call(this);
@@ -665,7 +743,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -695,7 +773,7 @@ module.exports = function ($) {
     return createLayerToggleCheckbox;
 }
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
     //This function gets called every time the layer properties icon gets clicked
 module.exports = function ($) {
     function createLayerPropertiesDialog (layer) {
@@ -785,7 +863,7 @@ module.exports = function ($) {
 }
 
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 module.exports = function ($) {
     var createLayerPropertiesDialog = require("./layer_dialog.js")($);
 
@@ -803,7 +881,7 @@ module.exports = function ($) {
     return createLayerPropertiesIcon;
 }
 
-},{"./layer_dialog.js":14}],16:[function(require,module,exports){
+},{"./layer_dialog.js":15}],17:[function(require,module,exports){
 module.exports = function ($, app) {
     var Layer = require('./layer.js')($, app);
 
@@ -887,7 +965,7 @@ module.exports = function ($, app) {
     return createLayerToggleRadioButton;
 }
 
-},{"./layer.js":12}],17:[function(require,module,exports){
+},{"./layer.js":13}],18:[function(require,module,exports){
 module.exports = function ($, app) {
     function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
         var selectBox = document.createElement("select"),$selectBox;
@@ -989,7 +1067,7 @@ module.exports = function ($, app) {
     return createLayerToggleDropdownBox;
 }
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 function Mask (maskName) {
     window.EventEmitter.call(this);
     this.maskName = maskName;
@@ -998,7 +1076,7 @@ function Mask (maskName) {
 
 module.exports = Mask;
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js');
 
@@ -1079,7 +1157,7 @@ module.exports = function ($, app) {
     return createMultigraphTool;
 }
 
-},{"./clicktool.js":5}],20:[function(require,module,exports){
+},{"./clicktool.js":5}],21:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -1091,7 +1169,7 @@ module.exports = function (app, activeBtn) {
     return activateMultigraphTool;
 }
 
-},{"./deactivate_controls.js":7}],21:[function(require,module,exports){
+},{"./deactivate_controls.js":7}],22:[function(require,module,exports){
 module.exports = function ($) {
     //jdm: override of js remove function
     //This is very useful for removing items from array by value
@@ -1146,7 +1224,7 @@ module.exports = function ($) {
     }));
 }
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 module.exports = function ($) {
     var AccordionGroup = require("./accordion_group.js");
     var AccordionGroupSublist = require("./accordion_group_sublist.js");
@@ -1373,7 +1451,7 @@ module.exports = function ($) {
     return parseConfig;
 }
 
-},{"./accordion_group.js":1,"./accordion_group_sublist.js":2,"./baselayer.js":4,"./identify.js":9,"./layer.js":12,"./multigraph.js":19,"./theme.js":29}],23:[function(require,module,exports){
+},{"./accordion_group.js":1,"./accordion_group_sublist.js":2,"./baselayer.js":4,"./identify.js":9,"./layer.js":13,"./multigraph.js":20,"./theme.js":30}],24:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap () {
         // go through all layers, and collect a list of objects
@@ -1447,7 +1525,7 @@ module.exports = function ($, app) {
     return printMap;
 };
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 function RepeatingOperation (op, yieldEveryIteration) {
     var count = 0;
     var instance = this;
@@ -1463,7 +1541,7 @@ function RepeatingOperation (op, yieldEveryIteration) {
 
 module.exports = RepeatingOperation;
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 module.exports = function ($) {
     var RepeatingOperation = require("./repeating_operation.js");
     var ShareUrlInfo = require("./share.js");
@@ -1747,7 +1825,7 @@ module.exports = function ($) {
     return setTheme;
 }
 
-},{"./array_contains_element.js":3,"./layer_checkbox.js":13,"./layer_icon.js":15,"./layer_radio.js":16,"./layer_select.js":17,"./repeating_operation.js":24,"./share.js":26}],26:[function(require,module,exports){
+},{"./array_contains_element.js":3,"./layer_checkbox.js":14,"./layer_icon.js":16,"./layer_radio.js":17,"./layer_select.js":18,"./repeating_operation.js":25,"./share.js":27}],27:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) {
         settings = {};
@@ -1857,7 +1935,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -1878,14 +1956,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -1912,7 +1990,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2669,82 +2747,7 @@ module.exports = Theme;
 
         this.parseConfig = require("./js/parse_config.js")($);
 
-        this.initOpenLayers = function (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
-
-            if (baseLayer.name.indexOf("Google") > -1) {
-                var layer = new OpenLayers.Layer.Google("Google Streets", {numZoomLevels: 20});
-            } else { //assume arcgis
-                var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
-                    layerInfo: baseLayerInfo
-                });
-            }
-
-            var maxExtentBounds = new OpenLayers.Bounds(app.maxExtent.left, app.maxExtent.bottom,
-                                                        app.maxExtent.right, app.maxExtent.top);
-            //console.log(maxExtentBounds);
-            //console.log(initialExtent);
-
-            if (initialExtent === undefined) {
-                //take the extent coming from the config file
-                initialExtent = app.maxExtent;
-            } else {
-                //take the extent of the share map url
-                maxExtentBounds = new OpenLayers.Bounds(initialExtent.left, initialExtent.bottom,
-                                                        initialExtent.right, initialExtent.top);
-            }
-
-            app.tileManager = new OpenLayers.TileManager({
-                cacheSize: 12,
-                moveDelay: 1000,
-                zoomDelay: 1000
-            });
-
-            app.map = new OpenLayers.Map('map', {
-                maxExtent:         maxExtentBounds,
-                units:             'm',
-                resolutions:       layer.resolutions,
-                numZoomLevels:     layer.numZoomLevels,
-                tileSize:          layer.tileSize,
-                tileManager:       app.tileManager,
-                controls: [
-                    new OpenLayers.Control.Navigation({
-                        dragPanOptions: {
-                            enableKinetic: true
-                        }
-                    }),
-                    new OpenLayers.Control.Attribution(),
-                    app.zoomInTool,
-                    app.zoomOutTool,
-                    app.identifyTool,
-                    app.multigraphTool
-                ],
-                eventListeners:
-                {
-                    "moveend": function() { app.emit("extentchange"); },
-                    "zoomend": function() { app.emit("extentchange"); }
-                },
-                zoom: 1,
-                projection: new OpenLayers.Projection(seldon.projection)
-            });
-
-            // set the base layer, but bypass setBaseLayer() here, because that function initiates an ajax request
-            // to fetch the layerInfo, which in this case we already have
-            this.currentBaseLayer = baseLayer;
-            this.emit("baselayerchange");
-            this.map.addControl(new OpenLayers.Control.ScaleLine({bottomOutUnits: 'mi'}));
-            this.map.addLayers([layer]);
-            this.map.setLayerIndex(layer, 0);
-            // this.setTheme(theme, themeOptions);
-            app.setAccordionGroup(this.setTheme(theme, themeOptions));
-            this.zoomToExtent(initialExtent);
-            this.map.events.register("mousemove", app.map, function (e) {
-                var pixel = app.map.events.getMousePosition(e);
-                var lonlat = app.map.getLonLatFromPixel(pixel);
-                lonlat = lonlat.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
-                OpenLayers.Util.getElement("latLonTracker").innerHTML = "Lat: " + sprintf("%.5f", lonlat.lat) + " Lon: " + sprintf("%.5f", lonlat.lon) + "";
-            });
-            app.map.addControl(new OpenLayers.Control.PanZoomBar());
-        };
+        this.initOpenLayers = require("./js/init_openlayers.js");
 
     };
     EventEmitter.declare(seldon.App);
@@ -2785,4 +2788,4 @@ module.exports = Theme;
 
 }(jQuery));
 
-},{"./js/clicktool.js":5,"./js/create_arcgis_rest_params.js":6,"./js/deactivate_controls.js":7,"./js/extents_equal.js":8,"./js/identify_activate.js":10,"./js/init.js":11,"./js/layer.js":12,"./js/mask.js":18,"./js/multigraph_activate.js":20,"./js/overrides.js":21,"./js/parse_config.js":22,"./js/print.js":23,"./js/set_theme.js":25,"./js/share.js":26,"./js/splash.js":27,"./js/stringContainsChar.js":28}]},{},[30]);
+},{"./js/clicktool.js":5,"./js/create_arcgis_rest_params.js":6,"./js/deactivate_controls.js":7,"./js/extents_equal.js":8,"./js/identify_activate.js":10,"./js/init.js":11,"./js/init_openlayers.js":12,"./js/layer.js":13,"./js/mask.js":19,"./js/multigraph_activate.js":21,"./js/overrides.js":22,"./js/parse_config.js":23,"./js/print.js":24,"./js/set_theme.js":26,"./js/share.js":27,"./js/splash.js":28,"./js/stringContainsChar.js":29}]},{},[31]);
