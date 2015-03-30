@@ -21,6 +21,28 @@ function AccordionGroupSublist (settings) {
 module.exports = AccordionGroupSublist;
 
 },{}],3:[function(require,module,exports){
+module.exports = function ($) {
+     function addMaskToLegend (layer) {
+         var app = this;
+
+        var maskName = layer.lid.substring(layer.lid.indexOf("MaskFor"),layer.lid.length);
+        //clear out old legend graphic if necessary
+        if ($(document.getElementById("lgd" + maskName))) {
+            $(document.getElementById("lgd" + maskName)).remove();
+        }
+        layer.$legendItem = $(document.createElement("div")).attr("id", "lgd" + maskName)
+            .prepend($(document.createElement("img")).attr("src", layer.legend))
+            .prependTo($('#legend'))
+            .click(function () {
+                app.setMaskByMask(false, maskName);
+            });
+    }
+
+    return addMaskToLegend
+}
+
+
+},{}],4:[function(require,module,exports){
 function arrayContainsElement (array, element) {
     var i;
     if (array === undefined) {
@@ -36,7 +58,7 @@ function arrayContainsElement (array, element) {
 
 module.exports = arrayContainsElement;
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 function BaseLayer (settings) {
     if (!settings) { return; }
     this.name  = settings.name;
@@ -47,7 +69,7 @@ function BaseLayer (settings) {
 
 module.exports = BaseLayer;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 // The following creates a new OpenLayers tool class called ClickTool
 // which calls a function whenever the user clicks in the map.  Each
 // instance of ClickTool corresponds to a specific callback function.
@@ -84,7 +106,7 @@ var ClickTool = OpenLayers.Class(OpenLayers.Control, {
 
 module.exports = ClickTool;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 module.exports = function ($) {
     function createArcGIS93RestParams ($layer) {
         //  $layer is a jQuery object corresponding to a <restLayer> section in the config file.
@@ -127,7 +149,7 @@ module.exports = function ($) {
     return createArcGIS93RestParams;
 }
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     function deactivateActiveOpenLayersControls () {
         var controls,
@@ -150,7 +172,7 @@ module.exports = function (app, activeBtn) {
     return deactivateActiveOpenLayersControls;
 }
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 function extentsAreEqual (e1, e2) {
     var tolerance = 0.001;
     return ((Math.abs(e1.left - e2.left)        <= tolerance)
@@ -161,7 +183,7 @@ function extentsAreEqual (e1, e2) {
 
 module.exports = extentsAreEqual;
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js'),
         stringContainsChar = require('./stringContainsChar.js');
@@ -432,7 +454,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":5,"./stringContainsChar.js":31}],10:[function(require,module,exports){
+},{"./clicktool.js":6,"./stringContainsChar.js":34}],11:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -444,7 +466,7 @@ module.exports = function (app, activeBtn) {
     return activateIdentifyTool;
 }
 
-},{"./deactivate_controls.js":7}],11:[function(require,module,exports){
+},{"./deactivate_controls.js":8}],12:[function(require,module,exports){
 module.exports = function (app) {
     var ShareUrlInfo = require('./share.js');
 
@@ -460,7 +482,7 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":28}],12:[function(require,module,exports){
+},{"./share.js":31}],13:[function(require,module,exports){
 function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
     var app = this;
 
@@ -538,7 +560,7 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
 
 module.exports = initOpenLayers;
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 module.exports = function ($) {
     var createSplashScreen = require("./splash.js")($);
 
@@ -842,7 +864,7 @@ module.exports = function ($) {
     return launch;
 }
 
-},{"./deactivate_controls.js":7,"./identify_activate.js":10,"./multigraph_activate.js":22,"./print.js":25,"./splash.js":30}],14:[function(require,module,exports){
+},{"./deactivate_controls.js":8,"./identify_activate.js":11,"./multigraph_activate.js":23,"./print.js":26,"./splash.js":33}],15:[function(require,module,exports){
 module.exports = function ($, app) {
     var stringContainsChar = require('./stringContainsChar.js');
 
@@ -1049,7 +1071,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{"./stringContainsChar.js":31}],15:[function(require,module,exports){
+},{"./stringContainsChar.js":34}],16:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -1079,7 +1101,7 @@ module.exports = function ($) {
     return createLayerToggleCheckbox;
 }
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
     //This function gets called every time the layer properties icon gets clicked
 module.exports = function ($) {
     function createLayerPropertiesDialog (layer) {
@@ -1169,7 +1191,7 @@ module.exports = function ($) {
 }
 
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 module.exports = function ($) {
     var createLayerPropertiesDialog = require("./layer_dialog.js")($);
 
@@ -1187,7 +1209,7 @@ module.exports = function ($) {
     return createLayerPropertiesIcon;
 }
 
-},{"./layer_dialog.js":16}],18:[function(require,module,exports){
+},{"./layer_dialog.js":17}],19:[function(require,module,exports){
 module.exports = function ($, app) {
     var Layer = require('./layer.js')($, app);
 
@@ -1271,7 +1293,7 @@ module.exports = function ($, app) {
     return createLayerToggleRadioButton;
 }
 
-},{"./layer.js":14}],19:[function(require,module,exports){
+},{"./layer.js":15}],20:[function(require,module,exports){
 module.exports = function ($, app) {
     function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
         var selectBox = document.createElement("select"),$selectBox;
@@ -1373,7 +1395,7 @@ module.exports = function ($, app) {
     return createLayerToggleDropdownBox;
 }
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 function Mask (maskName) {
     window.EventEmitter.call(this);
     this.maskName = maskName;
@@ -1382,7 +1404,7 @@ function Mask (maskName) {
 
 module.exports = Mask;
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js');
 
@@ -1463,7 +1485,7 @@ module.exports = function ($, app) {
     return createMultigraphTool;
 }
 
-},{"./clicktool.js":5}],22:[function(require,module,exports){
+},{"./clicktool.js":6}],23:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -1475,7 +1497,7 @@ module.exports = function (app, activeBtn) {
     return activateMultigraphTool;
 }
 
-},{"./deactivate_controls.js":7}],23:[function(require,module,exports){
+},{"./deactivate_controls.js":8}],24:[function(require,module,exports){
 module.exports = function ($) {
     //jdm: override of js remove function
     //This is very useful for removing items from array by value
@@ -1530,7 +1552,7 @@ module.exports = function ($) {
     }));
 }
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 module.exports = function ($) {
     var createArcGIS93RestParams = require("./create_arcgis_rest_params.js")($);
     var AccordionGroup = require("./accordion_group.js");
@@ -1758,7 +1780,7 @@ module.exports = function ($) {
     return parseConfig;
 }
 
-},{"./accordion_group.js":1,"./accordion_group_sublist.js":2,"./baselayer.js":4,"./create_arcgis_rest_params.js":6,"./identify.js":9,"./layer.js":14,"./multigraph.js":21,"./theme.js":32}],25:[function(require,module,exports){
+},{"./accordion_group.js":1,"./accordion_group_sublist.js":2,"./baselayer.js":5,"./create_arcgis_rest_params.js":7,"./identify.js":10,"./layer.js":15,"./multigraph.js":22,"./theme.js":35}],26:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap () {
         // go through all layers, and collect a list of objects
@@ -1832,7 +1854,7 @@ module.exports = function ($, app) {
     return printMap;
 };
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 function RepeatingOperation (op, yieldEveryIteration) {
     var count = 0;
     var instance = this;
@@ -1848,7 +1870,177 @@ function RepeatingOperation (op, yieldEveryIteration) {
 
 module.exports = RepeatingOperation;
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
+module.exports = function ($) {
+    function setMaskByLayer (toggle, parentLayer) {
+        var Layer = require("./layer.js")($, this);
+
+        var app = this;
+
+        if (toggle) {
+            app.maskParentLayers.push(parentLayer);
+            for (var m = 0; m < app.masks.length; m++) {
+                var maskLayer = new Layer({
+                    lid              : parentLayer.lid+app.masks[m].maskName.replace("/",""),
+                    visible          : 'true',
+                    url              : parentLayer.url,
+                    srs              : parentLayer.srs,
+                    layers           : parentLayer.layers+app.masks[m].maskName.replace("/",""),
+                    identify         : parentLayer.identify,
+                    name             : parentLayer.lid+app.masks[m].maskName.replace("/",""),
+                    mask             : 'false',
+                    legend           : parentLayer.legend,
+                    index            : parentLayer.index
+                });
+                maskLayer.parentLayer = parentLayer;
+                maskLayer.activate();
+                app.masks[m].maskLayers.push(maskLayer);
+                if (parentLayer.visible=="true") {
+                    parentLayer.deactivate();
+                    parentLayer.visible="false";
+                }
+                $("#"+app.masks[m].maskName.replace("MaskFor","")).get(0).checked = true;
+                $('#mask-status'+ parentLayer.lid).text("(m)");
+                $("#chk"+parentLayer.lid).prop('checked', true);
+            }
+        } else {
+            //deactivate and remove from mask.maskLayers[]
+            for (var m = 0; m < app.masks.length; m++) {
+                var currentMask = app.masks[m];
+                var maskLayersToDelete = [];
+                for (var ml = 0; ml < app.masks[m].maskLayers.length; ml++) {
+                    var currentMaskLayer = app.masks[m].maskLayers[ml];
+                    if (currentMaskLayer.parentLayer.lid == parentLayer.lid) {
+                        currentMaskLayer.deactivate();
+                        $('#mask-status'+ currentMaskLayer.parentLayer.lid).text("")
+                        maskLayersToDelete.push(currentMaskLayer);
+                    }
+                }
+                for (var mld = 0; mld < maskLayersToDelete.length; mld++) {
+                    currentMask.maskLayers.remove(maskLayersToDelete[mld]);
+                }
+            }
+            //remove from maskParentLayers and activate parentLayer
+            app.maskParentLayers.remove(parentLayer);
+            if (parentLayer.visible == "false") {
+                parentLayer.visible = "true";
+            } else {
+                parentLayer.visible == "true";
+                parentLayer.deactivate();
+            }
+            $('#mask-status'+ parentLayer.lid).text("");
+        }
+        app.updateShareMapUrl();
+    }; //end app.setMaskByLayer()
+
+    return setMaskByLayer;
+}
+
+},{"./layer.js":15}],29:[function(require,module,exports){
+module.exports = function ($) {
+    var Mask = require("./mask.js");
+
+    // jdm: 11/27-12/5/14 - re-wrote to use Mask object, doing things in a more
+    //      object oriented fashion!
+    function setMaskByMask (toggle, maskName) {
+        var Layer = require("./layer.js")($, this);
+
+        var app = this;
+
+        if (toggle) {
+            //if ForestOnly grey out the sub-forest types
+            if (maskName == "MaskForForest") {
+                $("#ConiferForest").attr("disabled", true);
+                $("#DeciduousForest").attr("disabled", true);
+                $("#MixedForest").attr("disabled", true);
+            }
+
+            var mask = new Mask(maskName);
+            app.masks.push(mask);
+
+            // Loop through app.map.layers making sure that
+            // app.maskParentLayers is correct
+            for (var l = 0; l < app.map.layers.length; l++) {
+                if (app.map.layers[l].seldonLayer) {
+                    if (app.map.layers[l].seldonLayer.mask=="true") {
+                        if (app.count(app.maskParentLayers,app.map.layers[l].seldonLayer)==0) {
+                            app.maskParentLayers.push(app.map.layers[l].seldonLayer);
+                            app.map.layers[l].seldonLayer.visible="true";
+                        }
+                    }
+                }
+            }
+
+            for (var mp = 0; mp < app.maskParentLayers.length; mp++) {
+                //console.log("creating maskLayer for "+ app.maskParentLayers[mp].name);
+                var maskLayer = new Layer({
+                    lid              : app.maskParentLayers[mp].lid+maskName.replace("/",""),
+                    visible          : 'true',
+                    url              : app.maskParentLayers[mp].url,
+                    srs              : app.maskParentLayers[mp].srs,
+                    layers           : app.maskParentLayers[mp].layers+maskName.replace("/",""),
+                    identify         : app.maskParentLayers[mp].identify,
+                    name             : app.maskParentLayers[mp].lid+maskName.replace("/",""),
+                    mask             : 'false',
+                    legend           : app.maskParentLayers[mp].legend,
+                    index            : app.maskParentLayers[mp].index
+                });
+                maskLayer.parentLayer = app.maskParentLayers[mp];
+                maskLayer.activate();
+                mask.maskLayers.push(maskLayer);
+                if (app.maskParentLayers[mp].visible=="true") {
+                    app.maskParentLayers[mp].deactivate();
+                    app.maskParentLayers[mp].visible=="false";
+                }
+                $("#"+maskName.replace("MaskFor","")).get(0).checked = true;
+                $('#mask-status'+ app.maskParentLayers[mp].lid).text("(m)");
+                $("#chk"+app.maskParentLayers[mp].lid).prop('checked', true);
+            }
+        } //end if (toggle)
+        else { //we have just turned off a mask
+            //if ForestOnly grey out the sub-forest types
+            if (maskName=="MaskForForest") {
+                $( "#ConiferForest" ).attr("disabled", false);
+                $( "#DeciduousForest" ).attr("disabled", false);
+                $( "#MixedForest" ).attr("disabled", false);
+            }
+            // Loop through app.masks and find maskName
+            // When you find it, deactivate all of its maskLayers
+            // Keep track of the number of mask in app.masks
+            for (var m = 0; m < app.masks.length; m++) {
+                if (app.masks[m].maskName==maskName) {
+                    for (var ml = 0; ml < app.masks[m].maskLayers.length; ml++) {
+                        app.masks[m].maskLayers[ml].deactivate();
+                    }
+                    //Remove the mask from app.masks that you just cleared out
+                    app.masks.remove(app.masks[m]);
+                    $("#"+maskName.replace("MaskFor","")).get(0).checked = false;
+                    $(document.getElementById("lgd" + maskName)).remove();
+                }
+            }
+            // If it was the only mask in app.Mask (e.g. app.masks.length ==0) to begin with
+            // Then loop through app.maskParentLayers and activate those layer
+            // Remove those layers from app.maskParentLayers that you just activated
+            if (app.masks.length==0) {
+                var layersToRemove = [];
+                for (var mp = 0; mp < app.maskParentLayers.length; mp++) {
+                    app.maskParentLayers[mp].activate();
+                    app.maskParentLayers[mp].visible="true";
+                    layersToRemove.push(app.maskParentLayers[mp]);
+                }
+                for (var l = 0; l < layersToRemove.length; l++) {
+                    app.maskParentLayers.remove(layersToRemove[l]);
+                    $('#mask-status'+ layersToRemove[l].lid).text("");
+                }
+            }
+        }
+        app.updateShareMapUrl();
+    }; //end app.setMaskByMask()
+
+    return setMaskByMask;
+}
+
+},{"./layer.js":15,"./mask.js":21}],30:[function(require,module,exports){
 module.exports = function ($) {
     var RepeatingOperation = require("./repeating_operation.js");
     var ShareUrlInfo = require("./share.js");
@@ -2132,7 +2324,7 @@ module.exports = function ($) {
     return setTheme;
 }
 
-},{"./array_contains_element.js":3,"./layer_checkbox.js":15,"./layer_icon.js":17,"./layer_radio.js":18,"./layer_select.js":19,"./repeating_operation.js":26,"./share.js":28}],28:[function(require,module,exports){
+},{"./array_contains_element.js":4,"./layer_checkbox.js":16,"./layer_icon.js":18,"./layer_radio.js":19,"./layer_select.js":20,"./repeating_operation.js":27,"./share.js":31}],31:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) {
         settings = {};
@@ -2242,7 +2434,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],29:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 module.exports = function ($) {
     var stringContainsChar = require("./stringContainsChar.js");
     var ShareUrlInfo = require("./share.js");
@@ -2309,7 +2501,7 @@ module.exports = function ($) {
     return shareUrl;
 }
 
-},{"./share.js":28,"./stringContainsChar.js":31}],30:[function(require,module,exports){
+},{"./share.js":31,"./stringContainsChar.js":34}],33:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -2330,14 +2522,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],31:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],32:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -2364,7 +2556,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],33:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 module.exports = function ($) {
     function updateShareMapUrl () {
         if (this.currentTheme) {
@@ -2378,7 +2570,7 @@ module.exports = function ($) {
     return updateShareMapUrl;
 }
 
-},{}],34:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2612,176 +2804,11 @@ module.exports = function ($) {
             return counter;
         }
 
-        this.addMaskToLegend = function (layer) {
-            var maskName = layer.lid.substring(layer.lid.indexOf("MaskFor"),layer.lid.length);
-            //clear out old legend graphic if necessary
-            if ($(document.getElementById("lgd" + maskName))) {
-                $(document.getElementById("lgd" + maskName)).remove();
-            }
-            layer.$legendItem = $(document.createElement("div")).attr("id", "lgd" + maskName)
-            .prepend($(document.createElement("img")).attr("src", layer.legend))
-            .prependTo($('#legend'))
-            .click(function () {
-                app.setMaskByMask(false, maskName);
-            });
-        }
-
+        this.addMaskToLegend = require("./js/add_mask_legend.js")($); 
         this.removeMaskFromLegend = function (layer) {}
-        //jdm: 11/27-12/5/14 - re-wrote to use Mask object,  doing things in a more
-        //object oriented fashion!
-        this.setMaskByMask = function (toggle, maskName) {
-            if (toggle) {
-                //if ForestOnly grey out the sub-forest types
-                if (maskName == "MaskForForest") {
-                    $( "#ConiferForest" ).attr("disabled", true);
-                    $( "#DeciduousForest" ).attr("disabled", true);
-                    $( "#MixedForest" ).attr("disabled", true);
-                }
 
-                //console.log("creating new mask "+ maskName);
-                var mask = new Mask(maskName);
-                app.masks.push(mask);
-
-                //Loop through app.map.layers making sure that
-                //app.maskParentLayers is correct
-                for (var l = 0; l < app.map.layers.length; l++) {
-                    if (app.map.layers[l].seldonLayer) {
-                        if (app.map.layers[l].seldonLayer.mask=="true") {
-                            //console.log("count "+ app.count(app.maskParentLayers,app.map.layers[l].seldonLayer));
-                            if (app.count(app.maskParentLayers,app.map.layers[l].seldonLayer)==0) {
-                                app.maskParentLayers.push(app.map.layers[l].seldonLayer);
-                                app.map.layers[l].seldonLayer.visible="true";
-                            }
-                        }
-                    }
-                }
-
-                for (var mp = 0; mp < app.maskParentLayers.length; mp++) {
-                    //console.log("creating maskLayer for "+ app.maskParentLayers[mp].name);
-                     var maskLayer = new Layer({
-                            lid              : app.maskParentLayers[mp].lid+maskName.replace("/",""),
-                            visible          : 'true',
-                            url              : app.maskParentLayers[mp].url,
-                            srs              : app.maskParentLayers[mp].srs,
-                            layers           : app.maskParentLayers[mp].layers+maskName.replace("/",""),
-                            identify         : app.maskParentLayers[mp].identify,
-                            name             : app.maskParentLayers[mp].lid+maskName.replace("/",""),
-                            mask             : 'false',
-                            legend           : app.maskParentLayers[mp].legend,
-                            index            : app.maskParentLayers[mp].index
-                    });
-                    maskLayer.parentLayer = app.maskParentLayers[mp];
-                    maskLayer.activate();
-                    mask.maskLayers.push(maskLayer);
-                    if (app.maskParentLayers[mp].visible=="true") {
-                        app.maskParentLayers[mp].deactivate();
-                        app.maskParentLayers[mp].visible=="false";
-                    }
-                    $("#"+maskName.replace("MaskFor","")).get(0).checked = true;
-                    $('#mask-status'+ app.maskParentLayers[mp].lid).text("(m)");
-                    $("#chk"+app.maskParentLayers[mp].lid).prop('checked', true);
-                }
-            } //end if (toggle)
-            else { //we have just turned off a mask
-                //if ForestOnly grey out the sub-forest types
-                if (maskName=="MaskForForest") {
-                    $( "#ConiferForest" ).attr("disabled", false);
-                    $( "#DeciduousForest" ).attr("disabled", false);
-                    $( "#MixedForest" ).attr("disabled", false);
-                }
-                //console.log("we have just turned off a mask "+ maskName);
-                //Loop through app.masks and find maskName
-                //When you find it, deactivate all of its maskLayers
-                //Keep track of the number of mask in app.masks
-                for (var m = 0; m < app.masks.length; m++) {
-                    if (app.masks[m].maskName==maskName) {
-                        for (var ml = 0; ml < app.masks[m].maskLayers.length; ml++) {
-                            //console.log("deactivating maskLayer "+ app.masks[m].maskLayers[ml].name);
-                            app.masks[m].maskLayers[ml].deactivate();
-                        }
-                        //Remove the mask from app.masks that you just cleared out
-                        app.masks.remove(app.masks[m]);
-                        $("#"+maskName.replace("MaskFor","")).get(0).checked = false;
-                        $(document.getElementById("lgd" + maskName)).remove();
-                    }
-                }
-                //If it was the only mask in app.Mask (e.g. app.masks.length ==0) to begin with
-                //Then loop through app.maskParentLayers and activate those layer
-                //Remove those layers from app.maskParentLayers that you just activated
-                if (app.masks.length==0) {
-                    var layersToRemove = [];
-                    for (var mp = 0; mp < app.maskParentLayers.length; mp++) {
-                        app.maskParentLayers[mp].activate();
-                        app.maskParentLayers[mp].visible="true";
-                        layersToRemove.push(app.maskParentLayers[mp]);
-                    }
-                    for (var l = 0; l < layersToRemove.length; l++) {
-                        app.maskParentLayers.remove(layersToRemove[l]);
-                        $('#mask-status'+ layersToRemove[l].lid).text("");
-                    }
-                }
-            }
-            app.updateShareMapUrl();
-        }; //end app.setMaskByMask()
-
-        this.setMaskByLayer = function (toggle, parentLayer) {
-            if (toggle) {
-                //console.log("adding new mask parent "+ parentLayer.name);
-                app.maskParentLayers.push(parentLayer);
-                for (var m = 0; m < app.masks.length; m++) {
-                     var maskLayer = new Layer({
-                            lid              : parentLayer.lid+app.masks[m].maskName.replace("/",""),
-                            visible          : 'true',
-                            url              : parentLayer.url,
-                            srs              : parentLayer.srs,
-                            layers           : parentLayer.layers+app.masks[m].maskName.replace("/",""),
-                            identify         : parentLayer.identify,
-                            name             : parentLayer.lid+app.masks[m].maskName.replace("/",""),
-                            mask             : 'false',
-                            legend           : parentLayer.legend,
-                            index            : parentLayer.index
-                    });
-                    maskLayer.parentLayer = parentLayer;
-                    maskLayer.activate();
-                    app.masks[m].maskLayers.push(maskLayer);
-                    if (parentLayer.visible=="true") {
-                        parentLayer.deactivate();
-                        parentLayer.visible="false";
-                    }
-                    $("#"+app.masks[m].maskName.replace("MaskFor","")).get(0).checked = true;
-                    $('#mask-status'+ parentLayer.lid).text("(m)");
-                    $("#chk"+parentLayer.lid).prop('checked', true);
-                }
-            }
-            else {
-                //deactivate and remove from mask.maskLayers[]
-                for (var m = 0; m < app.masks.length; m++) {
-                    var currentMask = app.masks[m];
-                    var maskLayersToDelete = [];
-                    for (var ml = 0; ml < app.masks[m].maskLayers.length; ml++) {
-                        var currentMaskLayer = app.masks[m].maskLayers[ml];
-                        if (currentMaskLayer.parentLayer.lid == parentLayer.lid) {
-                            currentMaskLayer.deactivate();
-                            $('#mask-status'+ currentMaskLayer.parentLayer.lid).text("")
-                            maskLayersToDelete.push(currentMaskLayer);
-                        }
-                    }
-                    for (var mld = 0; mld < maskLayersToDelete.length; mld++) {
-                        currentMask.maskLayers.remove(maskLayersToDelete[mld]);
-                    }
-                }
-                //remove from maskParentLayers and activate parentLayer
-                app.maskParentLayers.remove(parentLayer);
-                if (parentLayer.visible == "false") {
-                    parentLayer.visible = "true";
-                } else {
-                    parentLayer.visible == "true";
-                    parentLayer.deactivate();
-                }
-                $('#mask-status'+ parentLayer.lid).text("");
-            }
-            app.updateShareMapUrl();
-        }; //end app.setMaskByLayer()
+        this.setMaskByMask = require("./js/set_mask_by_mask.js")($);
+        this.setMaskByLayer = require("./js/set_mask_by_layer.js")($);
 
         this.parseConfig = require("./js/parse_config.js")($);
 
@@ -2797,8 +2824,6 @@ module.exports = function ($) {
     }
 
     seldon.init = require("./js/init.js")(app);
-    var Mask = require("./js/mask.js");
-    var Layer = require("./js/layer.js")($, app);
     var extentsAreEqual = require("./js/extents_equal.js");
     require("./js/overrides.js")($);
 
@@ -2808,7 +2833,7 @@ module.exports = function ($) {
 //    seldon.BaseLayer                         = BaseLayer;
 //    seldon.AccordionGroup                    = AccordionGroup;
 //    seldon.AccordionGroupSublist             = AccordionGroupSublist;
-    seldon.Layer                             = Layer;
+//    seldon.Layer                             = Layer;
 //    seldon.Theme                             = Theme;
 //    seldon.createWMSGetFeatureInfoRequestURL = createWMSGetFeatureInfoRequestURL;
 //    seldon.stringContainsChar                = stringContainsChar;
@@ -2817,4 +2842,4 @@ module.exports = function ($) {
 
 }(jQuery));
 
-},{"./js/extents_equal.js":8,"./js/init.js":11,"./js/init_openlayers.js":12,"./js/launch.js":13,"./js/layer.js":14,"./js/mask.js":20,"./js/overrides.js":23,"./js/parse_config.js":24,"./js/set_theme.js":27,"./js/share_url.js":29,"./js/update_share_url.js":33}]},{},[34]);
+},{"./js/add_mask_legend.js":3,"./js/extents_equal.js":9,"./js/init.js":12,"./js/init_openlayers.js":13,"./js/launch.js":14,"./js/overrides.js":24,"./js/parse_config.js":25,"./js/set_mask_by_layer.js":28,"./js/set_mask_by_mask.js":29,"./js/set_theme.js":30,"./js/share_url.js":32,"./js/update_share_url.js":36}]},{},[37]);
