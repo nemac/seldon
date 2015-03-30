@@ -222,5 +222,9 @@ module.exports = function ($) {
         app.initOpenLayers(baseLayerInfo, initialBaseLayer, initialTheme, themeOptions, initialExtent);
     }
 
+    function displayError (message) {
+        //console.log(message);
+    }
+
     return parseConfig;
 }

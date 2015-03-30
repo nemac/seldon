@@ -1,6 +1,7 @@
 module.exports = function ($) {
     var createSplashScreen = require("./splash.js")($);
 
+    var areasList = [];
     var activeBtn = [];
 
     function launch (configFile, shareUrlInfo) {

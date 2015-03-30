@@ -738,6 +738,7 @@ module.exports = initOpenLayers;
 module.exports = function ($) {
     var createSplashScreen = require("./splash.js")($);
 
+    var areasList = [];
     var activeBtn = [];
 
     function launch (configFile, shareUrlInfo) {
@@ -1951,6 +1952,10 @@ module.exports = function ($) {
         app.initOpenLayers(baseLayerInfo, initialBaseLayer, initialTheme, themeOptions, initialExtent);
     }
 
+    function displayError (message) {
+        //console.log(message);
+    }
+
     return parseConfig;
 }
 
@@ -2786,7 +2791,6 @@ module.exports = function ($) {
 
     var EventEmitter = window.EventEmitter,
         seldon = {},
-        areasList = [],
         app;
 
     seldon.App = function () {
@@ -2837,71 +2841,32 @@ module.exports = function ($) {
         this.zoomToPreviousExtent = require("./js/extent_zoom_previous.js");
         this.zoomToNextExtent = require("./js/extent_zoom_next.js");
         this.printSavedExtents = require("./js/extent_print.js");
-
-        this.checkForExistingItemInArray = function (arr,item) {
-            var isItemInArray = false;
-            for (var i = 0; i < arr.length; i++) {
-                if (arr[i]=item) {
-                    isItemInArray = true;
-                }
-            }
-            return isItemInArray;
-        };
-
         this.setBaseLayer = require("./js/set_base_layer.js")($);
-
-        // Begin Accordion Group Specific Functions
         this.setAccordionGroup = require("./js/accordion_group_set.js");
         this.clearAccordionSections = require("./js/accordion_clear.js")($);
         this.addAccordionSection = require("./js/accordion_section_add.js")($);
         this.addAccordionSublists = require("./js/accordion_sublist_add.js")($);
         this.addAccordionSublistItems = require("./js/accordion_sublist_item_add.js")($);
-
-        // End Accordion Group Specific Functions
-
         this.setTheme = require("./js/set_theme.js")($);
-
         this.shareUrl = require("./js/share_url.js")($);
-
         this.updateShareMapUrl = require("./js/update_share_url.js")($);
-
         this.launch = require("./js/launch.js")($);
-
         this.count = require("./js/count.js");
         this.addMaskToLegend = require("./js/add_mask_legend.js")($); 
-        this.removeMaskFromLegend = function (layer) {}
-
         this.setMaskByMask = require("./js/set_mask_by_mask.js")($);
         this.setMaskByLayer = require("./js/set_mask_by_layer.js")($);
-
         this.parseConfig = require("./js/parse_config.js")($);
-
         this.initOpenLayers = require("./js/init_openlayers.js");
-
+        this.removeMaskFromLegend = function (layer) {};
     };
     EventEmitter.declare(seldon.App);
 
     app = new seldon.App();
 
-    function displayError (message) {
-        //console.log(message);
-    }
-
     seldon.init = require("./js/init.js")(app);
     require("./js/overrides.js")($);
 
-    //
-    // exports, for testing:
-    //
-//    seldon.BaseLayer                         = BaseLayer;
-//    seldon.AccordionGroup                    = AccordionGroup;
-//    seldon.AccordionGroupSublist             = AccordionGroupSublist;
-//    seldon.Layer                             = Layer;
-//    seldon.Theme                             = Theme;
-//    seldon.createWMSGetFeatureInfoRequestURL = createWMSGetFeatureInfoRequestURL;
-//    seldon.stringContainsChar                = stringContainsChar;
-//    seldon.ShareUrlInfo                      = ShareUrlInfo;
-    window.seldon                            = seldon;
+    window.seldon = seldon;
 
 }(jQuery));
 
