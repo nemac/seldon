@@ -85,6 +85,49 @@ var ClickTool = OpenLayers.Class(OpenLayers.Control, {
 module.exports = ClickTool;
 
 },{}],6:[function(require,module,exports){
+module.exports = function ($) {
+    function createArcGIS93RestParams ($layer) {
+        //  $layer is a jQuery object corresponding to a <restLayer> section in the config file.
+        //  For example:
+        //
+        //    <restLayer
+        //      name="Climate Wizard"
+        //      url="http://www.climatewizard.org:6080/ArcGIS/rest/services/ClimateWizard/US/ImageServer/exportImage/exportImage"
+        //      legend="yaya-placeholder.png"
+        //      lid="CC9999"
+        //      visible="true">
+        //        <param name="noData" value="0" />
+        //        <param name="format" value="png" />
+        //        <param name="interpolation" value="RSP_NearestNeighbor" />
+        //        <param name="transparent" value="true" />
+        //        <param name="mosaicRule">
+        //            <param name="mosaicMethod" value="esriMosaicAttribute" />
+        //            <param name="where" value="Name = 'm_ensemble_50_a2_pptPct_14_2040_2069'" />
+        //            <param name="sortField" value="Name" />
+        //        </param>
+        //        <param name="imageSR" value="102100" />
+        //        <param name="bboxSR" value="102100" />
+        //        <param name="f" value="json" />
+        //    </restLayer>
+        //
+        //  This function constructs and returns a (nested) JS Object corresponding
+        //  to the <param> subelements.
+        var obj = {};
+        $layer.find('>param').each(function(i,param) {
+            var $param = $(param);
+            if (param.hasAttribute('value')) {
+                obj[$param.attr('name')] = $param.attr('value');
+            } else {
+                obj[$param.attr('name')] = createArcGIS93RestParams($param);
+            }
+        });
+        return obj;
+    }
+
+    return createArcGIS93RestParams;
+}
+
+},{}],7:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     function deactivateActiveOpenLayersControls () {
         var controls,
@@ -107,7 +150,7 @@ module.exports = function (app, activeBtn) {
     return deactivateActiveOpenLayersControls;
 }
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 function extentsAreEqual (e1, e2) {
     var tolerance = 0.001;
     return ((Math.abs(e1.left - e2.left)        <= tolerance)
@@ -118,7 +161,7 @@ function extentsAreEqual (e1, e2) {
 
 module.exports = extentsAreEqual;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js'),
         stringContainsChar = require('./stringContainsChar.js');
@@ -389,7 +432,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":5,"./stringContainsChar.js":22}],9:[function(require,module,exports){
+},{"./clicktool.js":5,"./stringContainsChar.js":24}],10:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -401,7 +444,7 @@ module.exports = function (app, activeBtn) {
     return activateIdentifyTool;
 }
 
-},{"./deactivate_controls.js":6}],10:[function(require,module,exports){
+},{"./deactivate_controls.js":7}],11:[function(require,module,exports){
 module.exports = function (app) {
     var ShareUrlInfo = require('./share.js');
 
@@ -452,7 +495,7 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":20}],11:[function(require,module,exports){
+},{"./share.js":22}],12:[function(require,module,exports){
 module.exports = function ($, app) {
     function Layer (settings) {
         EventEmitter.call(this);
@@ -655,7 +698,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -685,7 +728,7 @@ module.exports = function ($) {
     return createLayerToggleCheckbox;
 }
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
     //This function gets called every time the layer properties icon gets clicked
 module.exports = function ($) {
     function createLayerPropertiesDialog (layer) {
@@ -775,7 +818,7 @@ module.exports = function ($) {
 }
 
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports = function ($) {
     var createLayerPropertiesDialog = require("./layer_dialog.js")($);
 
@@ -793,7 +836,7 @@ module.exports = function ($) {
     return createLayerPropertiesIcon;
 }
 
-},{"./layer_dialog.js":13}],15:[function(require,module,exports){
+},{"./layer_dialog.js":14}],16:[function(require,module,exports){
 module.exports = function ($, app) {
     var Layer = require('./layer.js')($, app);
 
@@ -877,7 +920,7 @@ module.exports = function ($, app) {
     return createLayerToggleRadioButton;
 }
 
-},{"./layer.js":11}],16:[function(require,module,exports){
+},{"./layer.js":12}],17:[function(require,module,exports){
 module.exports = function ($, app) {
     function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
         var selectBox = document.createElement("select"),$selectBox;
@@ -979,7 +1022,7 @@ module.exports = function ($, app) {
     return createLayerToggleDropdownBox;
 }
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js');
 
@@ -1060,7 +1103,7 @@ module.exports = function ($, app) {
     return createMultigraphTool;
 }
 
-},{"./clicktool.js":5}],18:[function(require,module,exports){
+},{"./clicktool.js":5}],19:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -1072,7 +1115,7 @@ module.exports = function (app, activeBtn) {
     return activateMultigraphTool;
 }
 
-},{"./deactivate_controls.js":6}],19:[function(require,module,exports){
+},{"./deactivate_controls.js":7}],20:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap () {
         // go through all layers, and collect a list of objects
@@ -1146,7 +1189,23 @@ module.exports = function ($, app) {
     return printMap;
 };
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
+function RepeatingOperation (op, yieldEveryIteration) {
+    var count = 0;
+    var instance = this;
+    this.step = function (args) {
+        if (++count >= yieldEveryIteration) {
+            count = 0;
+            setTimeout(function () { op(args); }, 1, []);
+            return;
+        }
+        op(args);
+    };
+}
+
+module.exports = RepeatingOperation;
+
+},{}],22:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) {
         settings = {};
@@ -1256,7 +1315,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],21:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -1277,14 +1336,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],22:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],23:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -1311,60 +1370,13 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],24:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 (function ($) {
     "use strict";
 
-    var RepeatingOperation = function(op, yieldEveryIteration) {
-        var count = 0;
-        var instance = this;
-        this.step = function (args) {
-            if (++count >= yieldEveryIteration) {
-                count = 0;
-                setTimeout(function () { op(args); }, 1, []);
-                return;
-            }
-            op(args);
-        };
-    };
+    var RepeatingOperation = require('./js/repeating_operation.js');
 
-    var createArcGIS93RestParams = function($layer) {
-        //  $layer is a jQuery object corresponding to a <restLayer> section in the config file.
-        //  For example:
-        //
-        //    <restLayer
-        //      name="Climate Wizard"
-        //      url="http://www.climatewizard.org:6080/ArcGIS/rest/services/ClimateWizard/US/ImageServer/exportImage/exportImage"
-        //      legend="yaya-placeholder.png"
-        //      lid="CC9999"
-        //      visible="true">
-        //        <param name="noData" value="0" />
-        //        <param name="format" value="png" />
-        //        <param name="interpolation" value="RSP_NearestNeighbor" />
-        //        <param name="transparent" value="true" />
-        //        <param name="mosaicRule">
-        //            <param name="mosaicMethod" value="esriMosaicAttribute" />
-        //            <param name="where" value="Name = 'm_ensemble_50_a2_pptPct_14_2040_2069'" />
-        //            <param name="sortField" value="Name" />
-        //        </param>
-        //        <param name="imageSR" value="102100" />
-        //        <param name="bboxSR" value="102100" />
-        //        <param name="f" value="json" />
-        //    </restLayer>
-        //
-        //  This function constructs and returns a (nested) JS Object corresponding
-        //  to the <param> subelements.
-        var obj = {};
-        $layer.find('>param').each(function(i,param) {
-            var $param = $(param);
-            if (param.hasAttribute('value')) {
-                obj[$param.attr('name')] = $param.attr('value');
-            } else {
-                obj[$param.attr('name')] = createArcGIS93RestParams($param);
-            }
-        });
-        return obj;
-    };
+    var createArcGIS93RestParams = require('./js/create_arcgis_rest_params.js')($);
 
     var EventEmitter = window.EventEmitter,
         seldon = {},
@@ -2765,4 +2777,4 @@ module.exports = Theme;
 
 }(jQuery));
 
-},{"./js/accordion_group.js":1,"./js/accordion_group_sublist.js":2,"./js/array_contains_element.js":3,"./js/baselayer.js":4,"./js/clicktool.js":5,"./js/deactivate_controls.js":6,"./js/extents_equal.js":7,"./js/identify.js":8,"./js/identify_activate.js":9,"./js/init.js":10,"./js/layer.js":11,"./js/layer_checkbox.js":12,"./js/layer_dialog.js":13,"./js/layer_icon.js":14,"./js/layer_radio.js":15,"./js/layer_select.js":16,"./js/multigraph.js":17,"./js/multigraph_activate.js":18,"./js/print.js":19,"./js/share.js":20,"./js/splash.js":21,"./js/stringContainsChar.js":22,"./js/theme.js":23}]},{},[24]);
+},{"./js/accordion_group.js":1,"./js/accordion_group_sublist.js":2,"./js/array_contains_element.js":3,"./js/baselayer.js":4,"./js/clicktool.js":5,"./js/create_arcgis_rest_params.js":6,"./js/deactivate_controls.js":7,"./js/extents_equal.js":8,"./js/identify.js":9,"./js/identify_activate.js":10,"./js/init.js":11,"./js/layer.js":12,"./js/layer_checkbox.js":13,"./js/layer_dialog.js":14,"./js/layer_icon.js":15,"./js/layer_radio.js":16,"./js/layer_select.js":17,"./js/multigraph.js":18,"./js/multigraph_activate.js":19,"./js/print.js":20,"./js/repeating_operation.js":21,"./js/share.js":22,"./js/splash.js":23,"./js/stringContainsChar.js":24,"./js/theme.js":25}]},{},[26]);
