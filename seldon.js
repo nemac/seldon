@@ -1365,29 +1365,11 @@
 
     app = new seldon.App();
 
-    function BaseLayer (settings) {
-        if (!settings) { return; }
-        this.name  = settings.name;
-        this.label = settings.label;
-        this.url   = settings.url;
-        this.index = settings.index;
-    }
+    var BaseLayer = require('./js/baselayer.js');
 
-    function AccordionGroup (settings) {
-        this.sublists = [];
-        if (!settings) { return; }
-        this.gid              = settings.gid;
-        this.name             = settings.name;
-        this.label            = settings.label;
-        this.selectedInConfig = settings.selectedInConfig;
-    }
+    var AccordionGroup = require('./js/accordion_group.js');
 
-    function AccordionGroupSublist (settings) {
-        this.layers = [];
-        if (!settings) { return; }
-        this.label  = settings.label;
-                this.type  = settings.type;
-    }
+    var AccordionGroupSublist = require('./js/accordion_group_sublist.js');
 
     function Mask (maskName) {
         EventEmitter.call(this);

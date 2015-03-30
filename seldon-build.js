@@ -1,4 +1,37 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+function AccordionGroup (settings) {
+    if (!settings) { return; }
+    this.sublists         = [];
+    this.gid              = settings.gid;
+    this.name             = settings.name;
+    this.label            = settings.label;
+    this.selectedInConfig = settings.selectedInConfig;
+}
+
+module.exports = AccordionGroup;
+
+},{}],2:[function(require,module,exports){
+function AccordionGroupSublist (settings) {
+    if (!settings) { return; }
+    this.layers = [];
+    this.label  = settings.label;
+    this.type   = settings.type;
+}
+
+module.exports = AccordionGroupSublist;
+
+},{}],3:[function(require,module,exports){
+function BaseLayer (settings) {
+    if (!settings) { return; }
+    this.name  = settings.name;
+    this.label = settings.label;
+    this.url   = settings.url;
+    this.index = settings.index;
+}
+
+module.exports = BaseLayer;
+
+},{}],4:[function(require,module,exports){
 // The following creates a new OpenLayers tool class called ClickTool
 // which calls a function whenever the user clicks in the map.  Each
 // instance of ClickTool corresponds to a specific callback function.
@@ -35,7 +68,7 @@ var ClickTool = OpenLayers.Class(OpenLayers.Control, {
 
 module.exports = ClickTool;
 
-},{}],2:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js'),
         stringContainsChar = require('./stringContainsChar.js');
@@ -306,7 +339,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":1,"./stringContainsChar.js":14}],3:[function(require,module,exports){
+},{"./clicktool.js":4,"./stringContainsChar.js":17}],6:[function(require,module,exports){
 module.exports = function (app) {
     var ShareUrlInfo = require('./share.js');
 
@@ -357,7 +390,7 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":12}],4:[function(require,module,exports){
+},{"./share.js":15}],7:[function(require,module,exports){
 module.exports = function ($, app) {
     function Layer (settings) {
         EventEmitter.call(this);
@@ -560,7 +593,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{}],5:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -590,7 +623,7 @@ module.exports = function ($) {
     return createLayerToggleCheckbox;
 }
 
-},{}],6:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
     //This function gets called every time the layer properties icon gets clicked
 module.exports = function ($) {
     function createLayerPropertiesDialog (layer) {
@@ -680,7 +713,7 @@ module.exports = function ($) {
 }
 
 
-},{}],7:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 module.exports = function ($) {
     var createLayerPropertiesDialog = require("./layer_dialog.js")($);
 
@@ -698,7 +731,7 @@ module.exports = function ($) {
     return createLayerPropertiesIcon;
 }
 
-},{"./layer_dialog.js":6}],8:[function(require,module,exports){
+},{"./layer_dialog.js":9}],11:[function(require,module,exports){
 module.exports = function ($, app) {
     var Layer = require('./layer.js')($, app);
 
@@ -782,7 +815,7 @@ module.exports = function ($, app) {
     return createLayerToggleRadioButton;
 }
 
-},{"./layer.js":4}],9:[function(require,module,exports){
+},{"./layer.js":7}],12:[function(require,module,exports){
 module.exports = function ($, app) {
     function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
         var selectBox = document.createElement("select"),$selectBox;
@@ -884,7 +917,7 @@ module.exports = function ($, app) {
     return createLayerToggleDropdownBox;
 }
 
-},{}],10:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js');
 
@@ -965,7 +998,7 @@ module.exports = function ($, app) {
     return createMultigraphTool;
 }
 
-},{"./clicktool.js":1}],11:[function(require,module,exports){
+},{"./clicktool.js":4}],14:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap () {
         // go through all layers, and collect a list of objects
@@ -1039,7 +1072,7 @@ module.exports = function ($, app) {
     return printMap;
 };
 
-},{}],12:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) {
         settings = {};
@@ -1149,7 +1182,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],13:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -1170,14 +1203,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],14:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],15:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -1204,7 +1237,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],16:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2572,29 +2605,11 @@ module.exports = Theme;
 
     app = new seldon.App();
 
-    function BaseLayer (settings) {
-        if (!settings) { return; }
-        this.name  = settings.name;
-        this.label = settings.label;
-        this.url   = settings.url;
-        this.index = settings.index;
-    }
+    var BaseLayer = require('./js/baselayer.js');
 
-    function AccordionGroup (settings) {
-        this.sublists = [];
-        if (!settings) { return; }
-        this.gid              = settings.gid;
-        this.name             = settings.name;
-        this.label            = settings.label;
-        this.selectedInConfig = settings.selectedInConfig;
-    }
+    var AccordionGroup = require('./js/accordion_group.js');
 
-    function AccordionGroupSublist (settings) {
-        this.layers = [];
-        if (!settings) { return; }
-        this.label  = settings.label;
-                this.type  = settings.type;
-    }
+    var AccordionGroupSublist = require('./js/accordion_group_sublist.js');
 
     function Mask (maskName) {
         EventEmitter.call(this);
@@ -2763,4 +2778,4 @@ module.exports = Theme;
 
 }(jQuery));
 
-},{"./js/clicktool.js":1,"./js/identify.js":2,"./js/init.js":3,"./js/layer.js":4,"./js/layer_checkbox.js":5,"./js/layer_dialog.js":6,"./js/layer_icon.js":7,"./js/layer_radio.js":8,"./js/layer_select.js":9,"./js/multigraph.js":10,"./js/print.js":11,"./js/share.js":12,"./js/splash.js":13,"./js/stringContainsChar.js":14,"./js/theme.js":15}]},{},[16]);
+},{"./js/accordion_group.js":1,"./js/accordion_group_sublist.js":2,"./js/baselayer.js":3,"./js/clicktool.js":4,"./js/identify.js":5,"./js/init.js":6,"./js/layer.js":7,"./js/layer_checkbox.js":8,"./js/layer_dialog.js":9,"./js/layer_icon.js":10,"./js/layer_radio.js":11,"./js/layer_select.js":12,"./js/multigraph.js":13,"./js/print.js":14,"./js/share.js":15,"./js/splash.js":16,"./js/stringContainsChar.js":17,"./js/theme.js":18}]},{},[19]);
