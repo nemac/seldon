@@ -148,8 +148,12 @@ Map Styles
     opacity: .7;
 }
 
-.layer-loader-image.loading:nth-of-type(1) {
+.layer-loader-image.loading {
     display: block;
+}
+
+.layer-loader-image.loading ~ .layer-loader-image.loading {
+    display: none;
 }
 
 /*
