@@ -660,6 +660,8 @@ module.exports = function ($, app) {
         };
     }
 
+    window.EventEmitter.declare(Layer);
+
     return Layer;
 }
 
@@ -2724,8 +2726,6 @@ module.exports = Theme;
     }
 
     var Layer = require("./js/layer.js")($, app);
-
-    EventEmitter.declare(Layer);
 
     var Theme = require("./js/theme.js");
 

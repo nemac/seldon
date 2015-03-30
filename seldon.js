@@ -1332,8 +1332,6 @@
 
     var Layer = require("./js/layer.js")($, app);
 
-    EventEmitter.declare(Layer);
-
     var Theme = require("./js/theme.js");
 
     function displayError (message) {

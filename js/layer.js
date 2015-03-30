@@ -197,5 +197,7 @@ module.exports = function ($, app) {
         };
     }
 
+    window.EventEmitter.declare(Layer);
+
     return Layer;
 }
