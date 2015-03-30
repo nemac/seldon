@@ -1459,7 +1459,7 @@
                                             );
             }
 
-            var loadingimage = $('<img class="layer-loader-image ' + this.name + '" src="icons/ajax-loader.gif"/>');
+            var loadingimage = $('<img class="layer-loader-image ' + this.name + '" src="icons/loading.gif"/>');
             $("#map").append(loadingimage);
             this.openLayersLayer.loadingimage = loadingimage;
 
