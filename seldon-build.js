@@ -548,6 +548,7 @@ module.exports = function ($) {
         var deactivateActiveOpenLayersControls = require("./deactivate_controls.js")(this, activeBtn);
         var activateIdentifyTool = require("./identify_activate.js")(this, activeBtn);
         var activateMultigraphTool = require("./multigraph_activate.js")(this, activeBtn);
+        var printMap = require("./print.js")($, this);
 
         var app = this;
 
@@ -841,8 +842,10 @@ module.exports = function ($) {
     return launch;
 }
 
-},{"./deactivate_controls.js":7,"./identify_activate.js":10,"./multigraph_activate.js":22,"./splash.js":30}],14:[function(require,module,exports){
+},{"./deactivate_controls.js":7,"./identify_activate.js":10,"./multigraph_activate.js":22,"./print.js":25,"./splash.js":30}],14:[function(require,module,exports){
 module.exports = function ($, app) {
+    var stringContainsChar = require('./stringContainsChar.js');
+
     function Layer (settings) {
         EventEmitter.call(this);
         if (!settings) { return; }
@@ -1046,7 +1049,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{}],15:[function(require,module,exports){
+},{"./stringContainsChar.js":31}],15:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -2796,9 +2799,7 @@ module.exports = function ($) {
     seldon.init = require("./js/init.js")(app);
     var Mask = require("./js/mask.js");
     var Layer = require("./js/layer.js")($, app);
-    var ClickTool = require("./js/clicktool.js");
     var extentsAreEqual = require("./js/extents_equal.js");
-    var printMap = require("./js/print.js")($, app);
     require("./js/overrides.js")($);
 
     //
@@ -2816,4 +2817,4 @@ module.exports = function ($) {
 
 }(jQuery));
 
-},{"./js/clicktool.js":5,"./js/extents_equal.js":8,"./js/init.js":11,"./js/init_openlayers.js":12,"./js/launch.js":13,"./js/layer.js":14,"./js/mask.js":20,"./js/overrides.js":23,"./js/parse_config.js":24,"./js/print.js":25,"./js/set_theme.js":27,"./js/share_url.js":29,"./js/update_share_url.js":33}]},{},[34]);
+},{"./js/extents_equal.js":8,"./js/init.js":11,"./js/init_openlayers.js":12,"./js/launch.js":13,"./js/layer.js":14,"./js/mask.js":20,"./js/overrides.js":23,"./js/parse_config.js":24,"./js/set_theme.js":27,"./js/share_url.js":29,"./js/update_share_url.js":33}]},{},[34]);

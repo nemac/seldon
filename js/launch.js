@@ -7,6 +7,7 @@ module.exports = function ($) {
         var deactivateActiveOpenLayersControls = require("./deactivate_controls.js")(this, activeBtn);
         var activateIdentifyTool = require("./identify_activate.js")(this, activeBtn);
         var activateMultigraphTool = require("./multigraph_activate.js")(this, activeBtn);
+        var printMap = require("./print.js")($, this);
 
         var app = this;
 

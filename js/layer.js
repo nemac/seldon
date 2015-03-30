@@ -1,4 +1,6 @@
 module.exports = function ($, app) {
+    var stringContainsChar = require('./stringContainsChar.js');
+
     function Layer (settings) {
         EventEmitter.call(this);
         if (!settings) { return; }

@@ -418,9 +418,7 @@
     seldon.init = require("./js/init.js")(app);
     var Mask = require("./js/mask.js");
     var Layer = require("./js/layer.js")($, app);
-    var ClickTool = require("./js/clicktool.js");
     var extentsAreEqual = require("./js/extents_equal.js");
-    var printMap = require("./js/print.js")($, app);
     require("./js/overrides.js")($);
 
     //
