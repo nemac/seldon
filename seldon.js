@@ -84,14 +84,7 @@
 
         this.launch = require("./js/launch.js")($);
 
-        this.count = function (array, value) {
-            var counter = 0;
-            for(var i = 0; i < array.length; i++) {
-                if (array[i] === value) counter++;
-            }
-            return counter;
-        }
-
+        this.count = require("./js/count.js");
         this.addMaskToLegend = require("./js/add_mask_legend.js")($); 
         this.removeMaskFromLegend = function (layer) {}
 

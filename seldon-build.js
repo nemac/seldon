@@ -170,6 +170,18 @@ var ClickTool = OpenLayers.Class(OpenLayers.Control, {
 module.exports = ClickTool;
 
 },{}],12:[function(require,module,exports){
+function count (array, value) {
+    var counter = 0,
+        i;
+    for (i = 0; i < array.length; i++) {
+        if (array[i] === value) counter++;
+    }
+    return counter;
+}
+
+module.exports = count;
+
+},{}],13:[function(require,module,exports){
 module.exports = function ($) {
     function createArcGIS93RestParams ($layer) {
         //  $layer is a jQuery object corresponding to a <restLayer> section in the config file.
@@ -212,7 +224,7 @@ module.exports = function ($) {
     return createArcGIS93RestParams;
 }
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     function deactivateActiveOpenLayersControls () {
         var controls,
@@ -235,7 +247,7 @@ module.exports = function (app, activeBtn) {
     return deactivateActiveOpenLayersControls;
 }
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 function printSavedExtents () {
     // This function is for debugging only and is not normally used.  It returns an HTML
     // table showing the current savedExtents list, and the current position within the list.
@@ -261,7 +273,7 @@ function printSavedExtents () {
 
 module.exports = printSavedExtents;
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 var extentsAreEqual = require("./extents_equal.js");
 
 // save the current extent into the savedExtents array, if it is different from
@@ -300,7 +312,7 @@ function saveCurrentExtent () {
 
 module.exports = saveCurrentExtent;
 
-},{"./extents_equal.js":19}],16:[function(require,module,exports){
+},{"./extents_equal.js":20}],17:[function(require,module,exports){
 function zoomToExtent (extent, save) {
     if (save === undefined) {
         save = true;
@@ -314,7 +326,7 @@ function zoomToExtent (extent, save) {
 
 module.exports = zoomToExtent;
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 function zoomToNextExtent () {
     if (this.currentSavedExtentIndex < this.savedExtents.length-1) {
         ++this.currentSavedExtentIndex;
@@ -324,7 +336,7 @@ function zoomToNextExtent () {
 
 module.exports = zoomToNextExtent;
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 function zoomToPreviousExtent () {
     if (this.currentSavedExtentIndex > 0) {
         --this.currentSavedExtentIndex;
@@ -334,7 +346,7 @@ function zoomToPreviousExtent () {
 
 module.exports = zoomToPreviousExtent;
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 function extentsAreEqual (e1, e2) {
     var tolerance = 0.001;
     return ((Math.abs(e1.left - e2.left)        <= tolerance)
@@ -345,7 +357,7 @@ function extentsAreEqual (e1, e2) {
 
 module.exports = extentsAreEqual;
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js'),
         stringContainsChar = require('./stringContainsChar.js');
@@ -616,7 +628,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":11,"./stringContainsChar.js":45}],21:[function(require,module,exports){
+},{"./clicktool.js":11,"./stringContainsChar.js":46}],22:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -628,7 +640,7 @@ module.exports = function (app, activeBtn) {
     return activateIdentifyTool;
 }
 
-},{"./deactivate_controls.js":13}],22:[function(require,module,exports){
+},{"./deactivate_controls.js":14}],23:[function(require,module,exports){
 module.exports = function (app) {
     var ShareUrlInfo = require('./share.js');
 
@@ -644,7 +656,7 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":42}],23:[function(require,module,exports){
+},{"./share.js":43}],24:[function(require,module,exports){
 function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
     var app = this;
 
@@ -722,7 +734,7 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
 
 module.exports = initOpenLayers;
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 module.exports = function ($) {
     var createSplashScreen = require("./splash.js")($);
 
@@ -1026,7 +1038,7 @@ module.exports = function ($) {
     return launch;
 }
 
-},{"./deactivate_controls.js":13,"./identify_activate.js":21,"./multigraph_activate.js":33,"./print.js":36,"./splash.js":44}],25:[function(require,module,exports){
+},{"./deactivate_controls.js":14,"./identify_activate.js":22,"./multigraph_activate.js":34,"./print.js":37,"./splash.js":45}],26:[function(require,module,exports){
 module.exports = function ($, app) {
     var stringContainsChar = require('./stringContainsChar.js');
 
@@ -1233,7 +1245,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{"./stringContainsChar.js":45}],26:[function(require,module,exports){
+},{"./stringContainsChar.js":46}],27:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -1263,7 +1275,7 @@ module.exports = function ($) {
     return createLayerToggleCheckbox;
 }
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
     //This function gets called every time the layer properties icon gets clicked
 module.exports = function ($) {
     function createLayerPropertiesDialog (layer) {
@@ -1353,7 +1365,7 @@ module.exports = function ($) {
 }
 
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 module.exports = function ($) {
     var createLayerPropertiesDialog = require("./layer_dialog.js")($);
 
@@ -1371,7 +1383,7 @@ module.exports = function ($) {
     return createLayerPropertiesIcon;
 }
 
-},{"./layer_dialog.js":27}],29:[function(require,module,exports){
+},{"./layer_dialog.js":28}],30:[function(require,module,exports){
 module.exports = function ($, app) {
     var Layer = require('./layer.js')($, app);
 
@@ -1455,7 +1467,7 @@ module.exports = function ($, app) {
     return createLayerToggleRadioButton;
 }
 
-},{"./layer.js":25}],30:[function(require,module,exports){
+},{"./layer.js":26}],31:[function(require,module,exports){
 module.exports = function ($, app) {
     function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
         var selectBox = document.createElement("select"),$selectBox;
@@ -1557,7 +1569,7 @@ module.exports = function ($, app) {
     return createLayerToggleDropdownBox;
 }
 
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 function Mask (maskName) {
     window.EventEmitter.call(this);
     this.maskName = maskName;
@@ -1566,7 +1578,7 @@ function Mask (maskName) {
 
 module.exports = Mask;
 
-},{}],32:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js');
 
@@ -1647,7 +1659,7 @@ module.exports = function ($, app) {
     return createMultigraphTool;
 }
 
-},{"./clicktool.js":11}],33:[function(require,module,exports){
+},{"./clicktool.js":11}],34:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     var deactivateActiveOpenLayersControls = require('./deactivate_controls.js')(app, activeBtn);
 
@@ -1659,7 +1671,7 @@ module.exports = function (app, activeBtn) {
     return activateMultigraphTool;
 }
 
-},{"./deactivate_controls.js":13}],34:[function(require,module,exports){
+},{"./deactivate_controls.js":14}],35:[function(require,module,exports){
 module.exports = function ($) {
     //jdm: override of js remove function
     //This is very useful for removing items from array by value
@@ -1714,7 +1726,7 @@ module.exports = function ($) {
     }));
 }
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 module.exports = function ($) {
     var createArcGIS93RestParams = require("./create_arcgis_rest_params.js")($);
     var AccordionGroup = require("./accordion_group.js");
@@ -1942,7 +1954,7 @@ module.exports = function ($) {
     return parseConfig;
 }
 
-},{"./accordion_group.js":2,"./accordion_group_sublist.js":4,"./baselayer.js":10,"./create_arcgis_rest_params.js":12,"./identify.js":20,"./layer.js":25,"./multigraph.js":32,"./theme.js":46}],36:[function(require,module,exports){
+},{"./accordion_group.js":2,"./accordion_group_sublist.js":4,"./baselayer.js":10,"./create_arcgis_rest_params.js":13,"./identify.js":21,"./layer.js":26,"./multigraph.js":33,"./theme.js":47}],37:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap () {
         // go through all layers, and collect a list of objects
@@ -2016,7 +2028,7 @@ module.exports = function ($, app) {
     return printMap;
 };
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 function RepeatingOperation (op, yieldEveryIteration) {
     var count = 0;
     var instance = this;
@@ -2032,7 +2044,7 @@ function RepeatingOperation (op, yieldEveryIteration) {
 
 module.exports = RepeatingOperation;
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 module.exports = function ($) {
     function setBaseLayer (baseLayer) {
         var app = this;
@@ -2068,7 +2080,7 @@ module.exports = function ($) {
 }
 
 
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 module.exports = function ($) {
     function setMaskByLayer (toggle, parentLayer) {
         var Layer = require("./layer.js")($, this);
@@ -2134,7 +2146,7 @@ module.exports = function ($) {
     return setMaskByLayer;
 }
 
-},{"./layer.js":25}],40:[function(require,module,exports){
+},{"./layer.js":26}],41:[function(require,module,exports){
 module.exports = function ($) {
     var Mask = require("./mask.js");
 
@@ -2238,7 +2250,7 @@ module.exports = function ($) {
     return setMaskByMask;
 }
 
-},{"./layer.js":25,"./mask.js":31}],41:[function(require,module,exports){
+},{"./layer.js":26,"./mask.js":32}],42:[function(require,module,exports){
 module.exports = function ($) {
     var RepeatingOperation = require("./repeating_operation.js");
     var ShareUrlInfo = require("./share.js");
@@ -2522,7 +2534,7 @@ module.exports = function ($) {
     return setTheme;
 }
 
-},{"./array_contains_element.js":9,"./layer_checkbox.js":26,"./layer_icon.js":28,"./layer_radio.js":29,"./layer_select.js":30,"./repeating_operation.js":37,"./share.js":42}],42:[function(require,module,exports){
+},{"./array_contains_element.js":9,"./layer_checkbox.js":27,"./layer_icon.js":29,"./layer_radio.js":30,"./layer_select.js":31,"./repeating_operation.js":38,"./share.js":43}],43:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) {
         settings = {};
@@ -2632,7 +2644,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 module.exports = function ($) {
     var stringContainsChar = require("./stringContainsChar.js");
     var ShareUrlInfo = require("./share.js");
@@ -2699,7 +2711,7 @@ module.exports = function ($) {
     return shareUrl;
 }
 
-},{"./share.js":42,"./stringContainsChar.js":45}],44:[function(require,module,exports){
+},{"./share.js":43,"./stringContainsChar.js":46}],45:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $splashScreenContainer = $("#splashScreenContainer"),
@@ -2720,14 +2732,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],46:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -2754,7 +2766,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],47:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 module.exports = function ($) {
     function updateShareMapUrl () {
         if (this.currentTheme) {
@@ -2768,7 +2780,7 @@ module.exports = function ($) {
     return updateShareMapUrl;
 }
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2855,14 +2867,7 @@ module.exports = function ($) {
 
         this.launch = require("./js/launch.js")($);
 
-        this.count = function (array, value) {
-            var counter = 0;
-            for(var i = 0; i < array.length; i++) {
-                if (array[i] === value) counter++;
-            }
-            return counter;
-        }
-
+        this.count = require("./js/count.js");
         this.addMaskToLegend = require("./js/add_mask_legend.js")($); 
         this.removeMaskFromLegend = function (layer) {}
 
@@ -2900,4 +2905,4 @@ module.exports = function ($) {
 
 }(jQuery));
 
-},{"./js/accordion_clear.js":1,"./js/accordion_group_set.js":3,"./js/accordion_section_add.js":5,"./js/accordion_sublist_add.js":6,"./js/accordion_sublist_item_add.js":7,"./js/add_mask_legend.js":8,"./js/extent_print.js":14,"./js/extent_save.js":15,"./js/extent_zoom.js":16,"./js/extent_zoom_next.js":17,"./js/extent_zoom_previous.js":18,"./js/init.js":22,"./js/init_openlayers.js":23,"./js/launch.js":24,"./js/overrides.js":34,"./js/parse_config.js":35,"./js/set_base_layer.js":38,"./js/set_mask_by_layer.js":39,"./js/set_mask_by_mask.js":40,"./js/set_theme.js":41,"./js/share_url.js":43,"./js/update_share_url.js":47}]},{},[48]);
+},{"./js/accordion_clear.js":1,"./js/accordion_group_set.js":3,"./js/accordion_section_add.js":5,"./js/accordion_sublist_add.js":6,"./js/accordion_sublist_item_add.js":7,"./js/add_mask_legend.js":8,"./js/count.js":12,"./js/extent_print.js":15,"./js/extent_save.js":16,"./js/extent_zoom.js":17,"./js/extent_zoom_next.js":18,"./js/extent_zoom_previous.js":19,"./js/init.js":23,"./js/init_openlayers.js":24,"./js/launch.js":25,"./js/overrides.js":35,"./js/parse_config.js":36,"./js/set_base_layer.js":39,"./js/set_mask_by_layer.js":40,"./js/set_mask_by_mask.js":41,"./js/set_theme.js":42,"./js/share_url.js":44,"./js/update_share_url.js":48}]},{},[49]);
