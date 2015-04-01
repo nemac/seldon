@@ -1,0 +1,4 @@
+#! /bin/bash
+
+browserify js/seldon.js -o seldon.js
+uglifyjs < seldon.js > seldon-min.js
