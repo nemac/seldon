@@ -13,14 +13,15 @@ module.exports = function ($, app) {
         }
         checkbox.onchange = function () {
             //Loop through other radio buttons and deactivate those layers accordingly.
-            $('input:radio').each(function() {
+            $('input:radio').each(function () {
                 if($(this).is(':checked')) {
-                    var wanted_layer = undefined;
-                    var wanted_lid = undefined;
-                    var selectLayer = undefined;
-                    for (var i = 0; i < app.dropdownBoxList[0].length; i++) {
+                    var wanted_layer;
+                    var wanted_lid;
+                    var selectLayer;
+                    var i, j ,k;
+                    for (i = 0; i < app.dropdownBoxList[0].length; i++) {
                         if (app.dropdownBoxList[0][i].selected) {
-                            if (app.dropdownBoxList[0][i].innerHTML=="select...") {
+                            if (app.dropdownBoxList[0][i].innerHTML === "select...") {
                                 alert("Please make a selection from the appropriate dropdown list");
                                 break;
                             }
@@ -28,13 +29,15 @@ module.exports = function ($, app) {
                             wanted_lid = selectLayer.lid;
                         }
                     }
-                    for (var i = 0; i < app.radioButtonList.length; i++) {
+
+                    for (i = 0; i < app.radioButtonList.length; i++) {
                         if (app.radioButtonList[i].checked) {
-                            wanted_layer = parseInt(selectLayer.layers)+parseInt(app.radioButtonLayers[i].layers);
-                            wanted_lid = app.radioButtonLayers[i].lid+wanted_lid;
+                            wanted_layer = parseInt(selectLayer.layers, 10) + parseInt(app.radioButtonLayers[i].layers, 10);
+                            wanted_lid = app.radioButtonLayers[i].lid + wanted_lid;
                         }
                     }
-                    if (selectLayer!=undefined) {
+
+                    if (selectLayer != undefined) {
                         var checkBoxLayer = new Layer({
                             lid              : wanted_lid,
                             visible          : selectLayer.visible,
@@ -50,15 +53,15 @@ module.exports = function ($, app) {
                         checkBoxLayer.activate();
                     }
                 } else {
-                    for (var i = app.map.getNumLayers()-1; i > 0; i--) {
-                        var currLayer = app.map.layers[i];
+                    var currLayer, testLid;
+                    for (i = app.map.getNumLayers() - 1; i > 0; i--) {
+                        currLayer = app.map.layers[i];
                         //Outer loop radio buttons
-                        for (var j = 0; j < app.radioButtonLayers.length; j++) {
+                        for (j = 0; j < app.radioButtonLayers.length; j++) {
                             //Inner loop drop-down list
-                            for (var k = 0; k < app.dropdownBoxLayers.length; k++) {
-                                //console.log(app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid);
-                                if ((currLayer.seldonLayer.lid==app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid) &&
-                                    (app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid!==getActiveDropdownBoxRadioLID()))
+                            for (k = 0; k < app.dropdownBoxLayers.length; k++) {
+                                testLid = app.radioButtonLayers[j].lid + app.dropdownBoxLayers[k].lid;
+                                if (currLayer.seldonLayer.lid === testLid && getActiveDropdownBoxRadioLID() !== testLid)
                                     currLayer.seldonLayer.deactivate();
                             }
                         }

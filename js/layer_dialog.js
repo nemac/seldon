@@ -20,7 +20,6 @@ module.exports = function ($) {
 
         $html.find('input.transparency-text').val(layer.transparency);
 
-        // if ((layer.transparency>0) && (app.maskParents.indexOf(layer.lid) > -1)) {
         if (layer.transparency > 0) {
             localTransparency = layer.transparency;
             layer.setTransparency(localTransparency);

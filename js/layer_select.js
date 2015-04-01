@@ -1,38 +1,44 @@
 module.exports = function ($, app) {
     function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
-        var selectBox = document.createElement("select"),$selectBox;
-        selectBox.setAttribute("id", selectBoxGroupName);
+        var selectBox = document.createElement("select"), $selectBox;
         var options = [];
-        //Loop through selectBoxLayers adding to options accordingly
-        for (var i = 0; i < selectBoxLayers.length; i++) {
-            // options.push(selectBoxLayers[i].layers+":"+selectBoxLayers[i].name);
+        var i, x, option;
+
+        selectBox.setAttribute("id", selectBoxGroupName);
+
+        // Loop through selectBoxLayers adding to options accordingly
+        for (i = 0; i < selectBoxLayers.length; i++) {
             options.push(selectBoxLayers[i].name);
         }
-        //Loop through options adding to the selectBox
-        for (var x in options) {
+
+        // Loop through options adding to the selectBox
+        for (x in options) {
             if (options.hasOwnProperty(x)) {
-                var option = document.createElement("option");
+                option = document.createElement("option");
                 option.value = x;
                 option.appendChild(document.createTextNode(options[x]));
                 selectBox.appendChild(option);
             }
         }
-        //add one blank one at the top
-        var option = document.createElement("option");
+
+        // add one blank one at the top
+        option = document.createElement("option");
         option.value = options.length;
         option.appendChild(document.createTextNode("select..."));
         selectBox.appendChild(option);
         selectBox.selectedIndex = options.length;
+
+        // Change event listener
         $selectBox = $(selectBox);
-        //Change event listener
         $selectBox.change(function () {
             var wanted_layer = undefined;
             var wanted_lid = undefined;
             var selectLayer = undefined;
-            // var selectedDropDownBoxIndex = app.dropdownBoxList[0].selectedIndex
-            for (var i = 0; i < app.dropdownBoxList[0].length; i++) {
+            var i, j, k;
+
+            for (i = 0; i < app.dropdownBoxList[0].length; i++) {
                 if (app.dropdownBoxList[0][i].selected) {
-                    if (app.dropdownBoxList[0][i].innerHTML=="select...") {
+                    if (app.dropdownBoxList[0][i].innerHTML === "select...") {
                         alert("Please make a selection from the appropriate dropdown list");
                         break;
                     }
@@ -40,13 +46,15 @@ module.exports = function ($, app) {
                     wanted_lid = selectLayer.lid;
                 }
             }
-            for (var i = 0; i < app.radioButtonList.length; i++) {
+
+            for (i = 0; i < app.radioButtonList.length; i++) {
                 if (app.radioButtonList[i].checked) {
-                    wanted_layer = parseInt(selectLayer.layers)+parseInt(app.radioButtonLayers[i].layers, 10);
-                    wanted_lid = app.radioButtonLayers[i].lid+wanted_lid;
+                    wanted_layer = parseInt(selectLayer.layers) + parseInt(app.radioButtonLayers[i].layers, 10);
+                    wanted_lid = app.radioButtonLayers[i].lid + wanted_lid;
                 }
             }
-            if (selectLayer!=undefined) {
+
+            if (selectLayer != undefined) {
                 var checkBoxLayer = new Layer({
                     lid              : wanted_lid,
                     visible          : selectLayer.visible,
@@ -61,16 +69,17 @@ module.exports = function ($, app) {
                 });
                 checkBoxLayer.activate();
             }
+
             //Clear out any previously active layers, not needed any more
-            for (var i = app.map.getNumLayers()-1; i > 0; i--) {
-                var currLayer = app.map.layers[i];
+            var currLayer, testLid;
+            for (i = app.map.getNumLayers()-1; i > 0; i--) {
+                currLayer = app.map.layers[i];
                 //Outer loop radio buttons
-                for (var j = 0; j < app.radioButtonLayers.length; j++) {
+                for (j = 0; j < app.radioButtonLayers.length; j++) {
                     //Inner loop drop-down list
-                    for (var k = 0; k < app.dropdownBoxLayers.length; k++) {
-                        //console.log(app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid);
-                        if ((currLayer.seldonLayer.lid==app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid) &&
-                            (app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid!==getActiveDropdownBoxRadioLID()))
+                    for (k = 0; k < app.dropdownBoxLayers.length; k++) {
+                        testLid = app.radioButtonLayers[j].lid + app.dropdownBoxLayers[k].lid;
+                        if (currLayer.seldonLayer.lid === testLid && getActiveDropdownBoxRadioLID() !== testLid)
                             currLayer.seldonLayer.deactivate();
                     }
                 }
@@ -82,13 +91,15 @@ module.exports = function ($, app) {
     function getActiveDropdownBoxRadioLID () {
         var wanted_lid = undefined;
         var selectLayer = undefined;
-        for (var i = 0; i < app.dropdownBoxList[0].length; i++) {
+        var i;
+
+        for (i = 0; i < app.dropdownBoxList[0].length; i++) {
             if (app.dropdownBoxList[0][i].selected) {
                 selectLayer = app.dropdownBoxLayers[app.dropdownBoxList[0].selectedIndex];
                 wanted_lid = selectLayer.lid;
             }
         }
-        for (var i = 0; i < app.radioButtonList.length; i++) {
+        for (i = 0; i < app.radioButtonList.length; i++) {
             if (app.radioButtonList[i].checked) {
                 wanted_lid = app.radioButtonLayers[i].lid+wanted_lid;
             }

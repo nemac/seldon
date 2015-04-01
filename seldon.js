@@ -46,12 +46,13 @@ module.exports = function ($) {
             title          : title,
             titleElement   : $('<h3>' + title + '</h3>'),
             contentElement : $('<div></div>'),
-            sublists    : []
+            sublists       : []
         };
-        $(accordionGroup).data('listAccordion').sections.push(sectionObj);
-        $(accordionGroup).append(sectionObj.titleElement)
+        var $accordionGroup = $(accordionGroup);
+        $accordionGroup.data('listAccordion').sections.push(sectionObj);
+        $accordionGroup.append(sectionObj.titleElement)
             .append(sectionObj.contentElement);
-        $(accordionGroup).accordion('refresh');
+        $accordionGroup.accordion('refresh');
         return sectionObj;
     }
 
@@ -85,14 +86,12 @@ module.exports = function ($) {
 
 },{}],8:[function(require,module,exports){
 module.exports = function ($) {
-     function addMaskToLegend (layer) {
-         var app = this;
+    function addMaskToLegend (layer) {
+        var app = this;
 
-        var maskName = layer.lid.substring(layer.lid.indexOf("MaskFor"),layer.lid.length);
+        var maskName = layer.lid.substring(layer.lid.indexOf("MaskFor"), layer.lid.length);
         //clear out old legend graphic if necessary
-        if ($(document.getElementById("lgd" + maskName))) {
-            $(document.getElementById("lgd" + maskName)).remove();
-        }
+        $("#lgd" + maskName).remove();
         layer.$legendItem = $(document.createElement("div")).attr("id", "lgd" + maskName)
             .prepend($(document.createElement("img")).attr("src", layer.legend))
             .prependTo($('#legend'))
@@ -111,15 +110,15 @@ module.exports = function ($) {
 
     function App () {
         EventEmitter.call(this);
-        this.map         = undefined; // OpenLayers map object
-        this.tileManager = undefined;
-        this.projection  = undefined; // OpenLayers map projection
-        this.gisServerType = undefined; //The type of server that the wms layers will be served from
+        this.map            = undefined; // OpenLayers map object
+        this.tileManager    = undefined;
+        this.projection     = undefined; // OpenLayers map projection
+        this.gisServerType  = undefined; //The type of server that the wms layers will be served from
         this.useProxyScript = undefined;
-        this.scalebar    = undefined;
-        this.zoomInTool  = undefined; // OpenLayers zoom in tool
-        this.zoomOutTool = undefined; // OpenLayers zoom out tool
-        this.dragPanTool = undefined; // OpenLayers dragpan tool
+        this.scalebar       = undefined;
+        this.zoomInTool     = undefined; // OpenLayers zoom in tool
+        this.zoomOutTool    = undefined; // OpenLayers zoom out tool
+        this.dragPanTool    = undefined; // OpenLayers dragpan tool
         this.id_markerLayer = undefined;
         this.maxExtent   = {
             left   : -15000000,  //NOTE: These values get replaced by settings from the config file.
@@ -150,28 +149,28 @@ module.exports = function ($) {
         // index of the "current" extent in the above array:
         this.currentSavedExtentIndex = -1;
 
-        this.saveCurrentExtent = require("./extent_save.js");
-        this.zoomToExtent = require("./extent_zoom.js");
-        this.zoomToPreviousExtent = require("./extent_zoom_previous.js");
-        this.zoomToNextExtent = require("./extent_zoom_next.js");
-        this.printSavedExtents = require("./extent_print.js");
-        this.setBaseLayer = require("./set_base_layer.js")($);
-        this.setAccordionGroup = require("./accordion_group_set.js");
-        this.clearAccordionSections = require("./accordion_clear.js")($);
-        this.addAccordionSection = require("./accordion_section_add.js")($);
-        this.addAccordionSublists = require("./accordion_sublist_add.js")($);
+        this.saveCurrentExtent        = require("./extent_save.js");
+        this.zoomToExtent             = require("./extent_zoom.js");
+        this.zoomToPreviousExtent     = require("./extent_zoom_previous.js");
+        this.zoomToNextExtent         = require("./extent_zoom_next.js");
+        this.printSavedExtents        = require("./extent_print.js");
+        this.setBaseLayer             = require("./set_base_layer.js")($);
+        this.setAccordionGroup        = require("./accordion_group_set.js");
+        this.clearAccordionSections   = require("./accordion_clear.js")($);
+        this.addAccordionSection      = require("./accordion_section_add.js")($);
+        this.addAccordionSublists     = require("./accordion_sublist_add.js")($);
         this.addAccordionSublistItems = require("./accordion_sublist_item_add.js")($);
-        this.setTheme = require("./set_theme.js")($);
-        this.shareUrl = require("./share_url.js")($);
-        this.updateShareMapUrl = require("./update_share_url.js")($);
-        this.launch = require("./launch.js")($);
-        this.count = require("./count.js");
-        this.addMaskToLegend = require("./add_mask_legend.js")($); 
-        this.setMaskByMask = require("./set_mask_by_mask.js")($);
-        this.setMaskByLayer = require("./set_mask_by_layer.js")($);
-        this.parseConfig = require("./parse_config.js")($);
-        this.initOpenLayers = require("./init_openlayers.js");
-        this.removeMaskFromLegend = function (layer) {};
+        this.setTheme                 = require("./set_theme.js")($);
+        this.shareUrl                 = require("./share_url.js")($);
+        this.updateShareMapUrl        = require("./update_share_url.js")($);
+        this.launch                   = require("./launch.js")($);
+        this.count                    = require("./count.js");
+        this.addMaskToLegend          = require("./add_mask_legend.js")($); 
+        this.setMaskByMask            = require("./set_mask_by_mask.js")($);
+        this.setMaskByLayer           = require("./set_mask_by_layer.js")($);
+        this.parseConfig              = require("./parse_config.js")($);
+        this.initOpenLayers           = require("./init_openlayers.js");
+        this.removeMaskFromLegend     = function (layer) {};
 
         OpenLayers.Util.onImageLoadErrorColor = 'transparent';
         OpenLayers.IMAGE_RELOAD_ATTEMPTS = 3;
@@ -287,7 +286,7 @@ module.exports = function ($) {
         //  This function constructs and returns a (nested) JS Object corresponding
         //  to the <param> subelements.
         var obj = {};
-        $layer.find('>param').each(function(i,param) {
+        $layer.find('>param').each(function(i, param) {
             var $param = $(param);
             if (param.hasAttribute('value')) {
                 obj[$param.attr('name')] = $param.attr('value');
@@ -456,19 +455,26 @@ module.exports = function ($, app) {
                 // which is EPSG:900913.
                 var coords = app.map.getLonLatFromPixel(e.xy);
                 //add marker
-                var styleMap = new OpenLayers.StyleMap({pointRadius: 4,
-                                                        fillColor: "yellow",
-                                                        fillOpacity: 0.75,});
+                var styleMap = new OpenLayers.StyleMap({
+                    pointRadius: 4,
+                    fillColor: "yellow",
+                    fillOpacity: 0.75
+                });
 
                 if (app.id_markerLayer) {
                     app.map.removeLayer(app.id_markerLayer);
                     app.id_markerLayer = undefined;
                 }
-                app.id_markerLayer = new OpenLayers.Layer.Vector("markerLayer",
-                                                                 {styleMap: styleMap});
+                app.id_markerLayer = new OpenLayers.Layer.Vector(
+                    "markerLayer",
+                    {styleMap: styleMap}
+                );
+
                 var feature = new OpenLayers.Feature.Vector(
-                                                            new OpenLayers.Geometry.Point(coords.lon, coords.lat),
-                                                            {some:'data'});
+                    new OpenLayers.Geometry.Point(coords.lon, coords.lat),
+                    {some:'data'}
+                );
+
                 app.id_markerLayer.addFeatures(feature);
                 app.map.addLayer(app.id_markerLayer);
 
@@ -517,10 +523,10 @@ module.exports = function ($, app) {
                 popup.html(html);
                 popup.dialog({
                     width     : 600,
-                    height     : 300,
+                    height    : 300,
                     resizable : true,
                     title     : "Identify Results",
-                    close : function( event, ui ) {
+                    close : function (event, ui) {
                         // app.map.removeLayer(markerLayer);
                         app.map.removeLayer(app.id_markerLayer);
                         app.id_markerLayer = undefined;
@@ -1131,46 +1137,45 @@ module.exports = function ($, app) {
         if (this.type == undefined) {
             this.type = "WMS";
         }
-        this.openLayersLayer    = undefined;
+        this.openLayersLayer = undefined;
         this.createOpenLayersLayer = function () {
             if (this.openLayersLayer !== undefined) {
                 return this.openLayersLayer;
             }
+
             var options = {
                 isBaseLayer      : false,
                 transitionEffect : 'resize',
-                buffer : 0
+                buffer           : 0,
+                singleTile       : true,
+                ratio            : 1
             };
 
-            options.singleTile = true;
-            options.ratio = 1;
-
-            //console.log("new OpenLayers.Layer.WMS "+" of "+this.layers);
             if (this.type === "ArcGIS93Rest") {
-                this.openLayersLayer =
-                    new OpenLayers.Layer.ArcGIS93Rest(this.name,
-                                                      this.url,
-                                                      // The following expression returns either this.params, if it has no mosaicRule property, or
-                                                      // a copy of this.params in which the mosaicRule property has been stringified, if this
-                                                      // mosaicRule property is present:
-                                                      (  this.params.mosaicRule
-                                                         ? $.extend(true, {}, this.params, { 'mosaicRule' : JSON.stringify(this.params.mosaicRule) })
-                                                         : this.params),
-                                                      options
-                                                     );
+                this.openLayersLayer = new OpenLayers.Layer.ArcGIS93Rest(
+                    this.name,
+                    this.url,
+                    // The following expression returns either this.params, if it has no mosaicRule property, or
+                    // a copy of this.params in which the mosaicRule property has been stringified, if this
+                    // mosaicRule property is present:
+                    ( this.params.mosaicRule ?
+                      $.extend(true, {}, this.params, { 'mosaicRule' : JSON.stringify(this.params.mosaicRule) }) :
+                      this.params),
+                    options
+                );
             } else {
-                this.openLayersLayer =
-                    new OpenLayers.Layer.WMS(this.name,
-                                             this.url,
-                                             {
-                                                 projection  : new OpenLayers.Projection(seldon.projection),
-                                                 units       : "m",
-                                                 layers      : this.layers,
-                                                 maxExtent   : new OpenLayers.Bounds(app.maxExtent),
-                                                 transparent : true
-                                             },
-                                             options
-                                            );
+                this.openLayersLayer = new OpenLayers.Layer.WMS(
+                    this.name,
+                    this.url,
+                    {
+                        projection  : new OpenLayers.Projection(seldon.projection),
+                        units       : "m",
+                        layers      : this.layers,
+                        maxExtent   : new OpenLayers.Bounds(app.maxExtent),
+                        transparent : true
+                    },
+                    options
+                );
             }
 
             var loadingimage = $('<img class="layer-loader-image ' + this.name + '" src="icons/loading.gif"/>');
@@ -1183,40 +1188,38 @@ module.exports = function ($, app) {
             this.openLayersLayer.events.register("loadend", this.openLayersLayer, function () {
                 this.loadingimage.removeClass("loading");
             });
-            this.openLayersLayer.setOpacity(1-parseFloat(this.transparency)/100.0);
+            this.openLayersLayer.setOpacity(1 - parseFloat(this.transparency)/100.0);
             this.openLayersLayer.seldonLayer = this;
             return this.openLayersLayer;
         };
 
         this.activate = function () {
-            //console.log("app.map.addLayer "+this.name);
             app.map.addLayer(this.createOpenLayersLayer());
-            //Only add legend for parent layers
+            // Only add legend for parent layers
             if (this.lid.indexOf("MaskFor") > -1) {
-                //Handle mask legend differently
-                // console.log("call app.addMaskToLegend()");
+                // Handle mask legend differently
                 app.addMaskToLegend(this);
             } else {
                 this.addToLegend();
             }
 
             this.emit("activate");
-            this.visible="true";
-            if ((this.mask == "true") && (this.lid.indexOf("MaskFor") == -1)) {
-                if (app.masks.length>0) {
-                    app.setMaskByLayer(true,this);
+            this.visible = "true";
+            if ((this.mask === "true") && (this.lid.indexOf("MaskFor") === -1)) {
+                if (app.masks.length > 0) {
+                    app.setMaskByLayer(true, this);
                 }
             }
 
             //View order rules:
             //1. Vector layers (vlayers) always on top
             //2. otherwise things go by seldon layer index.
-            if (app.map.getNumLayers()>1) {
-                var lyrJustAdded = app.map.layers[app.map.getNumLayers()-1];
-                if (lyrJustAdded.url.indexOf("vlayers") == -1) {
-                    for (var i = app.map.getNumLayers()-2; i > 0; i--) {
+            if (app.map.getNumLayers() > 1) {
+                var lyrJustAdded = app.map.layers[app.map.getNumLayers() - 1];
+                if (lyrJustAdded.url.indexOf("vlayers") === -1) {
+                    for (var i = app.map.getNumLayers() - 2; i > 0; i--) {
                         var nextLayerDown = app.map.layers[i];
-                        if (nextLayerDown.url.indexOf("vlayers") == -1) {
+                        if (nextLayerDown.url.indexOf("vlayers") === -1) {
                             if (nextLayerDown.seldonLayer.index < lyrJustAdded.seldonLayer.index) {
                                 app.map.setLayerIndex(lyrJustAdded, i);
                             }
@@ -1234,14 +1237,13 @@ module.exports = function ($, app) {
 
         this.deactivate = function () {
             if (this.openLayersLayer) {
-                if (this.visible=="true") {
-                    //console.log("deactivate "+this.name);
+                if (this.visible === "true") {
                     app.map.removeLayer(this.openLayersLayer);
                     this.removeFromLegend();
-                    this.visible="false";
+                    this.visible = "false";
                 } else { //we are dealing with a inactive parent layer to mask
                     this.removeFromLegend();
-                    app.setMaskByLayer(false,this);
+                    app.setMaskByLayer(false, this);
                 }
 
                 if (this.openLayersLayer.loadingimage) {
@@ -1254,31 +1256,26 @@ module.exports = function ($, app) {
 
         this.addToLegend = function () {
             var that = this;
+            var $legend = $("#legend");
             //clear out old legend graphic if necessary
-            if ($(document.getElementById("lgd" + this.lid))) {
-                $(document.getElementById("lgd" + this.lid)).remove();
-            }
-            if (this.url.indexOf("vlayers")>-1) {
-                this.$legendItem = $(document.createElement("div")).attr("id", "lgd" + this.lid)
+            $(document.getElementById("lgd" + this.lid)).remove();
+
+            this.$legendItem = $(document.createElement("div")).attr("id", "lgd" + this.lid)
                 .prepend($(document.createElement("img")).attr("src", this.legend))
-                .prependTo($('#legend'))
                 .click(function () {
                     that.deactivate();
                 });
+
+            if (this.url.indexOf("vlayers") > -1) {
+                this.$legendItem.prependTo($legend);
             } else {
-                this.$legendItem = $(document.createElement("div")).attr("id", "lgd" + this.lid)
-                .append($(document.createElement("img")).attr("src", this.legend))
-                .appendTo($('#legend'))
-                .click(function () {
-                    that.deactivate();
-                });
+                this.$legendItem.appendTo($legend);
             }
         };
 
         this.removeFromLegend = function () {
             if (this.$legendItem) {
-                if (this.lid.indexOf("MaskFor")>-1) {
-                    // console.log("call app.removeMaskFromLegend()");
+                if (this.lid.indexOf("MaskFor") > -1) {
                     app.removeMaskFromLegend(this);
                 } else {
                     this.$legendItem.remove();
@@ -1288,7 +1285,7 @@ module.exports = function ($, app) {
 
         this.setTransparency = function (transparency) {
             if (this.openLayersLayer) {
-                this.openLayersLayer.setOpacity(1-parseFloat(transparency)/100.0);
+                this.openLayersLayer.setOpacity(1 - parseFloat(transparency)/100.0);
             }
             this.transparency = transparency;
 
@@ -1302,14 +1299,19 @@ module.exports = function ($, app) {
                 var errTxt = err.Message;
             }
 
-            //Handle transparency for mask
-            //Still need to make this parent-layer specific
-            if (app.map != undefined) {
-                for (var i = app.map.getNumLayers()-2; i > 0; i--) {
-                    var currentLayer = app.map.layers[i];
+            // Handle transparency for mask
+            // Still need to make this parent-layer specific
+            if (app.map !== undefined) {
+                var currentLayer, openLayersLayer, lid;
+                var i;
+                for (i = app.map.getNumLayers()-2; i > 0; i--) {
+                    currentLayer = app.map.layers[i];
+                    openLayersLayer = currentLayer.seldonLayer.openLayersLayer;
+                    lid = currentLayer.seldonLayer.lid;
+
                     if (stringContainsChar(currentLayer.name, 'Mask')) {
-                        if ((currentLayer.seldonLayer.openLayersLayer) && (currentLayer.seldonLayer.lid.substring(0, currentLayer.seldonLayer.lid.indexOf("MaskFor")) == this.lid)){
-                            currentLayer.seldonLayer.openLayersLayer.setOpacity(1-parseFloat(transparency)/100.0);
+                        if (openLayersLayer && (lid.substring(0, lid.indexOf("MaskFor")) === this.lid)) {
+                            openLayersLayer.setOpacity(1 - parseFloat(transparency)/100.0);
                             currentLayer.seldonLayer.transparency = transparency;
                         }
                     }
@@ -1376,7 +1378,6 @@ module.exports = function ($) {
 
         $html.find('input.transparency-text').val(layer.transparency);
 
-        // if ((layer.transparency>0) && (app.maskParents.indexOf(layer.lid) > -1)) {
         if (layer.transparency > 0) {
             localTransparency = layer.transparency;
             layer.setTransparency(localTransparency);
@@ -1477,14 +1478,15 @@ module.exports = function ($, app) {
         }
         checkbox.onchange = function () {
             //Loop through other radio buttons and deactivate those layers accordingly.
-            $('input:radio').each(function() {
+            $('input:radio').each(function () {
                 if($(this).is(':checked')) {
-                    var wanted_layer = undefined;
-                    var wanted_lid = undefined;
-                    var selectLayer = undefined;
-                    for (var i = 0; i < app.dropdownBoxList[0].length; i++) {
+                    var wanted_layer;
+                    var wanted_lid;
+                    var selectLayer;
+                    var i, j ,k;
+                    for (i = 0; i < app.dropdownBoxList[0].length; i++) {
                         if (app.dropdownBoxList[0][i].selected) {
-                            if (app.dropdownBoxList[0][i].innerHTML=="select...") {
+                            if (app.dropdownBoxList[0][i].innerHTML === "select...") {
                                 alert("Please make a selection from the appropriate dropdown list");
                                 break;
                             }
@@ -1492,13 +1494,15 @@ module.exports = function ($, app) {
                             wanted_lid = selectLayer.lid;
                         }
                     }
-                    for (var i = 0; i < app.radioButtonList.length; i++) {
+
+                    for (i = 0; i < app.radioButtonList.length; i++) {
                         if (app.radioButtonList[i].checked) {
-                            wanted_layer = parseInt(selectLayer.layers)+parseInt(app.radioButtonLayers[i].layers);
-                            wanted_lid = app.radioButtonLayers[i].lid+wanted_lid;
+                            wanted_layer = parseInt(selectLayer.layers, 10) + parseInt(app.radioButtonLayers[i].layers, 10);
+                            wanted_lid = app.radioButtonLayers[i].lid + wanted_lid;
                         }
                     }
-                    if (selectLayer!=undefined) {
+
+                    if (selectLayer != undefined) {
                         var checkBoxLayer = new Layer({
                             lid              : wanted_lid,
                             visible          : selectLayer.visible,
@@ -1514,15 +1518,15 @@ module.exports = function ($, app) {
                         checkBoxLayer.activate();
                     }
                 } else {
-                    for (var i = app.map.getNumLayers()-1; i > 0; i--) {
-                        var currLayer = app.map.layers[i];
+                    var currLayer, testLid;
+                    for (i = app.map.getNumLayers() - 1; i > 0; i--) {
+                        currLayer = app.map.layers[i];
                         //Outer loop radio buttons
-                        for (var j = 0; j < app.radioButtonLayers.length; j++) {
+                        for (j = 0; j < app.radioButtonLayers.length; j++) {
                             //Inner loop drop-down list
-                            for (var k = 0; k < app.dropdownBoxLayers.length; k++) {
-                                //console.log(app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid);
-                                if ((currLayer.seldonLayer.lid==app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid) &&
-                                    (app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid!==getActiveDropdownBoxRadioLID()))
+                            for (k = 0; k < app.dropdownBoxLayers.length; k++) {
+                                testLid = app.radioButtonLayers[j].lid + app.dropdownBoxLayers[k].lid;
+                                if (currLayer.seldonLayer.lid === testLid && getActiveDropdownBoxRadioLID() !== testLid)
                                     currLayer.seldonLayer.deactivate();
                             }
                         }
@@ -1548,39 +1552,45 @@ module.exports = function ($, app) {
 },{"./layer.js":27}],32:[function(require,module,exports){
 module.exports = function ($, app) {
     function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
-        var selectBox = document.createElement("select"),$selectBox;
-        selectBox.setAttribute("id", selectBoxGroupName);
+        var selectBox = document.createElement("select"), $selectBox;
         var options = [];
-        //Loop through selectBoxLayers adding to options accordingly
-        for (var i = 0; i < selectBoxLayers.length; i++) {
-            // options.push(selectBoxLayers[i].layers+":"+selectBoxLayers[i].name);
+        var i, x, option;
+
+        selectBox.setAttribute("id", selectBoxGroupName);
+
+        // Loop through selectBoxLayers adding to options accordingly
+        for (i = 0; i < selectBoxLayers.length; i++) {
             options.push(selectBoxLayers[i].name);
         }
-        //Loop through options adding to the selectBox
-        for (var x in options) {
+
+        // Loop through options adding to the selectBox
+        for (x in options) {
             if (options.hasOwnProperty(x)) {
-                var option = document.createElement("option");
+                option = document.createElement("option");
                 option.value = x;
                 option.appendChild(document.createTextNode(options[x]));
                 selectBox.appendChild(option);
             }
         }
-        //add one blank one at the top
-        var option = document.createElement("option");
+
+        // add one blank one at the top
+        option = document.createElement("option");
         option.value = options.length;
         option.appendChild(document.createTextNode("select..."));
         selectBox.appendChild(option);
         selectBox.selectedIndex = options.length;
+
+        // Change event listener
         $selectBox = $(selectBox);
-        //Change event listener
         $selectBox.change(function () {
             var wanted_layer = undefined;
             var wanted_lid = undefined;
             var selectLayer = undefined;
-            // var selectedDropDownBoxIndex = app.dropdownBoxList[0].selectedIndex
-            for (var i = 0; i < app.dropdownBoxList[0].length; i++) {
+            var i, j, k;
+
+            for (i = 0; i < app.dropdownBoxList[0].length; i++) {
                 if (app.dropdownBoxList[0][i].selected) {
-                    if (app.dropdownBoxList[0][i].innerHTML=="select...") {
+                    if (app.dropdownBoxList[0][i].innerHTML === "select...") {
                         alert("Please make a selection from the appropriate dropdown list");
                         break;
                     }
@@ -1588,13 +1598,15 @@ module.exports = function ($, app) {
                     wanted_lid = selectLayer.lid;
                 }
             }
-            for (var i = 0; i < app.radioButtonList.length; i++) {
+
+            for (i = 0; i < app.radioButtonList.length; i++) {
                 if (app.radioButtonList[i].checked) {
-                    wanted_layer = parseInt(selectLayer.layers)+parseInt(app.radioButtonLayers[i].layers, 10);
-                    wanted_lid = app.radioButtonLayers[i].lid+wanted_lid;
+                    wanted_layer = parseInt(selectLayer.layers) + parseInt(app.radioButtonLayers[i].layers, 10);
+                    wanted_lid = app.radioButtonLayers[i].lid + wanted_lid;
                 }
             }
-            if (selectLayer!=undefined) {
+
+            if (selectLayer != undefined) {
                 var checkBoxLayer = new Layer({
                     lid              : wanted_lid,
                     visible          : selectLayer.visible,
@@ -1609,16 +1621,17 @@ module.exports = function ($, app) {
                 });
                 checkBoxLayer.activate();
             }
+
             //Clear out any previously active layers, not needed any more
-            for (var i = app.map.getNumLayers()-1; i > 0; i--) {
-                var currLayer = app.map.layers[i];
+            var currLayer, testLid;
+            for (i = app.map.getNumLayers()-1; i > 0; i--) {
+                currLayer = app.map.layers[i];
                 //Outer loop radio buttons
-                for (var j = 0; j < app.radioButtonLayers.length; j++) {
+                for (j = 0; j < app.radioButtonLayers.length; j++) {
                     //Inner loop drop-down list
-                    for (var k = 0; k < app.dropdownBoxLayers.length; k++) {
-                        //console.log(app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid);
-                        if ((currLayer.seldonLayer.lid==app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid) &&
-                            (app.radioButtonLayers[j].lid+app.dropdownBoxLayers[k].lid!==getActiveDropdownBoxRadioLID()))
+                    for (k = 0; k < app.dropdownBoxLayers.length; k++) {
+                        testLid = app.radioButtonLayers[j].lid + app.dropdownBoxLayers[k].lid;
+                        if (currLayer.seldonLayer.lid === testLid && getActiveDropdownBoxRadioLID() !== testLid)
                             currLayer.seldonLayer.deactivate();
                     }
                 }
@@ -1630,13 +1643,15 @@ module.exports = function ($, app) {
     function getActiveDropdownBoxRadioLID () {
         var wanted_lid = undefined;
         var selectLayer = undefined;
-        for (var i = 0; i < app.dropdownBoxList[0].length; i++) {
+        var i;
+
+        for (i = 0; i < app.dropdownBoxList[0].length; i++) {
             if (app.dropdownBoxList[0][i].selected) {
                 selectLayer = app.dropdownBoxLayers[app.dropdownBoxList[0].selectedIndex];
                 wanted_lid = selectLayer.lid;
             }
         }
-        for (var i = 0; i < app.radioButtonList.length; i++) {
+        for (i = 0; i < app.radioButtonList.length; i++) {
             if (app.radioButtonList[i].checked) {
                 wanted_lid = app.radioButtonLayers[i].lid+wanted_lid;
             }
@@ -2633,28 +2648,15 @@ module.exports = function ($) {
 
 },{"./array_contains_element.js":10,"./layer_checkbox.js":28,"./layer_icon.js":30,"./layer_radio.js":31,"./layer_select.js":32,"./repeating_operation.js":39,"./share.js":45}],45:[function(require,module,exports){
 function ShareUrlInfo (settings) {
-    if (settings === undefined) {
-        settings = {};
-    }
+    if (settings === undefined) settings = {};
+
     this.themeName         = settings.themeName;
     this.accordionGroupGid = settings.accordionGroupGid;
     this.baseLayerName     = settings.baseLayerName;
-    this.extent            = settings.extent;
-    this.layerLids         = settings.layerLids;
-    this.layerMask         = settings.layerMask;
-    this.layerAlphas       = settings.layerAlphas;
-    if (this.extent === undefined) {
-        this.extent = {};
-    }
-    if (this.layerLids === undefined) {
-        this.layerLids = [];
-    }
-    if (this.layerMask === undefined) {
-        this.layerMask = [];
-    }
-    if (this.layerAlphas === undefined) {
-        this.layerAlphas = [];
-    }
+    this.extent            = settings.extent || {};
+    this.layerLids         = settings.layerLids || [];
+    this.layerMask         = settings.layerMask || [];
+    this.layerAlphas       = settings.layerAlphas || [];
 }
 
 ShareUrlInfo.parseUrl = function (url) {
@@ -2760,7 +2762,7 @@ module.exports = function ($) {
         if (!extent) { return undefined; }
 
         $.each(this.map.layers, function () {
-            var op;
+            var op, lid, test;
             if (! this.isBaseLayer) {
                 if (this.opacity === 1) {
                     op = "1";
@@ -2771,15 +2773,18 @@ module.exports = function ($) {
                 }
                 if (stringContainsChar(this.name, 'MaskFor')) {
                     //if this layer is a mask add to layerMask list
-                    if (layerMask.indexOf(this.seldonLayer.lid.substring(this.seldonLayer.lid.indexOf("MaskFor"),this.seldonLayer.lid.length).replace("MaskFor","")) == -1) {
-                        layerMask.push(this.seldonLayer.lid.substring(this.seldonLayer.lid.indexOf("MaskFor"),this.seldonLayer.lid.length).replace("MaskFor",""));
+                    lid = this.seldonLayer.lid;
+                    test = lid.substring(lid.indexOf("MaskFor"), lid.length).replace("MaskFor","")
+                    if (layerMask.indexOf(test) === -1) {
+                        layerMask.push(test);
                     }
+
                     //make sure the parent to the layerMask stays on the share map url
-                    if (layerLids.indexOf(this.name.substring(0, this.name.indexOf("MaskFor"))) == -1) {
-                        layerLids.push(this.name.substring(0, this.name.indexOf("MaskFor")));
+                    test = this.name.substring(0, this.name.indexOf("MaskFor"));
+                    if (layerLids.indexOf(test) === -1) {
+                        layerLids.push(test);
                         layerAlphas.push(op);
                     }
-                    var test = "";
                 } else {
                     //otherwise add to layerLids
                     if (this.seldonLayer) {
@@ -2811,11 +2816,11 @@ module.exports = function ($) {
 },{"./share.js":45,"./stringContainsChar.js":48}],47:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
-        var $splashScreenContainer = $("#splashScreenContainer"),
-            $document    = $(document),
+        var $document    = $(document),
             windowWidth  = Math.round($document.width()/2);
         $('#splashScreenContent').load('splashScreen.html');
-        $splashScreenContainer.dialog({
+        $("#splashScreenContainer").dialog({
+            autoOpen    : false,
             zIndex      : 10051,
             maxHeight   : $document.height(),
             width       : windowWidth,
@@ -2823,7 +2828,6 @@ module.exports = function ($) {
             dialogClass : 'splashScreenStyle',
             hide        : "explode"
         });
-        $splashScreenContainer.dialog("close");
     }
 
     return createSplashScreen;
