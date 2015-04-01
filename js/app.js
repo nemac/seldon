@@ -3,15 +3,15 @@ module.exports = function ($) {
 
     function App () {
         EventEmitter.call(this);
-        this.map         = undefined; // OpenLayers map object
-        this.tileManager = undefined;
-        this.projection  = undefined; // OpenLayers map projection
-        this.gisServerType = undefined; //The type of server that the wms layers will be served from
+        this.map            = undefined; // OpenLayers map object
+        this.tileManager    = undefined;
+        this.projection     = undefined; // OpenLayers map projection
+        this.gisServerType  = undefined; //The type of server that the wms layers will be served from
         this.useProxyScript = undefined;
-        this.scalebar    = undefined;
-        this.zoomInTool  = undefined; // OpenLayers zoom in tool
-        this.zoomOutTool = undefined; // OpenLayers zoom out tool
-        this.dragPanTool = undefined; // OpenLayers dragpan tool
+        this.scalebar       = undefined;
+        this.zoomInTool     = undefined; // OpenLayers zoom in tool
+        this.zoomOutTool    = undefined; // OpenLayers zoom out tool
+        this.dragPanTool    = undefined; // OpenLayers dragpan tool
         this.id_markerLayer = undefined;
         this.maxExtent   = {
             left   : -15000000,  //NOTE: These values get replaced by settings from the config file.
@@ -42,28 +42,28 @@ module.exports = function ($) {
         // index of the "current" extent in the above array:
         this.currentSavedExtentIndex = -1;
 
-        this.saveCurrentExtent = require("./extent_save.js");
-        this.zoomToExtent = require("./extent_zoom.js");
-        this.zoomToPreviousExtent = require("./extent_zoom_previous.js");
-        this.zoomToNextExtent = require("./extent_zoom_next.js");
-        this.printSavedExtents = require("./extent_print.js");
-        this.setBaseLayer = require("./set_base_layer.js")($);
-        this.setAccordionGroup = require("./accordion_group_set.js");
-        this.clearAccordionSections = require("./accordion_clear.js")($);
-        this.addAccordionSection = require("./accordion_section_add.js")($);
-        this.addAccordionSublists = require("./accordion_sublist_add.js")($);
+        this.saveCurrentExtent        = require("./extent_save.js");
+        this.zoomToExtent             = require("./extent_zoom.js");
+        this.zoomToPreviousExtent     = require("./extent_zoom_previous.js");
+        this.zoomToNextExtent         = require("./extent_zoom_next.js");
+        this.printSavedExtents        = require("./extent_print.js");
+        this.setBaseLayer             = require("./set_base_layer.js")($);
+        this.setAccordionGroup        = require("./accordion_group_set.js");
+        this.clearAccordionSections   = require("./accordion_clear.js")($);
+        this.addAccordionSection      = require("./accordion_section_add.js")($);
+        this.addAccordionSublists     = require("./accordion_sublist_add.js")($);
         this.addAccordionSublistItems = require("./accordion_sublist_item_add.js")($);
-        this.setTheme = require("./set_theme.js")($);
-        this.shareUrl = require("./share_url.js")($);
-        this.updateShareMapUrl = require("./update_share_url.js")($);
-        this.launch = require("./launch.js")($);
-        this.count = require("./count.js");
-        this.addMaskToLegend = require("./add_mask_legend.js")($); 
-        this.setMaskByMask = require("./set_mask_by_mask.js")($);
-        this.setMaskByLayer = require("./set_mask_by_layer.js")($);
-        this.parseConfig = require("./parse_config.js")($);
-        this.initOpenLayers = require("./init_openlayers.js");
-        this.removeMaskFromLegend = function (layer) {};
+        this.setTheme                 = require("./set_theme.js")($);
+        this.shareUrl                 = require("./share_url.js")($);
+        this.updateShareMapUrl        = require("./update_share_url.js")($);
+        this.launch                   = require("./launch.js")($);
+        this.count                    = require("./count.js");
+        this.addMaskToLegend          = require("./add_mask_legend.js")($); 
+        this.setMaskByMask            = require("./set_mask_by_mask.js")($);
+        this.setMaskByLayer           = require("./set_mask_by_layer.js")($);
+        this.parseConfig              = require("./parse_config.js")($);
+        this.initOpenLayers           = require("./init_openlayers.js");
+        this.removeMaskFromLegend     = function (layer) {};
 
         OpenLayers.Util.onImageLoadErrorColor = 'transparent';
         OpenLayers.IMAGE_RELOAD_ATTEMPTS = 3;

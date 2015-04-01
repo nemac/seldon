@@ -26,7 +26,7 @@ module.exports = function ($) {
         //  This function constructs and returns a (nested) JS Object corresponding
         //  to the <param> subelements.
         var obj = {};
-        $layer.find('>param').each(function(i,param) {
+        $layer.find('>param').each(function(i, param) {
             var $param = $(param);
             if (param.hasAttribute('value')) {
                 obj[$param.attr('name')] = $param.attr('value');

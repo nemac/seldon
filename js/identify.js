@@ -19,19 +19,26 @@ module.exports = function ($, app) {
                 // which is EPSG:900913.
                 var coords = app.map.getLonLatFromPixel(e.xy);
                 //add marker
-                var styleMap = new OpenLayers.StyleMap({pointRadius: 4,
-                                                        fillColor: "yellow",
-                                                        fillOpacity: 0.75,});
+                var styleMap = new OpenLayers.StyleMap({
+                    pointRadius: 4,
+                    fillColor: "yellow",
+                    fillOpacity: 0.75
+                });
 
                 if (app.id_markerLayer) {
                     app.map.removeLayer(app.id_markerLayer);
                     app.id_markerLayer = undefined;
                 }
-                app.id_markerLayer = new OpenLayers.Layer.Vector("markerLayer",
-                                                                 {styleMap: styleMap});
+                app.id_markerLayer = new OpenLayers.Layer.Vector(
+                    "markerLayer",
+                    {styleMap: styleMap}
+                );
+
                 var feature = new OpenLayers.Feature.Vector(
-                                                            new OpenLayers.Geometry.Point(coords.lon, coords.lat),
-                                                            {some:'data'});
+                    new OpenLayers.Geometry.Point(coords.lon, coords.lat),
+                    {some:'data'}
+                );
+
                 app.id_markerLayer.addFeatures(feature);
                 app.map.addLayer(app.id_markerLayer);
 
@@ -80,10 +87,10 @@ module.exports = function ($, app) {
                 popup.html(html);
                 popup.dialog({
                     width     : 600,
-                    height     : 300,
+                    height    : 300,
                     resizable : true,
                     title     : "Identify Results",
-                    close : function( event, ui ) {
+                    close : function (event, ui) {
                         // app.map.removeLayer(markerLayer);
                         app.map.removeLayer(app.id_markerLayer);
                         app.id_markerLayer = undefined;

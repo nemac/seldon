@@ -16,7 +16,7 @@ module.exports = function ($) {
         if (!extent) { return undefined; }
 
         $.each(this.map.layers, function () {
-            var op;
+            var op, lid, test;
             if (! this.isBaseLayer) {
                 if (this.opacity === 1) {
                     op = "1";
@@ -27,15 +27,18 @@ module.exports = function ($) {
                 }
                 if (stringContainsChar(this.name, 'MaskFor')) {
                     //if this layer is a mask add to layerMask list
-                    if (layerMask.indexOf(this.seldonLayer.lid.substring(this.seldonLayer.lid.indexOf("MaskFor"),this.seldonLayer.lid.length).replace("MaskFor","")) == -1) {
-                        layerMask.push(this.seldonLayer.lid.substring(this.seldonLayer.lid.indexOf("MaskFor"),this.seldonLayer.lid.length).replace("MaskFor",""));
+                    lid = this.seldonLayer.lid;
+                    test = lid.substring(lid.indexOf("MaskFor"), lid.length).replace("MaskFor","")
+                    if (layerMask.indexOf(test) === -1) {
+                        layerMask.push(test);
                     }
+
                     //make sure the parent to the layerMask stays on the share map url
-                    if (layerLids.indexOf(this.name.substring(0, this.name.indexOf("MaskFor"))) == -1) {
-                        layerLids.push(this.name.substring(0, this.name.indexOf("MaskFor")));
+                    test = this.name.substring(0, this.name.indexOf("MaskFor"));
+                    if (layerLids.indexOf(test) === -1) {
+                        layerLids.push(test);
                         layerAlphas.push(op);
                     }
-                    var test = "";
                 } else {
                     //otherwise add to layerLids
                     if (this.seldonLayer) {

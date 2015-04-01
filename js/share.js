@@ -1,26 +1,13 @@
 function ShareUrlInfo (settings) {
-    if (settings === undefined) {
-        settings = {};
-    }
+    if (settings === undefined) settings = {};
+
     this.themeName         = settings.themeName;
     this.accordionGroupGid = settings.accordionGroupGid;
     this.baseLayerName     = settings.baseLayerName;
-    this.extent            = settings.extent;
-    this.layerLids         = settings.layerLids;
-    this.layerMask         = settings.layerMask;
-    this.layerAlphas       = settings.layerAlphas;
-    if (this.extent === undefined) {
-        this.extent = {};
-    }
-    if (this.layerLids === undefined) {
-        this.layerLids = [];
-    }
-    if (this.layerMask === undefined) {
-        this.layerMask = [];
-    }
-    if (this.layerAlphas === undefined) {
-        this.layerAlphas = [];
-    }
+    this.extent            = settings.extent || {};
+    this.layerLids         = settings.layerLids || [];
+    this.layerMask         = settings.layerMask || [];
+    this.layerAlphas       = settings.layerAlphas || [];
 }
 
 ShareUrlInfo.parseUrl = function (url) {

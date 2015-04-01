@@ -1,10 +1,10 @@
 module.exports = function ($) {
     function createSplashScreen () {
-        var $splashScreenContainer = $("#splashScreenContainer"),
-            $document    = $(document),
+        var $document    = $(document),
             windowWidth  = Math.round($document.width()/2);
         $('#splashScreenContent').load('splashScreen.html');
-        $splashScreenContainer.dialog({
+        $("#splashScreenContainer").dialog({
+            autoOpen    : false,
             zIndex      : 10051,
             maxHeight   : $document.height(),
             width       : windowWidth,
@@ -12,7 +12,6 @@ module.exports = function ($) {
             dialogClass : 'splashScreenStyle',
             hide        : "explode"
         });
-        $splashScreenContainer.dialog("close");
     }
 
     return createSplashScreen;

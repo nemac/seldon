@@ -4,12 +4,13 @@ module.exports = function ($) {
             title          : title,
             titleElement   : $('<h3>' + title + '</h3>'),
             contentElement : $('<div></div>'),
-            sublists    : []
+            sublists       : []
         };
-        $(accordionGroup).data('listAccordion').sections.push(sectionObj);
-        $(accordionGroup).append(sectionObj.titleElement)
+        var $accordionGroup = $(accordionGroup);
+        $accordionGroup.data('listAccordion').sections.push(sectionObj);
+        $accordionGroup.append(sectionObj.titleElement)
             .append(sectionObj.contentElement);
-        $(accordionGroup).accordion('refresh');
+        $accordionGroup.accordion('refresh');
         return sectionObj;
     }
 
