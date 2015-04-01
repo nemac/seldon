@@ -6,8 +6,6 @@ module.exports = function ($) {
 
     function launch (configFile, shareUrlInfo) {
         var deactivateActiveOpenLayersControls = require("./deactivate_controls.js")(this, activeBtn);
-        var activateIdentifyTool = require("./identify_activate.js")(this, activeBtn);
-        var activateMultigraphTool = require("./multigraph_activate.js")(this, activeBtn);
         var printMap = require("./print.js")($, this);
 
         var app = this;
@@ -180,7 +178,8 @@ module.exports = function ($) {
         // identify button
         //
         $("#btnID").click(function () {
-            activateIdentifyTool();
+            deactivateActiveOpenLayersControls();
+            app.identifyTool.activate();
             activeBtn = $(this);
             activeBtn.children().addClass('icon-active');
         });
@@ -218,7 +217,8 @@ module.exports = function ($) {
         // multigraph button
         //
         $("#btnMultiGraph").click(function () {
-            activateMultigraphTool();
+            deactivateActiveOpenLayersControls();
+            app.multigraphTool.activate();
             activeBtn = $(this);
             activeBtn.children().addClass('icon-active');
         });
