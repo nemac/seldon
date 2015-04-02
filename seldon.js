@@ -363,9 +363,7 @@ function saveCurrentExtent () {
         newSavedExtents,
         i;
 
-    newExtent = (function (extent) {
-        return { left : extent.left, bottom : extent.bottom, right : extent.right, top : extent.top };
-    }(this.map.getExtent()));
+    newExtent = formatExtent(this.map.getExtent());
 
     if (this.currentSavedExtentIndex >= 0) {
         currentSavedExtent = this.savedExtents[this.currentSavedExtentIndex];
@@ -384,6 +382,10 @@ function saveCurrentExtent () {
     // append current extent to the list
     this.savedExtents.push(newExtent);
     ++this.currentSavedExtentIndex;
+}
+
+function formatExtent (extent) {
+    return { left : extent.left, bottom : extent.bottom, right : extent.right, top : extent.top };
 }
 
 module.exports = saveCurrentExtent;
@@ -445,15 +447,17 @@ module.exports = function ($, app) {
                 // identify tool is active.  The argument `e` is the click event; the coordinates
                 // of the clicked point are (e.x, e.y).
 
-                var services = {},
-                    service, urlsrs;
-
                 // First remove any existing popup window left over from a previous identify
                 $('#identify_popup').remove();
+
+                if (app.id_markerLayer) {
+                    app.map.removeLayer(app.id_markerLayer);
+                }
 
                 // This coords object is not really in lon/lat; it's in the display projection of the map,
                 // which is EPSG:900913.
                 var coords = app.map.getLonLatFromPixel(e.xy);
+
                 //add marker
                 var styleMap = new OpenLayers.StyleMap({
                     pointRadius: 4,
@@ -461,18 +465,13 @@ module.exports = function ($, app) {
                     fillOpacity: 0.75
                 });
 
-                if (app.id_markerLayer) {
-                    app.map.removeLayer(app.id_markerLayer);
-                    app.id_markerLayer = undefined;
-                }
+                var feature = new OpenLayers.Feature.Vector(
+                    new OpenLayers.Geometry.Point(coords.lon, coords.lat)
+                );
+
                 app.id_markerLayer = new OpenLayers.Layer.Vector(
                     "markerLayer",
                     {styleMap: styleMap}
-                );
-
-                var feature = new OpenLayers.Feature.Vector(
-                    new OpenLayers.Geometry.Point(coords.lon, coords.lat),
-                    {some:'data'}
                 );
 
                 app.id_markerLayer.addFeatures(feature);
@@ -489,28 +488,36 @@ module.exports = function ($, app) {
                 // entry records a url, srs, and list of layers, corresponding to one
                 // GetFeatureInfo request that will need to be made.  We also builds up the html
                 // that will display the results in the popup window here.
-                var html = '<table id="identify_results" height="100">';
+                var services = [],
+                    service, urlsrs;
+                var layersAdded = [];
+                var html = '<table id="identify_results">';
+
                 $.each(app.map.layers, function () {
-                    var srs, url, name, urlsrs;
-                    if ((!this.isBaseLayer) && (this.params)) {
-                        srs    = this.projection.projCode;
-                        url    = this.url;
+                    var name, label;
+                    if (!this.isBaseLayer && this.params) {
                         name   = this.params.LAYERS;
-                        urlsrs = url + ',' + srs;
-                        if (services[urlsrs] === undefined) {
-                            services[urlsrs] = { url : url, srs : srs, layers : [] };
-                        }
-                        services[urlsrs].layers.push(name);
+                        label = (name.indexOf("MaskFor") !== -1) ? name.substring(0, name.indexOf("MaskFor")) : name;
+
+                        if (layersAdded.indexOf(label) !== -1) return;
+
+                        layersAdded.push(label)
+                        services.push({
+                            url   : this.url,
+                            srs   : this.projection.projCode,
+                            name  : name,
+                            label : label
+                        });
+
                         html = html + Mustache.render(
                             (''
-                             + '<tr id="identify_results_for_{{name}}">'
-                             +   '<td class="layer-label">{{label}}:</td>'
+                             + '<tr id="{{label}}-label">'
+                             +   '<td class="layer-label"><b>{{label}}:</b></td>'
                              +   '<td class="layer-results"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></td>'
                              + '</tr>'
                             ),
                             {
-                                name  : name,
-                                label : this.seldonLayer.name
+                                label : label
                             }
                         );
                     }
@@ -519,7 +526,6 @@ module.exports = function ($, app) {
 
                 var popup = $(document.createElement('div'));
                 popup.attr("id", "identify_popup");
-                popup.id = "#identify_popup";
                 popup.html(html);
                 popup.dialog({
                     width     : 600,
@@ -527,106 +533,78 @@ module.exports = function ($, app) {
                     resizable : true,
                     title     : "Identify Results",
                     close : function (event, ui) {
-                        // app.map.removeLayer(markerLayer);
                         app.map.removeLayer(app.id_markerLayer);
                         app.id_markerLayer = undefined;
                         $(this).remove();
                     },
                 });
 
-                // Now loop over each item in the `services` object, generating the GetFeatureInfo request for it
-                for (urlsrs in services) {
-                    var firstResultsYet = 0;
-                    (function () {
-                        var service = services[urlsrs],
-                            //NOTE: the correct coords to use in the request are (e.xy.y,e.xy.y), which are NOT the same as (e.x,e.y).
-                            //      I'm not sure what the difference is, but (e.xy.y,e.xy.y) seems to be what GetFeatureInfo needs.
-                            requestUrl = createWMSGetFeatureInfoRequestURL(service.url, service.layers, service.srs, e.xy.x, e.xy.y);
-                        if (seldon.useProxyScript === "True") {
-                            requestUrl = $(location).attr('href')+"/cgi-bin/proxy.cgi?url="+encodeURIComponent(requestUrl);
-                        }
-                        $.ajax({
-                            url: requestUrl,
-                            dataType: "text",
-                            success: function (response) {
-                                var $gml = $($.parseXML(response)),
-                                    $identify_results = $("#identify_results");
-                                // For each layer that this request was for, parse the GML for the results
-                                // for that layer, and populate the corresponding result in the pop-up
-                                // created above.
-                                if (firstResultsYet < 1) {
-                                    $identify_results.empty(); //first clear out original
-                                    firstResultsYet = firstResultsYet + 1;
-                                }
-                                var layerIDCount     = 0,
-                                    newTableContents = '',
-                                    lastURL          = '';
-                                var previousMaskLayer;
-                                $.each(service.layers, function () {
-                                    // jdm: Check to see if we are using ArcGIS
-                                    // if so handle the xml that comes back differently
-                                    // on a related note ArcGIS WMS Raster layers do not support
-                                    // GetFeatureInfo
-                                    if (seldon.gisServerType == "ArcGIS") {
-                                        var result = getLayerResultsFromArcXML($gml, this, layerIDCount);
-                                    } else { //assuming MapServer at this point
-                                        var result = getLayerResultsFromGML($gml, this);
-                                    }
-                                    //check for previous mask
-                                    if (previousMaskLayer != service.layers[layerIDCount].substring(0,service.layers[layerIDCount].indexOf("MaskFor"))) {
-                                        var layerTitle = service.layers[layerIDCount];
-                                        if (layerTitle.indexOf("MaskFor") > -1) {
-                                            layerTitle = layerTitle.substring(0, layerTitle.indexOf('MaskFor'));
-                                        }
-                                        //jdm: with this list back from getLayerResultsFromGML
-                                        //loop through and build up new table structure
-                                        newTableContents = (''
-                                                            + '<tr>'
-                                                            +   '<td><b>'+layerTitle+'</b></td>'
-                                                            +   '<td>&nbsp</td>'
-                                                            + '</tr>'
-                                                            );
-                                        $identify_results.append(newTableContents);
-                                        var i;
-                                        for (i = 1; i < result.length; ++i) {
-                                            newTableContents = (''
-                                                                + '<tr>'
-                                                                +   '<td class="label">'+String(result[i][0]).replace("_0","")+':&nbsp&nbsp</td>'
-                                                                +   '<td>'+result[i][1]+'</td>'
-                                                                + '</tr>'
-                                                                );
-                                            $identify_results.append(newTableContents);
-                                        }
-                                    }
-                                    //populate for previous mask
-                                    if (service.layers[layerIDCount].indexOf("MaskFor") > -1) {
-                                        previousMaskLayer = service.layers[layerIDCount].substring(0,service.layers[layerIDCount].indexOf("MaskFor"));
-                                    }
-                                    layerIDCount++;
-                                });
-                            },
-                            error: function(jqXHR, textStatus, errorThrown) {
-                                alert(textStatus);
-                            }
-                        });
-                    }());
+                // Now loop over each item in the `services` array, generating the GetFeatureInfo request for it
+                var i, l;
+                for (i = 0, l = services.length; i < l; i++) {
+                    handleIdentifyRequest(services[i], e);
                 }
-                //jdm: last thing make the popup bigger
-                //this doesn't work for some reason
-                //app.map.popups[0].updateSize(new OpenLayers.Size(500, 500));
             }
         );
+    }
+
+    function handleIdentifyRequest (service, e) {
+        //NOTE: the correct coords to use in the request are (e.xy.y,e.xy.y), which are NOT the same as (e.x,e.y).
+        //      I'm not sure what the difference is, but (e.xy.y,e.xy.y) seems to be what GetFeatureInfo needs.
+        var requestUrl = createWMSGetFeatureInfoRequestURL(service.url, service.name, service.srs, e.xy.x, e.xy.y);
+
+        if (seldon.useProxyScript === "True") {
+            requestUrl = $(location).attr('href') + "/cgi-bin/proxy.cgi?url=" + encodeURIComponent(requestUrl);
+        }
+
+        $.ajax({
+            url: requestUrl,
+            dataType: "text",
+            success: function (response) {
+                var $gml = $($.parseXML(response));
+                var $group = $("#" + service.label + "-label");
+                var newTableContents = '';
+                var i;
+
+                $group.find("img").remove();
+
+                // jdm: Check to see if we are using ArcGIS
+                // if so handle the xml that comes back differently
+                // on a related note ArcGIS WMS Raster layers do not support
+                // GetFeatureInfo
+                var result = (seldon.gisServerType === "ArcGIS") ?
+                    getLayerResultsFromArcXML($gml, service.name, layerIDCount) :
+                    getLayerResultsFromGML($gml, service.name);
+
+                // loop through the result and build up new table structure
+                for (i = 1; i < result.length; ++i) {
+                    newTableContents += (''
+                                        + '<tr class="identify-result">'
+                                        +   '<td class="label">'+String(result[i][0]).replace("_0","")+':&nbsp&nbsp</td>'
+                                        +   '<td>'+result[i][1]+'</td>'
+                                        + '</tr>'
+                                       );
+                }
+
+                $(newTableContents).insertAfter($group);
+
+                if (!newTableContents) $group.find(".layer-results").text("N/A");
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert(textStatus);
+            }
+        });
     }
 
     // Return a string representing a GetFeatureInfo request URL for the current map,
     // based on the passed parameters:
     //
     //   serviceUrl: the URL of the WMS service
-    //   layers: list of layers to query
-    //   srs: the SRS of the layers
+    //   layer: layer to query
+    //   srs: the SRS of the layer
     //   (x,y): (pixel) coordinates of query point
     //
-    function createWMSGetFeatureInfoRequestURL (serviceUrl, layers, srs, x, y) {
+    function createWMSGetFeatureInfoRequestURL (serviceUrl, layer, srs, x, y) {
         var extent = app.map.getExtent();
         if (seldon.gisServerType === "ArcGIS") {
             extent = extent.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection(seldon.projection));
@@ -634,8 +612,8 @@ module.exports = function ($, app) {
         return Mustache.render(
             (''
              + serviceUrl
-             + '{{{c}}}LAYERS={{layers}}'
-             + '&QUERY_LAYERS={{layers}}'
+             + '{{{c}}}LAYERS={{layer}}'
+             + '&QUERY_LAYERS={{layer}}'
              + '&STYLES=,'
              + '&SERVICE=WMS'
              + '&VERSION=1.1.1'
@@ -652,7 +630,7 @@ module.exports = function ($, app) {
             ),
             {
                 c      : stringContainsChar(serviceUrl, '?') ? '&' : '?',
-                layers : layers.join(','),
+                layer  : layer,
                 height : app.map.size.h,
                 width  : app.map.size.w,
                 left   : extent.left,
@@ -693,7 +671,7 @@ module.exports = function ($, app) {
             if (children[i].nodeName !== 'gml:boundedBy') {
                 // jdm: IE doesn't have textContent on children[i], but Chrome and FireFox do
                 var value = (children[i].textContent) ? children[i].textContent : children[i].text;
-                if ((stringStartsWith(layerName,"EFETAC-NASA") || stringStartsWith(layerName,"RSAC-FHTET")) &&
+                if ((stringStartsWith(layerName, "EFETAC-NASA") || stringStartsWith(layerName, "RSAC-FHTET")) &&
                     (children[i].nodeName === "value_0")) {
                     value = value + sprintf(" (%.2f %%)", parseFloat(value,10) * 200.0 / 255.0 - 100);
                 }
@@ -739,16 +717,24 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
         });
     }
 
-    var maxExtentBounds = new OpenLayers.Bounds(app.maxExtent.left, app.maxExtent.bottom,
-                                                app.maxExtent.right, app.maxExtent.top);
+    var maxExtentBounds = new OpenLayers.Bounds(
+        app.maxExtent.left,
+        app.maxExtent.bottom,
+        app.maxExtent.right,
+        app.maxExtent.top
+    );
 
     if (initialExtent === undefined) {
         //take the extent coming from the config file
         initialExtent = app.maxExtent;
     } else {
         //take the extent of the share map url
-        maxExtentBounds = new OpenLayers.Bounds(initialExtent.left, initialExtent.bottom,
-                                                initialExtent.right, initialExtent.top);
+        maxExtentBounds = new OpenLayers.Bounds(
+            initialExtent.left,
+            initialExtent.bottom,
+            initialExtent.right,
+            initialExtent.top
+        );
     }
 
     app.tileManager = new OpenLayers.TileManager({
@@ -778,8 +764,8 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
         ],
         eventListeners:
         {
-            "moveend": function() { app.emit("extentchange"); },
-            "zoomend": function() { app.emit("extentchange"); }
+            "moveend": function () { app.emit("extentchange"); },
+            "zoomend": function () { app.emit("extentchange"); }
         },
         zoom: 1,
         projection: new OpenLayers.Projection(seldon.projection)
@@ -846,7 +832,7 @@ module.exports = function ($) {
         //
         $("#layerPickerDialog").dialog({
             zIndex   : 10050,
-            position : { my : "left top", at: "left+5 top+100"},
+            position : { my: "left top", at: "left+5 top+100" },
             autoOpen : true,
             hide     : "fade"
         });
@@ -877,7 +863,7 @@ module.exports = function ($) {
         //
         $("#mapToolsDialog").dialog({
             zIndex   : 10050,
-            position : { my : "right top", at: "right-5 top+100"},
+            position : { my: "right top", at: "right-5 top+100" },
             autoOpen : true,
             hide     : "fade"
         });
@@ -1051,15 +1037,13 @@ module.exports = function ($) {
         });
 
         //jdm: 7/9/12 - for global mask functionality
-        $(function () {
-            $('.mask-toggle').on('click', function () {
-                if ($(this).is(':checked')) {
-                    //console.log("setMaskByMask at line 789");
-                    app.setMaskByMask(true, this.value);
-                } else {
-                    app.setMaskByMask(false, this.value);
-                }
-            });
+        $('.mask-toggle').on('click', function () {
+            if ($(this).is(':checked')) {
+                //console.log("setMaskByMask at line 789");
+                app.setMaskByMask(true, this.value);
+            } else {
+                app.setMaskByMask(false, this.value);
+            }
         });
 
         $('textarea').focus(function () {
@@ -1686,15 +1670,22 @@ module.exports = function ($, app) {
                 var lonlat = app.map.getLonLatFromPixel(e.xy);
                 lonlat.transform(app.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
 
-                var styleMap = new OpenLayers.StyleMap({pointRadius: 4,
-                                                        fillColor: "yellow",
-                                                        fillOpacity: 0.75,});
+                var styleMap = new OpenLayers.StyleMap({
+                    pointRadius: 4,
+                    fillColor: "yellow",
+                    fillOpacity: 0.75
+                });
 
-                var markerLayer = new OpenLayers.Layer.Vector("markerLayer",
-                                                              {styleMap: styleMap});
+                var markerLayer = new OpenLayers.Layer.Vector(
+                    "markerLayer",
+                    {styleMap: styleMap}
+                );
+
                 var feature = new OpenLayers.Feature.Vector(
-                                                            new OpenLayers.Geometry.Point(coords.lon, coords.lat),
-                                                            {some:'data'});
+                    new OpenLayers.Geometry.Point(coords.lon, coords.lat),
+                    {some:'data'}
+                );
+
                 markerLayer.addFeatures(feature);
                 app.map.addLayer(markerLayer);
 
@@ -1798,10 +1789,10 @@ module.exports = function ($) {
 },{}],35:[function(require,module,exports){
 module.exports = function ($) {
     var createArcGIS93RestParams = require("./create_arcgis_rest_params.js")($);
-    var AccordionGroup = require("./accordion_group.js");
-    var AccordionGroupSublist = require("./accordion_group_sublist.js");
-    var BaseLayer = require("./baselayer.js");
-    var Theme = require("./theme.js");
+    var AccordionGroup           = require("./accordion_group.js");
+    var AccordionGroupSublist    = require("./accordion_group_sublist.js");
+    var BaseLayer                = require("./baselayer.js");
+    var Theme                    = require("./theme.js");
 
     function parseConfig (configXML, shareUrlInfo) {
         var Layer = require("./layer.js")($, this);
@@ -1812,13 +1803,12 @@ module.exports = function ($) {
             $configXML = $(configXML),
             initialBaseLayer,
             initialTheme,
-            shareUrlLayerAlpha,
+            shareUrlLayerAlpha = {},
             themeOptions = {},
             i, j, k,
             l, ll, lll;
 
         if (shareUrlInfo !== undefined) {
-            shareUrlLayerAlpha = {};
             for (i = 0, l = shareUrlInfo.layerLids.length; i < l; i++) {
                 shareUrlLayerAlpha[shareUrlInfo.layerLids[i]] = shareUrlInfo.layerAlphas[i];
             }
@@ -1853,8 +1843,8 @@ module.exports = function ($) {
             });
             app.baseLayers.push(baseLayer);
             $baseCombo.append($(document.createElement("option")).attr("value", i).text(baseLayer.label));
-            if ((  shareUrlInfo  &&   (shareUrlInfo.baseLayerName === baseLayer.name)) ||
-                ( !shareUrlInfo  &&   selected                                    )) {
+            if ((shareUrlInfo && shareUrlInfo.baseLayerName === baseLayer.name) ||
+                (!shareUrlInfo  && selected)) {
                 initialBaseLayer = baseLayer;
             }
         }
@@ -1875,6 +1865,7 @@ module.exports = function ($) {
             sublist,
             layer,
             index = 0;
+
         for (i = 0, l = $wmsGroups.length; i < l; i++) {
             $wmsGroup = $($wmsGroups[i]); // each <wmsGroup> corresponds to a (potential) layerPicker accordion group
             accordionGroup = new AccordionGroup({
@@ -1891,7 +1882,7 @@ module.exports = function ($) {
             $wmsSubgroups = $wmsGroup.find("wmsSubgroup");
             for (j = 0, ll = $wmsSubgroups.length; j < ll; j++) {
                 $wmsSubgroup = $($wmsSubgroups[j]); // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
-                sublist      = new AccordionGroupSublist({
+                sublist = new AccordionGroupSublist({
                     label : $wmsSubgroup.attr('label'),
                     type  : $wmsSubgroup.attr('type')
                 });
@@ -1902,6 +1893,7 @@ module.exports = function ($) {
                     if ($wmsLayer[0].tagName === "wmsLayer") {
                         layer = new Layer({
                             type             : "WMS",
+                            name             : $wmsLayer.attr('name'),
                             lid              : $wmsLayer.attr('lid'),
                             visible          : $wmsLayer.attr('visible'),
                             url              : $wmsLayer.attr('url'),
@@ -1909,7 +1901,6 @@ module.exports = function ($) {
                             layers           : $wmsLayer.attr('layers'),
                             styles           : $wmsLayer.attr('styles'),
                             identify         : $wmsLayer.attr('identify'),
-                            name             : $wmsLayer.attr('name'),
                             legend           : $wmsLayer.attr('legend'),
                             mask             : $wmsLayer.attr('mask'),
                             selectedInConfig : ($wmsLayer.attr('selected') === "true")
@@ -1919,12 +1910,12 @@ module.exports = function ($) {
                             type             : "ArcGIS93Rest",
                             name             : $wmsLayer.attr('name'),
                             lid              : $wmsLayer.attr('lid'),
-                            legend           : $wmsLayer.attr('legend'),
                             visible          : $wmsLayer.attr('visible'),
                             url              : $wmsLayer.attr('url'),
+                            identify         : $wmsLayer.attr('identify'),
+                            legend           : $wmsLayer.attr('legend'),
                             selectedInConfig : ($wmsLayer.attr('selected') === "true"),
-                            params           : createArcGIS93RestParams($wmsLayer),
-                            identify         : $wmsLayer.attr('identify')
+                            params           : createArcGIS93RestParams($wmsLayer)
                         });
                     }
                     layer.index = index;
@@ -1934,7 +1925,7 @@ module.exports = function ($) {
                             themeOptions.layers = [];
                         }
                         themeOptions.layers.push(layer);
-                        layer.setTransparency(100*(1-shareUrlLayerAlpha[layer.lid]));
+                        layer.setTransparency(100 * (1-shareUrlLayerAlpha[layer.lid]));
                     }
                     index = index + 1;
                 }
@@ -1966,11 +1957,11 @@ module.exports = function ($) {
             theme = new Theme({
                 name  : $view.attr('name'),
                 label : $view.attr('label'),
-                                    zoom  : $view.attr('zoom'),
-                                    xmin  : $view.attr('xmin'),
-                                    ymin  : $view.attr('ymin'),
-                                    xmax  : $view.attr('xmax'),
-                                    ymax  : $view.attr('ymax'),
+                zoom  : $view.attr('zoom'),
+                xmin  : $view.attr('xmin'),
+                ymin  : $view.attr('ymin'),
+                xmax  : $view.attr('xmax'),
+                ymax  : $view.attr('ymax'),
                 index : i
             });
             app.themes.push(theme);
@@ -2193,13 +2184,13 @@ module.exports = function ($) {
                 maskLayer.parentLayer = parentLayer;
                 maskLayer.activate();
                 app.masks[m].maskLayers.push(maskLayer);
-                if (parentLayer.visible=="true") {
+                if (parentLayer.visible === "true") {
                     parentLayer.deactivate();
-                    parentLayer.visible="false";
+                    parentLayer.visible = "false";
                 }
-                $("#"+app.masks[m].maskName.replace("MaskFor","")).get(0).checked = true;
-                $('#mask-status'+ parentLayer.lid).text("(m)");
-                $("#chk"+parentLayer.lid).prop('checked', true);
+                $("#" + app.masks[m].maskName.replace("MaskFor", "")).get(0).checked = true;
+                $('#mask-status' + parentLayer.lid).text("(m)");
+                $("#chk" + parentLayer.lid).prop('checked', true);
             }
         } else {
             //deactivate and remove from mask.maskLayers[]
@@ -2220,7 +2211,7 @@ module.exports = function ($) {
             }
             //remove from maskParentLayers and activate parentLayer
             app.maskParentLayers.remove(parentLayer);
-            if (parentLayer.visible == "false") {
+            if (parentLayer.visible === "false") {
                 parentLayer.visible = "true";
             } else {
                 parentLayer.visible == "true";
@@ -2574,7 +2565,6 @@ module.exports = function ($) {
         }
 
         return defaultAccordionGroup;
-
     };
 
 
