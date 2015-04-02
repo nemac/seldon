@@ -346,6 +346,10 @@ Other Popup Styles
     -moz-box-sizing: border-box;
 }
 
+#identify_results .identify-result td {
+    padding: 7px 0 7px 20px;
+}
+
 #identify_results tr {
     border-bottom: 1px solid #c7c6c6;
 }
