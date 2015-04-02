@@ -91,10 +91,10 @@ module.exports = function ($, app) {
             //2. otherwise things go by seldon layer index.
             if (app.map.getNumLayers() > 1) {
                 var lyrJustAdded = app.map.layers[app.map.getNumLayers() - 1];
-                if (lyrJustAdded.url.indexOf("vlayers") === -1) {
+                if (lyrJustAdded.url && lyrJustAdded.url.indexOf("vlayers") === -1) {
                     for (var i = app.map.getNumLayers() - 2; i > 0; i--) {
                         var nextLayerDown = app.map.layers[i];
-                        if (nextLayerDown.url.indexOf("vlayers") === -1) {
+                        if (nextLayerDown.url && nextLayerDown.url.indexOf("vlayers") === -1) {
                             if (nextLayerDown.seldonLayer.index < lyrJustAdded.seldonLayer.index) {
                                 app.map.setLayerIndex(lyrJustAdded, i);
                             }
