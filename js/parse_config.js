@@ -1,9 +1,9 @@
 module.exports = function ($) {
     var createArcGIS93RestParams = require("./create_arcgis_rest_params.js")($);
-    var AccordionGroup = require("./accordion_group.js");
-    var AccordionGroupSublist = require("./accordion_group_sublist.js");
-    var BaseLayer = require("./baselayer.js");
-    var Theme = require("./theme.js");
+    var AccordionGroup           = require("./accordion_group.js");
+    var AccordionGroupSublist    = require("./accordion_group_sublist.js");
+    var BaseLayer                = require("./baselayer.js");
+    var Theme                    = require("./theme.js");
 
     function parseConfig (configXML, shareUrlInfo) {
         var Layer = require("./layer.js")($, this);
@@ -14,13 +14,12 @@ module.exports = function ($) {
             $configXML = $(configXML),
             initialBaseLayer,
             initialTheme,
-            shareUrlLayerAlpha,
+            shareUrlLayerAlpha = {},
             themeOptions = {},
             i, j, k,
             l, ll, lll;
 
         if (shareUrlInfo !== undefined) {
-            shareUrlLayerAlpha = {};
             for (i = 0, l = shareUrlInfo.layerLids.length; i < l; i++) {
                 shareUrlLayerAlpha[shareUrlInfo.layerLids[i]] = shareUrlInfo.layerAlphas[i];
             }
@@ -55,8 +54,8 @@ module.exports = function ($) {
             });
             app.baseLayers.push(baseLayer);
             $baseCombo.append($(document.createElement("option")).attr("value", i).text(baseLayer.label));
-            if ((  shareUrlInfo  &&   (shareUrlInfo.baseLayerName === baseLayer.name)) ||
-                ( !shareUrlInfo  &&   selected                                    )) {
+            if ((shareUrlInfo && shareUrlInfo.baseLayerName === baseLayer.name) ||
+                (!shareUrlInfo  && selected)) {
                 initialBaseLayer = baseLayer;
             }
         }
@@ -77,6 +76,7 @@ module.exports = function ($) {
             sublist,
             layer,
             index = 0;
+
         for (i = 0, l = $wmsGroups.length; i < l; i++) {
             $wmsGroup = $($wmsGroups[i]); // each <wmsGroup> corresponds to a (potential) layerPicker accordion group
             accordionGroup = new AccordionGroup({
@@ -93,7 +93,7 @@ module.exports = function ($) {
             $wmsSubgroups = $wmsGroup.find("wmsSubgroup");
             for (j = 0, ll = $wmsSubgroups.length; j < ll; j++) {
                 $wmsSubgroup = $($wmsSubgroups[j]); // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
-                sublist      = new AccordionGroupSublist({
+                sublist = new AccordionGroupSublist({
                     label : $wmsSubgroup.attr('label'),
                     type  : $wmsSubgroup.attr('type')
                 });
@@ -104,6 +104,7 @@ module.exports = function ($) {
                     if ($wmsLayer[0].tagName === "wmsLayer") {
                         layer = new Layer({
                             type             : "WMS",
+                            name             : $wmsLayer.attr('name'),
                             lid              : $wmsLayer.attr('lid'),
                             visible          : $wmsLayer.attr('visible'),
                             url              : $wmsLayer.attr('url'),
@@ -111,7 +112,6 @@ module.exports = function ($) {
                             layers           : $wmsLayer.attr('layers'),
                             styles           : $wmsLayer.attr('styles'),
                             identify         : $wmsLayer.attr('identify'),
-                            name             : $wmsLayer.attr('name'),
                             legend           : $wmsLayer.attr('legend'),
                             mask             : $wmsLayer.attr('mask'),
                             selectedInConfig : ($wmsLayer.attr('selected') === "true")
@@ -121,12 +121,12 @@ module.exports = function ($) {
                             type             : "ArcGIS93Rest",
                             name             : $wmsLayer.attr('name'),
                             lid              : $wmsLayer.attr('lid'),
-                            legend           : $wmsLayer.attr('legend'),
                             visible          : $wmsLayer.attr('visible'),
                             url              : $wmsLayer.attr('url'),
+                            identify         : $wmsLayer.attr('identify'),
+                            legend           : $wmsLayer.attr('legend'),
                             selectedInConfig : ($wmsLayer.attr('selected') === "true"),
-                            params           : createArcGIS93RestParams($wmsLayer),
-                            identify         : $wmsLayer.attr('identify')
+                            params           : createArcGIS93RestParams($wmsLayer)
                         });
                     }
                     layer.index = index;
@@ -136,7 +136,7 @@ module.exports = function ($) {
                             themeOptions.layers = [];
                         }
                         themeOptions.layers.push(layer);
-                        layer.setTransparency(100*(1-shareUrlLayerAlpha[layer.lid]));
+                        layer.setTransparency(100 * (1-shareUrlLayerAlpha[layer.lid]));
                     }
                     index = index + 1;
                 }
@@ -168,11 +168,11 @@ module.exports = function ($) {
             theme = new Theme({
                 name  : $view.attr('name'),
                 label : $view.attr('label'),
-                                    zoom  : $view.attr('zoom'),
-                                    xmin  : $view.attr('xmin'),
-                                    ymin  : $view.attr('ymin'),
-                                    xmax  : $view.attr('xmax'),
-                                    ymax  : $view.attr('ymax'),
+                zoom  : $view.attr('zoom'),
+                xmin  : $view.attr('xmin'),
+                ymin  : $view.attr('ymin'),
+                xmax  : $view.attr('xmax'),
+                ymax  : $view.attr('ymax'),
                 index : i
             });
             app.themes.push(theme);

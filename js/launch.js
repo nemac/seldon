@@ -38,7 +38,7 @@ module.exports = function ($) {
         //
         $("#layerPickerDialog").dialog({
             zIndex   : 10050,
-            position : { my : "left top", at: "left+5 top+100"},
+            position : { my: "left top", at: "left+5 top+100" },
             autoOpen : true,
             hide     : "fade"
         });
@@ -69,7 +69,7 @@ module.exports = function ($) {
         //
         $("#mapToolsDialog").dialog({
             zIndex   : 10050,
-            position : { my : "right top", at: "right-5 top+100"},
+            position : { my: "right top", at: "right-5 top+100" },
             autoOpen : true,
             hide     : "fade"
         });
@@ -243,15 +243,13 @@ module.exports = function ($) {
         });
 
         //jdm: 7/9/12 - for global mask functionality
-        $(function () {
-            $('.mask-toggle').on('click', function () {
-                if ($(this).is(':checked')) {
-                    //console.log("setMaskByMask at line 789");
-                    app.setMaskByMask(true, this.value);
-                } else {
-                    app.setMaskByMask(false, this.value);
-                }
-            });
+        $('.mask-toggle').on('click', function () {
+            if ($(this).is(':checked')) {
+                //console.log("setMaskByMask at line 789");
+                app.setMaskByMask(true, this.value);
+            } else {
+                app.setMaskByMask(false, this.value);
+            }
         });
 
         $('textarea').focus(function () {

@@ -233,7 +233,6 @@ module.exports = function ($) {
         }
 
         return defaultAccordionGroup;
-
     };
 
 

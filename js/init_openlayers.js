@@ -9,16 +9,24 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
         });
     }
 
-    var maxExtentBounds = new OpenLayers.Bounds(app.maxExtent.left, app.maxExtent.bottom,
-                                                app.maxExtent.right, app.maxExtent.top);
+    var maxExtentBounds = new OpenLayers.Bounds(
+        app.maxExtent.left,
+        app.maxExtent.bottom,
+        app.maxExtent.right,
+        app.maxExtent.top
+    );
 
     if (initialExtent === undefined) {
         //take the extent coming from the config file
         initialExtent = app.maxExtent;
     } else {
         //take the extent of the share map url
-        maxExtentBounds = new OpenLayers.Bounds(initialExtent.left, initialExtent.bottom,
-                                                initialExtent.right, initialExtent.top);
+        maxExtentBounds = new OpenLayers.Bounds(
+            initialExtent.left,
+            initialExtent.bottom,
+            initialExtent.right,
+            initialExtent.top
+        );
     }
 
     app.tileManager = new OpenLayers.TileManager({
@@ -48,8 +56,8 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
         ],
         eventListeners:
         {
-            "moveend": function() { app.emit("extentchange"); },
-            "zoomend": function() { app.emit("extentchange"); }
+            "moveend": function () { app.emit("extentchange"); },
+            "zoomend": function () { app.emit("extentchange"); }
         },
         zoom: 1,
         projection: new OpenLayers.Projection(seldon.projection)

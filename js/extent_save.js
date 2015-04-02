@@ -11,9 +11,7 @@ function saveCurrentExtent () {
         newSavedExtents,
         i;
 
-    newExtent = (function (extent) {
-        return { left : extent.left, bottom : extent.bottom, right : extent.right, top : extent.top };
-    }(this.map.getExtent()));
+    newExtent = formatExtent(this.map.getExtent());
 
     if (this.currentSavedExtentIndex >= 0) {
         currentSavedExtent = this.savedExtents[this.currentSavedExtentIndex];
@@ -32,6 +30,10 @@ function saveCurrentExtent () {
     // append current extent to the list
     this.savedExtents.push(newExtent);
     ++this.currentSavedExtentIndex;
+}
+
+function formatExtent (extent) {
+    return { left : extent.left, bottom : extent.bottom, right : extent.right, top : extent.top };
 }
 
 module.exports = saveCurrentExtent;

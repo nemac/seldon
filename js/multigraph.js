@@ -24,15 +24,22 @@ module.exports = function ($, app) {
                 var lonlat = app.map.getLonLatFromPixel(e.xy);
                 lonlat.transform(app.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
 
-                var styleMap = new OpenLayers.StyleMap({pointRadius: 4,
-                                                        fillColor: "yellow",
-                                                        fillOpacity: 0.75,});
+                var styleMap = new OpenLayers.StyleMap({
+                    pointRadius: 4,
+                    fillColor: "yellow",
+                    fillOpacity: 0.75
+                });
 
-                var markerLayer = new OpenLayers.Layer.Vector("markerLayer",
-                                                              {styleMap: styleMap});
+                var markerLayer = new OpenLayers.Layer.Vector(
+                    "markerLayer",
+                    {styleMap: styleMap}
+                );
+
                 var feature = new OpenLayers.Feature.Vector(
-                                                            new OpenLayers.Geometry.Point(coords.lon, coords.lat),
-                                                            {some:'data'});
+                    new OpenLayers.Geometry.Point(coords.lon, coords.lat),
+                    {some:'data'}
+                );
+
                 markerLayer.addFeatures(feature);
                 app.map.addLayer(markerLayer);
 

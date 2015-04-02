@@ -22,13 +22,13 @@ module.exports = function ($) {
                 maskLayer.parentLayer = parentLayer;
                 maskLayer.activate();
                 app.masks[m].maskLayers.push(maskLayer);
-                if (parentLayer.visible=="true") {
+                if (parentLayer.visible === "true") {
                     parentLayer.deactivate();
-                    parentLayer.visible="false";
+                    parentLayer.visible = "false";
                 }
-                $("#"+app.masks[m].maskName.replace("MaskFor","")).get(0).checked = true;
-                $('#mask-status'+ parentLayer.lid).text("(m)");
-                $("#chk"+parentLayer.lid).prop('checked', true);
+                $("#" + app.masks[m].maskName.replace("MaskFor", "")).get(0).checked = true;
+                $('#mask-status' + parentLayer.lid).text("(m)");
+                $("#chk" + parentLayer.lid).prop('checked', true);
             }
         } else {
             //deactivate and remove from mask.maskLayers[]
@@ -49,7 +49,7 @@ module.exports = function ($) {
             }
             //remove from maskParentLayers and activate parentLayer
             app.maskParentLayers.remove(parentLayer);
-            if (parentLayer.visible == "false") {
+            if (parentLayer.visible === "false") {
                 parentLayer.visible = "true";
             } else {
                 parentLayer.visible == "true";
