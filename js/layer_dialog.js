@@ -1,4 +1,4 @@
-    //This function gets called every time the layer properties icon gets clicked
+// This function gets called every time the layer properties icon gets clicked
 module.exports = function ($) {
     function createLayerPropertiesDialog (layer) {
         var localTransparency = 0;

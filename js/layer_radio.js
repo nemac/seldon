@@ -26,7 +26,7 @@ module.exports = function ($, app) {
                                 alert("Please make a selection from the appropriate dropdown list");
                                 break;
                             }
-                            selectLayer = app.dropdownBoxLayers[app.dropdownBoxList[0].selectedIndex];
+                            selectLayer = app.dropdownBoxLayers[$(app.dropdownBoxList[0]).find(":selected").val()];
                             wanted_lid = selectLayer.lid;
                         }
                     }
