@@ -58,8 +58,8 @@ module.exports = function ($, app) {
                 $.each(app.map.layers, function () {
                     var name, label;
                     if (!this.isBaseLayer && this.params) {
-                        name   = this.params.LAYERS;
-                        label = (name.indexOf("MaskFor") !== -1) ? name.substring(0, name.indexOf("MaskFor")) : name;
+                        name  = this.params.LAYERS;
+                        label = (String(name).indexOf("MaskFor") !== -1) ? name.substring(0, name.indexOf("MaskFor")) : name;
 
                         if (layersAdded.indexOf(label) !== -1) return;
 

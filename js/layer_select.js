@@ -1,4 +1,7 @@
 module.exports = function ($, app) {
+    var Layer = require("./layer.js")($, app);
+    var getActiveDropdownBoxRadioLID = require("./layer_get_dropdown_lid.js");
+
     function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
         var selectBox = document.createElement("select"), $selectBox;
         var options = [];
@@ -79,7 +82,7 @@ module.exports = function ($, app) {
                     //Inner loop drop-down list
                     for (k = 0; k < app.dropdownBoxLayers.length; k++) {
                         testLid = app.radioButtonLayers[j].lid + app.dropdownBoxLayers[k].lid;
-                        if (currLayer.seldonLayer.lid === testLid && getActiveDropdownBoxRadioLID() !== testLid)
+                        if (currLayer.seldonLayer.lid === testLid && getActiveDropdownBoxRadioLID(app) !== testLid)
                             currLayer.seldonLayer.deactivate();
                     }
                 }
@@ -87,25 +90,6 @@ module.exports = function ($, app) {
         });
         return selectBox;
     }
-
-    function getActiveDropdownBoxRadioLID () {
-        var wanted_lid = undefined;
-        var selectLayer = undefined;
-        var i;
-
-        for (i = 0; i < app.dropdownBoxList[0].length; i++) {
-            if (app.dropdownBoxList[0][i].selected) {
-                selectLayer = app.dropdownBoxLayers[app.dropdownBoxList[0].selectedIndex];
-                wanted_lid = selectLayer.lid;
-            }
-        }
-        for (i = 0; i < app.radioButtonList.length; i++) {
-            if (app.radioButtonList[i].checked) {
-                wanted_lid = app.radioButtonLayers[i].lid+wanted_lid;
-            }
-        }
-        return wanted_lid;
-    };
 
     return createLayerToggleDropdownBox;
 }

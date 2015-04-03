@@ -1,5 +1,6 @@
 module.exports = function ($, app) {
     var Layer = require('./layer.js')($, app);
+    var getActiveDropdownBoxRadioLID = require("./layer_get_dropdown_lid.js");
 
     function createLayerToggleRadioButton (layer, radioGroupName) {
         // create the radio buttons
@@ -61,7 +62,7 @@ module.exports = function ($, app) {
                             //Inner loop drop-down list
                             for (k = 0; k < app.dropdownBoxLayers.length; k++) {
                                 testLid = app.radioButtonLayers[j].lid + app.dropdownBoxLayers[k].lid;
-                                if (currLayer.seldonLayer.lid === testLid && getActiveDropdownBoxRadioLID() !== testLid)
+                                if (currLayer.seldonLayer.lid === testLid && getActiveDropdownBoxRadioLID(app) !== testLid)
                                     currLayer.seldonLayer.deactivate();
                             }
                         }
