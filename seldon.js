@@ -1417,27 +1417,6 @@ module.exports = function ($) {
 
 
 },{}],29:[function(require,module,exports){
-function getActiveDropdownBoxRadioLID (app) {
-    var selectLayer = app.dropdownBoxLayers[$(app.dropdownBoxList[0]).find(":selected").val()];
-    var i;
-
-    if (selectLayer) {
-        var wanted_lid = selectLayer.lid;
-    } else {
-        return null;
-    }
-
-    for (i = 0; i < app.radioButtonList.length; i++) {
-        if (app.radioButtonList[i].checked) {
-            wanted_lid = app.radioButtonLayers[i].lid + wanted_lid;
-        }
-    }
-    return wanted_lid;
-}
-
-module.exports = getActiveDropdownBoxRadioLID;
-
-},{}],30:[function(require,module,exports){
 module.exports = function ($) {
     var createLayerPropertiesDialog = require("./layer_dialog.js")($);
 
@@ -1455,10 +1434,9 @@ module.exports = function ($) {
     return createLayerPropertiesIcon;
 }
 
-},{"./layer_dialog.js":28}],31:[function(require,module,exports){
+},{"./layer_dialog.js":28}],30:[function(require,module,exports){
 module.exports = function ($, app) {
-    var Layer = require('./layer.js')($, app);
-    var getActiveDropdownBoxRadioLID = require("./layer_get_dropdown_lid.js");
+    var generalRadioHandler = require("./layer_radio_handler.js")($, app);
 
     function createLayerToggleRadioButton (layer, radioGroupName) {
         // create the radio buttons
@@ -1470,8 +1448,9 @@ module.exports = function ($, app) {
         if (layer.selectedInConfig) {
             checkbox.checked = true;
         }
-        checkbox.onchange = radioHandler;
         $checkbox = $(checkbox);
+
+        $checkbox.change(radioHandler);
 
         // listen for activate/deactivate events from the layer, and update the checkbox accordingly
         layer.addListener("activate", function () {
@@ -1485,101 +1464,20 @@ module.exports = function ($, app) {
     }
 
     function radioHandler () {
-        // Loop through other radio buttons and deactivate those layers accordingly.
-        $('input:radio').each(function () {
-            if ($(this).is(':checked')) {
-                var $selectedOption = $(app.dropdownBoxList[0]).find(":selected");
-                if ($selectedOption.text() === "select...") {
-                    clearRadioLayers(app, null);
-                    return;
-                }
-
-                var selectLayer = app.dropdownBoxLayers[$selectedOption.val()];
-                var wanted_lid = getActiveDropdownBoxRadioLID(app);
-                var i;
-
-               for (i = 0; i < app.radioButtonList.length; i++) {
-                    if (app.radioButtonList[i].checked) {
-                        wanted_layer = parseInt(selectLayer.layers, 10) + parseInt(app.radioButtonLayers[i].layers, 10);
-                    }
-                }
-
-                var checkBoxLayer = new Layer({
-                    lid              : wanted_lid,
-                    visible          : selectLayer.visible,
-                    url              : selectLayer.url,
-                    srs              : selectLayer.srs,
-                    layers           : wanted_layer,
-                    identify         : selectLayer.identify,
-                    name             : wanted_lid,
-                    mask             : selectLayer.mask,
-                    legend           : selectLayer.legend,
-                    index            : selectLayer.index
-                });
-                checkBoxLayer.activate();
-            } else {
-                clearRadioLayers(app, getActiveDropdownBoxRadioLID(app));
-            }
-        });
-    }
-
-    function clearRadioLayers(app, wanted_lid) {
-        var currLayer, testLid;
-        var i, j, k;
-        for (i = app.map.getNumLayers() - 1; i > 0; i--) {
-            currLayer = app.map.layers[i].seldonLayer;
-            // Outer loop radio buttons
-            for (j = 0; j < app.radioButtonLayers.length; j++) {
-                // Inner loop drop-down list
-                for (k = 0; k < app.dropdownBoxLayers.length; k++) {
-                    testLid = app.radioButtonLayers[j].lid + app.dropdownBoxLayers[k].lid;
-                    if (currLayer.lid === testLid && wanted_lid !== testLid)
-                        currLayer.deactivate();
-                }
-            }
-        }
+        generalRadioHandler(app);
     }
 
     return createLayerToggleRadioButton;
 }
 
-},{"./layer.js":26,"./layer_get_dropdown_lid.js":29}],32:[function(require,module,exports){
+},{"./layer_radio_handler.js":31}],31:[function(require,module,exports){
 module.exports = function ($, app) {
-    var Layer = require("./layer.js")($, app);
-    var getActiveDropdownBoxRadioLID = require("./layer_get_dropdown_lid.js");
+    var Layer = require('./layer.js')($, app);
 
-    function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
-        var selectBox = document.createElement("select"), $selectBox;
-        var options = [];
-        var i, x, option;
-
-        selectBox.setAttribute("id", selectBoxGroupName);
-
-        // Loop through selectBoxLayers adding to options accordingly
-        for (i = 0; i < selectBoxLayers.length; i++) {
-            options.push(selectBoxLayers[i].name);
-        }
-
-        // Loop through options adding to the selectBox
-        for (x in options) {
-            if (options.hasOwnProperty(x)) {
-                selectBox.insertAdjacentHTML("afterbegin", "<option value='" + x + "'>" + options[x] + "</option>");
-            }
-        }
-
-        // add one blank one at the top
-        selectBox.insertAdjacentHTML("afterbegin", "<option value='-1' selected>select...</option>");
-
-        // Change event listener
-        $(selectBox).change(selectHandler);
-
-        return selectBox;
-    }
-
-    function selectHandler () {
+    function radioHandler (app) {
         var $selectedOption = $(app.dropdownBoxList[0]).find(":selected");
         if ($selectedOption.text() === "select...") {
-            clearRadioLayers(app, wanted_lid);
+            clearRadioLayers(app, null);
             return;
         }
 
@@ -1612,7 +1510,7 @@ module.exports = function ($, app) {
         clearRadioLayers(app, wanted_lid);
     }
 
-    function clearRadioLayers(app, wanted_lid) {
+    function clearRadioLayers (app, wanted_lid) {
         var currLayer, testLid;
         var i, j, k;
         for (i = app.map.getNumLayers() - 1; i > 0; i--) {
@@ -1629,10 +1527,68 @@ module.exports = function ($, app) {
         }
     }
 
+    function getActiveDropdownBoxRadioLID (app) {
+        var selectLayer = app.dropdownBoxLayers[$(app.dropdownBoxList[0]).find(":selected").val()];
+        var i;
+
+        if (selectLayer) {
+            var wanted_lid = selectLayer.lid;
+        } else {
+            return null;
+        }
+
+        for (i = 0; i < app.radioButtonList.length; i++) {
+            if (app.radioButtonList[i].checked) {
+                wanted_lid = app.radioButtonLayers[i].lid + wanted_lid;
+                break;
+            }
+        }
+        return wanted_lid;
+    }
+
+    return radioHandler;
+}
+
+},{"./layer.js":26}],32:[function(require,module,exports){
+module.exports = function ($, app) {
+    var radioHandler = require("./layer_radio_handler.js")($, app);
+
+    function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
+        var selectBox = document.createElement("select"), $selectBox;
+        var options = [];
+        var i, x, option;
+
+        selectBox.setAttribute("id", selectBoxGroupName);
+
+        // Loop through selectBoxLayers adding to options accordingly
+        for (i = 0; i < selectBoxLayers.length; i++) {
+            options.push(selectBoxLayers[i].name);
+        }
+
+        // Loop through options adding to the selectBox
+        for (x in options) {
+            if (options.hasOwnProperty(x)) {
+                selectBox.insertAdjacentHTML("afterbegin", "<option value='" + x + "'>" + options[x] + "</option>");
+            }
+        }
+
+        // add one blank one at the top
+        selectBox.insertAdjacentHTML("afterbegin", "<option value='-1' selected>select...</option>");
+
+        // Change event listener
+        $(selectBox).change(selectHandler);
+
+        return selectBox;
+    }
+
+    function selectHandler () {
+        radioHandler(app);
+    }
+
     return createLayerToggleDropdownBox;
 }
 
-},{"./layer.js":26,"./layer_get_dropdown_lid.js":29}],33:[function(require,module,exports){
+},{"./layer_radio_handler.js":31}],33:[function(require,module,exports){
 function Mask (maskName) {
     window.EventEmitter.call(this);
     this.maskName = maskName;
@@ -2610,7 +2566,7 @@ module.exports = function ($) {
     return setTheme;
 }
 
-},{"./array_contains_element.js":10,"./layer_checkbox.js":27,"./layer_icon.js":30,"./layer_radio.js":31,"./layer_select.js":32,"./repeating_operation.js":38,"./share.js":44}],44:[function(require,module,exports){
+},{"./array_contains_element.js":10,"./layer_checkbox.js":27,"./layer_icon.js":29,"./layer_radio.js":30,"./layer_select.js":32,"./repeating_operation.js":38,"./share.js":44}],44:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) settings = {};
 
