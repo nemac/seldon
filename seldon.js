@@ -358,12 +358,10 @@ var extentsAreEqual = require("./extents_equal.js");
 // changes, causing this function to be called multiple times with the same
 // extent
 function saveCurrentExtent () {
-    var newExtent,
+    var newExtent = formatExtent(this.map.getExtent()),
+        newSavedExtents = [],
         currentSavedExtent,
-        newSavedExtents,
         i;
-
-    newExtent = formatExtent(this.map.getExtent());
 
     if (this.currentSavedExtentIndex >= 0) {
         currentSavedExtent = this.savedExtents[this.currentSavedExtentIndex];
@@ -373,7 +371,6 @@ function saveCurrentExtent () {
     }
 
     // chop off the list after the current position
-    newSavedExtents = [];
     for (i = 0; i <= this.currentSavedExtentIndex; ++i) {
         newSavedExtents.push(this.savedExtents[i]);
     }
