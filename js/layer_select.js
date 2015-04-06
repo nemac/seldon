@@ -3,21 +3,13 @@ module.exports = function ($, app) {
 
     function createLayerToggleDropdownBox (lastLayerInGroup, selectBoxLayers, selectBoxGroupName) {
         var selectBox = document.createElement("select"), $selectBox;
-        var options = [];
-        var i, x, option;
+        var i;
 
         selectBox.setAttribute("id", selectBoxGroupName);
 
         // Loop through selectBoxLayers adding to options accordingly
         for (i = 0; i < selectBoxLayers.length; i++) {
-            options.push(selectBoxLayers[i].name);
-        }
-
-        // Loop through options adding to the selectBox
-        for (x in options) {
-            if (options.hasOwnProperty(x)) {
-                selectBox.insertAdjacentHTML("afterbegin", "<option value='" + x + "'>" + options[x] + "</option>");
-            }
+            selectBox.insertAdjacentHTML("afterbegin", "<option value='" + i + "'>" + selectBoxLayers[i].name + "</option>");
         }
 
         // add one blank one at the top
