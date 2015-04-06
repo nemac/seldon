@@ -1,7 +1,12 @@
 function getActiveDropdownBoxRadioLID (app) {
     var selectLayer = app.dropdownBoxLayers[$(app.dropdownBoxList[0]).find(":selected").val()];
-    var wanted_lid = selectLayer.lid;
     var i;
+
+    if (selectLayer) {
+        var wanted_lid = selectLayer.lid;
+    } else {
+        return null;
+    }
 
     for (i = 0; i < app.radioButtonList.length; i++) {
         if (app.radioButtonList[i].checked) {
