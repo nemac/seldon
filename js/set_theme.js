@@ -11,14 +11,7 @@ module.exports = function ($) {
 
         var app = this,
             $layerPickerAccordion = $("#layerPickerAccordion"),
-            flag,
-            accordionGroup,
-            labelElem,
-            brElem,
-            textElem,
-            maskLabelElem,
-            maskTextElem,
-            activeMaskLayers = [];
+            flag;
 
         //jdm 1/3/14: set the default forest mask
         //TODO: There should be a more eloquent way to handle default mask
@@ -43,7 +36,7 @@ module.exports = function ($) {
             var lids = shareUrlInfo.layerLids;
             //loop through the accordion groups the active one accordingly
             for (var a = 0, b = this.accordionGroups.length; a < b; a++) {
-                if (this.accordionGroups[a].gid==gid) {
+                if (this.accordionGroups[a].gid == gid) {
                     options.accordionGroup = this.accordionGroups[a];
                 }
             }
@@ -82,7 +75,7 @@ module.exports = function ($) {
                 app.setAccordionGroup(theme.accordionGroups[accordionGroupIndex]);
             }
         });
-        if ( ! $layerPickerAccordion.data('listAccordion') ) {
+        if ( !$layerPickerAccordion.data('listAccordion') ) {
             $layerPickerAccordion.data('listAccordion', {
                 accordionOptions     : options,
                 sections             : []
@@ -90,9 +83,28 @@ module.exports = function ($) {
             $layerPickerAccordion.accordion('option', 'active');
         }
 
+        var defaultAccordionGroup = setThemeLayers(app, theme, options, $layerPickerAccordion, lids);
+
+        $layerPickerAccordion.accordion("refresh");
+        // if page doesn't have layerPickerAccordion, insert it
+        if (flag === true) {
+            $("#layerPickerDialog").append($layerPickerAccordion);
+        }
+
+        return defaultAccordionGroup;
+    };
+
+    function setThemeLayers (app, theme, options, $layerPickerAccordion, lids) {
         //jdm: re-wrote loop using traditional for loops (more vintage-IE friendly)
         //vintage-IE does work with jquery each loops, but seems to be slower
         // for (var a = 0, b = theme.accordionGroups.length; a < b; a++) {
+        var accordionGroup,
+            labelElem,
+            brElem,
+            textElem,
+            maskLabelElem,
+            maskTextElem;
+
         var a = 0;
         var defaultAccordionGroup = undefined;
         var ro1 = new RepeatingOperation(function () {
@@ -147,45 +159,54 @@ module.exports = function ($) {
                     //jdm 5/28/13: if there is a mask for this layer then we will provide a status
                     //as to when that mask is active
                     var $testForMask = layer.mask;
-                    var radioButton;
-                    var dropdownBox;
+                    var controlGroup;
                     if ($testForMask) {
                         maskLabelElem = document.createElement("label");
                         maskTextElem = document.createTextNode(""); //empty until active, if active then put (m)
                         maskLabelElem.setAttribute("id", "mask-status" + layer.lid);
                         maskLabelElem.appendChild(maskTextElem);
-                        sublistLayerItems.push([createLayerToggleCheckbox(layer),
-                                                labelElem,
-                                                createLayerPropertiesIcon(layer),
-                                                maskLabelElem,brElem]);
+                        controlGroup = [
+                            createLayerToggleCheckbox(layer),
+                            labelElem,
+                            createLayerPropertiesIcon(layer),
+                            maskLabelElem,
+                            brElem
+                        ];
                     } else { //no mask for this layer (most will be of this type outside of FCAV)
                         // add the layer to the accordion group
-                        if (sublist.type=="radiobutton") { //radio button type
-                            sublistLayerItems.push([radioButton=createLayerToggleRadioButton(layer, sublist.label.replace(/\s+/g, '')),
-                                                    labelElem,
-                                                    createLayerPropertiesIcon(layer),brElem]);
+                        if (sublist.type === "radiobutton") { //radio button type
+                            var radioButton = createLayerToggleRadioButton(layer, sublist.label.replace(/\s+/g, ''));
                             app.radioButtonList.push(radioButton);
                             app.radioButtonLayers.push(layer);
-                        } else if (sublist.type=="dropdownbox") { //dropdownbox type
+                            controlGroup = [
+                                radioButton,
+                                labelElem,
+                                createLayerPropertiesIcon(layer),
+                                brElem
+                            ];
+                        } else if (sublist.type === "dropdownbox") { //dropdownbox type
+                            selectBoxLayers.push(layer);
+                            app.dropdownBoxLayers.push(layer);
+
                             // Using sublist.layers.length build up array of layer information to pass to 
                             // the dropdownbox such that only one call to createLayerToggleDropdownBox.
                             // Assumption #1: A dropdownbox is always preceded in the config file by a 
                             // radiobutton and therefore the dropdownbox needs to know about its corresponding radiobutton group
-                            if (((selectBoxLayers.length+1)<sublist.layers.length) || (selectBoxLayers.length == undefined)){
-                                selectBoxLayers.push(layer);
-                                app.dropdownBoxLayers.push(layer);
-                            } else {
-                                selectBoxLayers.push(layer);
-                                sublistLayerItems.push([dropdownBox=createLayerToggleDropdownBox(layer, selectBoxLayers, sublist.label.replace(/\s+/g, ''))]);
+                            if (!((selectBoxLayers.length+1) < sublist.layers.length) && !(selectBoxLayers.length == undefined)) {
+                                var dropdownBox = createLayerToggleDropdownBox(layer, selectBoxLayers, sublist.label.replace(/\s+/g, ''));
                                 app.dropdownBoxList.push(dropdownBox);
-                                app.dropdownBoxLayers.push(layer);
+                                controlGroup = [dropdownBox];
                             }
                         } else { // assume checkbox type
-                            sublistLayerItems.push([createLayerToggleCheckbox(layer),
-                                                    labelElem,
-                                                    createLayerPropertiesIcon(layer),brElem]);
+                            controlGroup = [
+                                createLayerToggleCheckbox(layer),
+                                labelElem,
+                                createLayerPropertiesIcon(layer),
+                                brElem
+                            ];
                         }
                     }
+                    sublistLayerItems.push(controlGroup);
 
                     // Decide whether to activate the layer.  If we received a layer list in the
                     // options arg, active the layer only if it appears in that list.  If we
@@ -201,9 +222,11 @@ module.exports = function ($) {
                     //we shouldn't have to re-activate an active layer on theme change
                     //But, rather just verify that it is checked as such
                     if (lids !== undefined) {
-                        for (var m = 0; m < lids.length; m++) {
-                            if ($("#chk"+lids[m])[0] !== undefined) {
-                                $("#chk"+lids[m])[0].checked = true;
+                        var $chkBox, m;
+                        for (m = 0; m < lids.length; m++) {
+                            $chkBox = $("#chk"+lids[m]);
+                            if ($chkBox[0] !== undefined) {
+                                $chkBox[0].checked = true;
                             }
                         }
                     }
@@ -226,15 +249,8 @@ module.exports = function ($) {
         ro1.step();
         // } //end loop for theme.accordionGroups
 
-        $layerPickerAccordion.accordion("refresh");
-        // if page doesn't have layerPickerAccordion, insert it
-        if (flag === true) {
-            $("#layerPickerDialog").append($layerPickerAccordion);
-        }
-
         return defaultAccordionGroup;
-    };
-
+    }
 
     function setThemeContinue (app, theme, options, accordionGroup) {
         app.currentTheme = theme;

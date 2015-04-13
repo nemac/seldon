@@ -2185,68 +2185,71 @@ module.exports = function ($) {
 
         var app = this;
 
+        var maskParentLayers = app.maskParentLayers;
+        var maskParentLayer, maskLayer;
+        var i;
+
         if (toggle) {
-            //if ForestOnly grey out the sub-forest types
-            if (maskName == "MaskForForest") {
+            // if ForestOnly grey out the sub-forest types
+            if (maskName === "MaskForForest") {
                 $("#ConiferForest").attr("disabled", true);
                 $("#DeciduousForest").attr("disabled", true);
                 $("#MixedForest").attr("disabled", true);
             }
+
+            var seldonLayer;
 
             var mask = new Mask(maskName);
             app.masks.push(mask);
 
             // Loop through app.map.layers making sure that
             // app.maskParentLayers is correct
-            for (var l = 0; l < app.map.layers.length; l++) {
-                if (app.map.layers[l].seldonLayer) {
-                    if (app.map.layers[l].seldonLayer.mask=="true") {
-                        if (app.count(app.maskParentLayers,app.map.layers[l].seldonLayer)==0) {
-                            app.maskParentLayers.push(app.map.layers[l].seldonLayer);
-                            app.map.layers[l].seldonLayer.visible="true";
-                        }
-                    }
+            for (i = 0; i < app.map.layers.length; i++) {
+                seldonLayer = app.map.layers[i].seldonLayer;
+                if (seldonLayer && seldonLayer.mask === "true" && app.count(maskParentLayers, seldonLayer) === 0) {
+                    app.maskParentLayers.push(seldonLayer);
+                    seldonLayer.visible = "true";
                 }
             }
 
-            for (var mp = 0; mp < app.maskParentLayers.length; mp++) {
-                //console.log("creating maskLayer for "+ app.maskParentLayers[mp].name);
-                var maskLayer = new Layer({
-                    lid              : app.maskParentLayers[mp].lid+maskName.replace("/",""),
-                    visible          : 'true',
-                    url              : app.maskParentLayers[mp].url,
-                    srs              : app.maskParentLayers[mp].srs,
-                    layers           : app.maskParentLayers[mp].layers+maskName.replace("/",""),
-                    identify         : app.maskParentLayers[mp].identify,
-                    name             : app.maskParentLayers[mp].lid+maskName.replace("/",""),
-                    mask             : 'false',
-                    legend           : app.maskParentLayers[mp].legend,
-                    index            : app.maskParentLayers[mp].index
+            for (i = 0; i < maskParentLayers.length; i++) {
+                maskParentLayer = maskParentLayers[i];
+                maskLayer = new Layer({
+                    lid         : maskParentLayer.lid + maskName.replace("/",""),
+                    visible     : "true",
+                    url         : maskParentLayer.url,
+                    srs         : maskParentLayer.srs,
+                    layers      : maskParentLayer.layers + maskName.replace("/",""),
+                    identify    : maskParentLayer.identify,
+                    name        : maskParentLayer.lid + maskName.replace("/",""),
+                    mask        : "false",
+                    legend      : maskParentLayer.legend,
+                    index       : maskParentLayer.index,
+                    parentLayer : maskParentLayer
                 });
-                maskLayer.parentLayer = app.maskParentLayers[mp];
                 maskLayer.activate();
                 mask.maskLayers.push(maskLayer);
-                if (app.maskParentLayers[mp].visible=="true") {
-                    app.maskParentLayers[mp].deactivate();
-                    app.maskParentLayers[mp].visible=="false";
+                if (maskParentLayer.visible === "true") {
+                    maskParentLayer.deactivate();
+                    maskParentLayer.visible = "false";
                 }
-                $("#"+maskName.replace("MaskFor","")).get(0).checked = true;
-                $('#mask-status'+ app.maskParentLayers[mp].lid).text("(m)");
-                $("#chk"+app.maskParentLayers[mp].lid).prop('checked', true);
+                $("#" + maskName.replace("MaskFor", "")).get(0).checked = true;
+                $('#mask-status' + maskParentLayer.lid).text("(m)");
+                $("#chk" + maskParentLayer.lid).prop('checked', true);
             }
         } //end if (toggle)
         else { //we have just turned off a mask
             //if ForestOnly grey out the sub-forest types
-            if (maskName=="MaskForForest") {
-                $( "#ConiferForest" ).attr("disabled", false);
-                $( "#DeciduousForest" ).attr("disabled", false);
-                $( "#MixedForest" ).attr("disabled", false);
+            if (maskName === "MaskForForest") {
+                $("#ConiferForest").attr("disabled", false);
+                $("#DeciduousForest").attr("disabled", false);
+                $("#MixedForest").attr("disabled", false);
             }
             // Loop through app.masks and find maskName
             // When you find it, deactivate all of its maskLayers
             // Keep track of the number of mask in app.masks
             for (var m = 0; m < app.masks.length; m++) {
-                if (app.masks[m].maskName==maskName) {
+                if (app.masks[m].maskName == maskName) {
                     for (var ml = 0; ml < app.masks[m].maskLayers.length; ml++) {
                         app.masks[m].maskLayers[ml].deactivate();
                     }
@@ -2259,11 +2262,11 @@ module.exports = function ($) {
             // If it was the only mask in app.Mask (e.g. app.masks.length ==0) to begin with
             // Then loop through app.maskParentLayers and activate those layer
             // Remove those layers from app.maskParentLayers that you just activated
-            if (app.masks.length==0) {
+            if (app.masks.length == 0) {
                 var layersToRemove = [];
                 for (var mp = 0; mp < app.maskParentLayers.length; mp++) {
                     app.maskParentLayers[mp].activate();
-                    app.maskParentLayers[mp].visible="true";
+                    app.maskParentLayers[mp].visible = "true";
                     layersToRemove.push(app.maskParentLayers[mp]);
                 }
                 for (var l = 0; l < layersToRemove.length; l++) {
@@ -2292,14 +2295,7 @@ module.exports = function ($) {
 
         var app = this,
             $layerPickerAccordion = $("#layerPickerAccordion"),
-            flag,
-            accordionGroup,
-            labelElem,
-            brElem,
-            textElem,
-            maskLabelElem,
-            maskTextElem,
-            activeMaskLayers = [];
+            flag;
 
         //jdm 1/3/14: set the default forest mask
         //TODO: There should be a more eloquent way to handle default mask
@@ -2324,7 +2320,7 @@ module.exports = function ($) {
             var lids = shareUrlInfo.layerLids;
             //loop through the accordion groups the active one accordingly
             for (var a = 0, b = this.accordionGroups.length; a < b; a++) {
-                if (this.accordionGroups[a].gid==gid) {
+                if (this.accordionGroups[a].gid == gid) {
                     options.accordionGroup = this.accordionGroups[a];
                 }
             }
@@ -2363,7 +2359,7 @@ module.exports = function ($) {
                 app.setAccordionGroup(theme.accordionGroups[accordionGroupIndex]);
             }
         });
-        if ( ! $layerPickerAccordion.data('listAccordion') ) {
+        if ( !$layerPickerAccordion.data('listAccordion') ) {
             $layerPickerAccordion.data('listAccordion', {
                 accordionOptions     : options,
                 sections             : []
@@ -2371,9 +2367,28 @@ module.exports = function ($) {
             $layerPickerAccordion.accordion('option', 'active');
         }
 
+        var defaultAccordionGroup = setThemeLayers(app, theme, options, $layerPickerAccordion, lids);
+
+        $layerPickerAccordion.accordion("refresh");
+        // if page doesn't have layerPickerAccordion, insert it
+        if (flag === true) {
+            $("#layerPickerDialog").append($layerPickerAccordion);
+        }
+
+        return defaultAccordionGroup;
+    };
+
+    function setThemeLayers (app, theme, options, $layerPickerAccordion, lids) {
         //jdm: re-wrote loop using traditional for loops (more vintage-IE friendly)
         //vintage-IE does work with jquery each loops, but seems to be slower
         // for (var a = 0, b = theme.accordionGroups.length; a < b; a++) {
+        var accordionGroup,
+            labelElem,
+            brElem,
+            textElem,
+            maskLabelElem,
+            maskTextElem;
+
         var a = 0;
         var defaultAccordionGroup = undefined;
         var ro1 = new RepeatingOperation(function () {
@@ -2428,45 +2443,54 @@ module.exports = function ($) {
                     //jdm 5/28/13: if there is a mask for this layer then we will provide a status
                     //as to when that mask is active
                     var $testForMask = layer.mask;
-                    var radioButton;
-                    var dropdownBox;
+                    var controlGroup;
                     if ($testForMask) {
                         maskLabelElem = document.createElement("label");
                         maskTextElem = document.createTextNode(""); //empty until active, if active then put (m)
                         maskLabelElem.setAttribute("id", "mask-status" + layer.lid);
                         maskLabelElem.appendChild(maskTextElem);
-                        sublistLayerItems.push([createLayerToggleCheckbox(layer),
-                                                labelElem,
-                                                createLayerPropertiesIcon(layer),
-                                                maskLabelElem,brElem]);
+                        controlGroup = [
+                            createLayerToggleCheckbox(layer),
+                            labelElem,
+                            createLayerPropertiesIcon(layer),
+                            maskLabelElem,
+                            brElem
+                        ];
                     } else { //no mask for this layer (most will be of this type outside of FCAV)
                         // add the layer to the accordion group
-                        if (sublist.type=="radiobutton") { //radio button type
-                            sublistLayerItems.push([radioButton=createLayerToggleRadioButton(layer, sublist.label.replace(/\s+/g, '')),
-                                                    labelElem,
-                                                    createLayerPropertiesIcon(layer),brElem]);
+                        if (sublist.type === "radiobutton") { //radio button type
+                            var radioButton = createLayerToggleRadioButton(layer, sublist.label.replace(/\s+/g, ''));
                             app.radioButtonList.push(radioButton);
                             app.radioButtonLayers.push(layer);
-                        } else if (sublist.type=="dropdownbox") { //dropdownbox type
+                            controlGroup = [
+                                radioButton,
+                                labelElem,
+                                createLayerPropertiesIcon(layer),
+                                brElem
+                            ];
+                        } else if (sublist.type === "dropdownbox") { //dropdownbox type
+                            selectBoxLayers.push(layer);
+                            app.dropdownBoxLayers.push(layer);
+
                             // Using sublist.layers.length build up array of layer information to pass to 
                             // the dropdownbox such that only one call to createLayerToggleDropdownBox.
                             // Assumption #1: A dropdownbox is always preceded in the config file by a 
                             // radiobutton and therefore the dropdownbox needs to know about its corresponding radiobutton group
-                            if (((selectBoxLayers.length+1)<sublist.layers.length) || (selectBoxLayers.length == undefined)){
-                                selectBoxLayers.push(layer);
-                                app.dropdownBoxLayers.push(layer);
-                            } else {
-                                selectBoxLayers.push(layer);
-                                sublistLayerItems.push([dropdownBox=createLayerToggleDropdownBox(layer, selectBoxLayers, sublist.label.replace(/\s+/g, ''))]);
+                            if (!((selectBoxLayers.length+1) < sublist.layers.length) && !(selectBoxLayers.length == undefined)) {
+                                var dropdownBox = createLayerToggleDropdownBox(layer, selectBoxLayers, sublist.label.replace(/\s+/g, ''));
                                 app.dropdownBoxList.push(dropdownBox);
-                                app.dropdownBoxLayers.push(layer);
+                                controlGroup = [dropdownBox];
                             }
                         } else { // assume checkbox type
-                            sublistLayerItems.push([createLayerToggleCheckbox(layer),
-                                                    labelElem,
-                                                    createLayerPropertiesIcon(layer),brElem]);
+                            controlGroup = [
+                                createLayerToggleCheckbox(layer),
+                                labelElem,
+                                createLayerPropertiesIcon(layer),
+                                brElem
+                            ];
                         }
                     }
+                    sublistLayerItems.push(controlGroup);
 
                     // Decide whether to activate the layer.  If we received a layer list in the
                     // options arg, active the layer only if it appears in that list.  If we
@@ -2482,9 +2506,11 @@ module.exports = function ($) {
                     //we shouldn't have to re-activate an active layer on theme change
                     //But, rather just verify that it is checked as such
                     if (lids !== undefined) {
-                        for (var m = 0; m < lids.length; m++) {
-                            if ($("#chk"+lids[m])[0] !== undefined) {
-                                $("#chk"+lids[m])[0].checked = true;
+                        var $chkBox, m;
+                        for (m = 0; m < lids.length; m++) {
+                            $chkBox = $("#chk"+lids[m]);
+                            if ($chkBox[0] !== undefined) {
+                                $chkBox[0].checked = true;
                             }
                         }
                     }
@@ -2507,15 +2533,8 @@ module.exports = function ($) {
         ro1.step();
         // } //end loop for theme.accordionGroups
 
-        $layerPickerAccordion.accordion("refresh");
-        // if page doesn't have layerPickerAccordion, insert it
-        if (flag === true) {
-            $("#layerPickerDialog").append($layerPickerAccordion);
-        }
-
         return defaultAccordionGroup;
-    };
-
+    }
 
     function setThemeContinue (app, theme, options, accordionGroup) {
         app.currentTheme = theme;
