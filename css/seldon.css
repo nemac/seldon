@@ -67,7 +67,10 @@ p.get-started {
 .icon-layers-alt, .icon-globe, .icon-mobile {
     font-size: 55pt;
 }
-.feature-row .fa-globe, .feature-row .fa-print, .feature-row .fa-bar-chart, .feature-row .fa-map-marker, .feature-row .fa-link, .feature-row .fa-arrows, .feature-row .fa-mobile, .feature-row .fa-train {
+.icon-mask {
+    font-size: 65pt;
+}
+.fa-globe, .feature-row .fa-print, .feature-row .fa-bar-chart, .feature-row .fa-map-marker, .feature-row .fa-link, .feature-row .fa-arrows, .fa-mobile {
     font-size: 95pt;
 }
 
@@ -75,7 +78,7 @@ p.get-started {
     font-size: 68pt;
 }
 
-.feature-row .fa:hover, .feature-row .icon-layers-alt:hover {
+.feature-row .fa:hover, .feature-row .icon-layers-alt:hover, .feature-row .icon-mask:hover{
     color: #5797dd;
 }
 
