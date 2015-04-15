@@ -49,13 +49,13 @@
     float: left;
     padding: 0 2px 0 2px;
 }
-.panning:hover {
+.layers:hover {
     color: #d12913;
 }
-.zooming:hover {
+.views:hover {
     color: #0a82d1;
 }
-.integrating:hover {
+.mobile:hover {
     color: #8d07e0;
 }
 p.get-started {
@@ -64,16 +64,18 @@ p.get-started {
     border: 1px #e2e2e2 dashed;
     padding: 5px;
 }
-.icon-layers-alt, .icon-globe, .icon-mobile {
-    font-size: 55pt;
+.icon-layers-alt {
+    font-size: 85pt;
 }
 .icon-mask {
-    font-size: 65pt;
+    font-size: 85pt;
 }
-.fa-globe, .feature-row .fa-print, .feature-row .fa-bar-chart, .feature-row .fa-map-marker, .feature-row .fa-link, .feature-row .fa-arrows, .fa-mobile {
+.fa-globe, .feature-row .fa-print, .feature-row .fa-bar-chart, .feature-row .fa-map-marker, .feature-row .fa-link, .feature-row .fa-arrows, .feature-row .fa-mobile {
     font-size: 95pt;
 }
-
+.feature-row .icon-mask {
+    font-size: 65pt;
+}
 .feature-row .icon-layers-alt {
     font-size: 68pt;
 }
