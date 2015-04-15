@@ -134,9 +134,11 @@ pre.prettyprint {
 .thumbnail {
   border-radius: 4px;
 }
-
 .caption h3 {
     text-align: center;
+}
+.caption p {
+    text-align: left;
 }
 
 
