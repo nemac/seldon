@@ -2388,7 +2388,7 @@ module.exports = function ($) {
             textElem,
             maskLabelElem,
             maskTextElem;
-
+        
         var a = 0;
         var defaultAccordionGroup = undefined;
         var ro1 = new RepeatingOperation(function () {
@@ -2476,7 +2476,7 @@ module.exports = function ($) {
                             // the dropdownbox such that only one call to createLayerToggleDropdownBox.
                             // Assumption #1: A dropdownbox is always preceded in the config file by a 
                             // radiobutton and therefore the dropdownbox needs to know about its corresponding radiobutton group
-                            if (!((selectBoxLayers.length+1) < sublist.layers.length) && !(selectBoxLayers.length == undefined)) {
+                            if ((selectBoxLayers.length + 1) >= sublist.layers.length) {
                                 var dropdownBox = createLayerToggleDropdownBox(layer, selectBoxLayers, sublist.label.replace(/\s+/g, ''));
                                 app.dropdownBoxList.push(dropdownBox);
                                 controlGroup = [dropdownBox];
@@ -2496,10 +2496,9 @@ module.exports = function ($) {
                     // options arg, active the layer only if it appears in that list.  If we
                     // received no layer list in the options arg, activate the layer if the layer's
                     // "selected" attribute was true in the config file.
-                    if (((options.layers !== undefined) &&
-                         (arrayContainsElement(options.layers, layer))) ||
-                        ((options.layers === undefined) &&
-                         layer.selectedInConfig) && (sublist.type!="radiobutton")) {
+                    if ((options.layers !== undefined && arrayContainsElement(options.layers, layer)) ||
+                        (options.layers === undefined && layer.selectedInConfig) &&
+                        sublist.type != "radiobutton") {
                         //console.log("activate at line 449");
                         layer.activate();
                     }
