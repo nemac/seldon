@@ -876,7 +876,12 @@ module.exports = function ($) {
         app.addListener("extentchange", function () {
             app.saveCurrentExtent();
             app.updateShareMapUrl();
-            app.map.setOptions({maxExtent: app.map.getExtent()});
+            //jdm 4/28/15: removed this as it seem to be throwing things off
+			//when panning outside of current view extent.  Instead moved it to the bottom of 
+			//setTheme because that is where a change such as switching to the Alaska theme 
+			//can be caught.  However, in general it shouldn't be necessary to be updating the 
+			//maxExtent within the CONUS which will be the case 99% of the time
+			// app.map.setOptions({maxExtent: app.map.getExtent()});
         });
 
         //
@@ -918,6 +923,9 @@ module.exports = function ($) {
         $('#themeCombo').change(function () {
             var i = parseInt($(this).val(), 10);
             app.setTheme(app.themes[i]);
+			//jdm (4/28/15) moved to here to account for possibility of 
+			//significant extent change with theme change
+			app.map.setOptions({maxExtent: app.map.getExtent()});			
         });
         app.addListener("themechange", function () {
             $('#themeCombo').val(app.currentTheme.index);
