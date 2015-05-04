@@ -9,24 +9,26 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
         });
     }
 
-    var maxExtentBounds = new OpenLayers.Bounds(
-        app.maxExtent.left,
-        app.maxExtent.bottom,
-        app.maxExtent.right,
-        app.maxExtent.top
-    );
+    var maxExtentBounds;
+    if (theme.xmax && theme.xmin && theme.ymax && theme.ymin) {
+	maxExtentBounds = new OpenLayers.Bounds(
+	    theme.xmin,
+	    theme.ymin,
+	    theme.xmax,
+	    theme.ymax
+	);
+    } else {
+	maxExtentBounds = new OpenLayers.Bounds(
+            app.maxExtent.left,
+            app.maxExtent.bottom,
+            app.maxExtent.right,
+            app.maxExtent.top
+	);
+    }
 
     if (initialExtent === undefined) {
         //take the extent coming from the config file
         initialExtent = app.maxExtent;
-    } else {
-        //take the extent of the share map url
-        maxExtentBounds = new OpenLayers.Bounds(
-            initialExtent.left,
-            initialExtent.bottom,
-            initialExtent.right,
-            initialExtent.top
-        );
     }
 
     app.tileManager = new OpenLayers.TileManager({
