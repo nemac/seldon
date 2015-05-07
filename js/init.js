@@ -3,11 +3,12 @@ module.exports = function (app) {
 
     function init (config, projection, gisServerType, useProxyScript) {
         var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
-        app.launch(config, shareUrlInfo);
-        seldon.app = app;
+        app.projection = projection;
         seldon.projection = projection;
         seldon.gisServerType = gisServerType;
         seldon.useProxyScript = useProxyScript;
+        app.launch(config, shareUrlInfo);
+        seldon.app = app;
     }
 
     return init;
