@@ -2239,6 +2239,7 @@ module.exports = function ($) {
                     parentLayer : maskParentLayer
                 });
                 maskLayer.activate();
+		maskLayer.setTransparency(maskParentLayer.transparency);
                 mask.maskLayers.push(maskLayer);
                 if (maskParentLayer.visible === "true") {
                     maskParentLayer.deactivate();
