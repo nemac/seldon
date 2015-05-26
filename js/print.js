@@ -1,5 +1,5 @@
 module.exports = function ($, app) {
-    function printMap () {
+    function printMap ($configXML) {
         // go through all layers, and collect a list of objects
         // each object is a tile's URL and the tile's pixel location relative to the viewport
         var offsetX = parseInt(app.map.layerContainerDiv.style.left, 10);
@@ -57,15 +57,46 @@ module.exports = function ($, app) {
             }
         });
 
-        OpenLayers.Request.POST({
-            url: 'http://'+window.location.hostname+window.location.pathname+'cgi-bin/print.cgi',
-            data: OpenLayers.Util.getParameterString({width:size.w,height:size.h,tiles:tiles_json,legends:legends_json}),
+        // Note: in what follows, we use default values for the print configuration so that
+        // in viewer installations which do not configure <tool name="Print"> with details,
+        // we fall back on the previous seldon print behavior, which was hardcoded to work
+        // for FCAV.
+        var service_url = $configXML.find("tools tool[name=Print]").attr("service_url");
+        if (!service_url) {
+            service_url = 'http://'+window.location.hostname+window.location.pathname; // default
+        }
+        service_url = service_url.replace(/\/$/, "");
+        var service_name = $configXML.find("tools tool[name=Print]").attr("service_name");
+        if (!service_name) {
+            service_name = 'cgi-bin/print.cgi'; // default
+        }
+        var title = $configXML.find("tools tool[name=Print]").attr("title");
+        if (!title) {
+            title = "U.S Forest Change Assessment Viewer"; // default
+        }
+        // NOTE: use $.ajax() here rather than OpenLayers.Request.POST(), because OpenLayers.Request.POST()
+        // seems to act poorly when dealing with cross-domain requests (specifically, it omits passing
+        // the `data` object in that case!).  mbp Tue May 26 17:38:32 2015
+        $.ajax({
+            url: service_url + "/" + service_name,
+            type: "POST",
+            data: OpenLayers.Util.getParameterString({width:size.w,height:size.h,tiles:tiles_json,legends:legends_json,title:title}),
             headers:{'Content-Type':'application/x-www-form-urlencoded'},
-            callback: function(request) {
-                $("#printMapLoader").html('<center><a href="http://'+window.location.hostname+window.location.pathname+'cgi-bin/printed_map.jpg" style="color:blue" target="_new">print image result</a></center>');
+            success: function(data,status,jqxhr) {
+                data = data.replace(/\s+/, ""); // remove all whitespace from data string; what's left is the rel URL of the image
+                var href = service_url + "/cgi-bin/printed_map.jpg";
+                if (data) {
+                    href = service_url + "/" + data; // default
+                }
+                $("#printMapLoader").html('<center><a href="' + href + '" style="color:blue" target="_new">print image result</a></center>');
                 printPopup.dialog('option', 'title', 'Print Image Created!');
+            },
+            error:  function(jqxhr,status,err) {
+                $("#printMapLoader").html('<center>An error happended.</center>');
+                printPopup.dialog('option', 'title', 'NO Print Image Created!');
             }
         });
+
     }
 
     return printMap;

@@ -804,11 +804,13 @@ module.exports = function ($) {
 
         var app = this;
 
+        var $configXML;
+
         $.ajax({
             url: configFile,
             dataType: "xml",
             success: function (configXML) {
-                app.parseConfig(configXML, shareUrlInfo);
+                $configXML = app.parseConfig(configXML, shareUrlInfo);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 alert(textStatus);
@@ -946,7 +948,11 @@ module.exports = function ($) {
         // print button
         //
         $("#btnPrint").click(function () {
-            printMap();
+            if ($configXML !== undefined) {
+                printMap($configXML);
+            } else {
+                console.log("Can't print yet; config file not yet parsed");
+            }
         });
 
         //
@@ -1963,6 +1969,8 @@ module.exports = function ($) {
         // comes from: initialBaseLayer.url + '?f=json&pretty=true'
         var baseLayerInfo = {"currentVersion":10.01,"serviceDescription":"This worldwide street map presents highway-level data for the world. Street-level data includes the United States; much of Canada; Japan; most countries in Europe; Australia and New Zealand; India; parts of South America including Argentina, Brazil, Chile, Colombia, and Venezuela; and parts of southern Africa including Botswana, Lesotho, Namibia, South Africa, and Swaziland.\nThis comprehensive street map includes highways, major roads, minor roads, one-way arrow indicators, railways, water features, administrative boundaries, cities, parks, and landmarks, overlaid on shaded relief imagery for added context. The map also includes building footprints for selected areas in the United States and Europe. Coverage is provided down to ~1:4k with ~1:1k and ~1:2k data available in select urban areas.\nThe street map was developed by Esri using Esri basemap data, DeLorme basemap layers, U.S. Geological Survey (USGS) elevation data, Intact Forest Landscape (IFL) data for the world; NAVTEQ data for Europe, Australia and New Zealand, India, North America, South America (Argentina, Brazil, Chile, Colombia, and Venezuela), and parts of southern Africa (Botswana, Lesotho, Namibia, South Africa, and Swaziland).\n\nFor more information on this map, including our terms of use, visit us \u003ca href=\"http://goto.arcgisonline.com/maps/World_Street_Map \" target=\"_new\"\u003eonline\u003c/a\u003e.","mapName":"Layers","description":"This worldwide street map presents highway-level data for the world. Street-level data includes the United States; much of Canada; Japan; most countries in Europe; Australia and New Zealand; India; parts of South America including Argentina, Brazil, Chile, Colombia, and Venezuela; and parts of southern Africa including Botswana, Lesotho, Namibia, South Africa, and Swaziland.\nThis comprehensive street map includes highways, major roads, minor roads, one-way arrow indicators, railways, water features, administrative boundaries, cities, parks, and landmarks, overlaid on shaded relief imagery for added context. The map also includes building footprints for selected areas in the United States and Europe. Coverage is provided down to ~1:4k with ~1:1k and ~1:2k data available in select urban areas.\nThe street map was developed by Esri using Esri basemap data, DeLorme basemap layers, U.S. Geological Survey (USGS) elevation data, Intact Forest Landscape (IFL) data for the world; NAVTEQ data for Europe, Australia and New Zealand, India, North America, South America (Argentina, Brazil, Chile, Colombia, and Venezuela), and parts of southern Africa (Botswana, Lesotho, Namibia, South Africa, and Swaziland).\n\nFor more information on this map, including the terms of use, visit us online at http://goto.arcgisonline.com/maps/World_Street_Map","copyrightText":"Sources: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012","layers":[{"id":0,"name":"World Street Map","parentLayerId":-1,"defaultVisibility":true,"subLayerIds":null,"minScale":0,"maxScale":0}],"tables":[],"spatialReference":{"wkid":102100},"singleFusedMapCache":true,"tileInfo":{"rows":256,"cols":256,"dpi":96,"format":"JPEG","compressionQuality":90,"origin":{"x":-20037508.342787,"y":20037508.342787},"spatialReference":{"wkid":102100},"lods":[{"level":0,"resolution":156543.033928,"scale":591657527.591555},{"level":1,"resolution":78271.5169639999,"scale":295828763.795777},{"level":2,"resolution":39135.7584820001,"scale":147914381.897889},{"level":3,"resolution":19567.8792409999,"scale":73957190.948944},{"level":4,"resolution":9783.93962049996,"scale":36978595.474472},{"level":5,"resolution":4891.96981024998,"scale":18489297.737236},{"level":6,"resolution":2445.98490512499,"scale":9244648.868618},{"level":7,"resolution":1222.99245256249,"scale":4622324.434309},{"level":8,"resolution":611.49622628138,"scale":2311162.217155},{"level":9,"resolution":305.748113140558,"scale":1155581.108577},{"level":10,"resolution":152.874056570411,"scale":577790.554289},{"level":11,"resolution":76.4370282850732,"scale":288895.277144},{"level":12,"resolution":38.2185141425366,"scale":144447.638572},{"level":13,"resolution":19.1092570712683,"scale":72223.819286},{"level":14,"resolution":9.55462853563415,"scale":36111.909643},{"level":15,"resolution":4.77731426794937,"scale":18055.954822},{"level":16,"resolution":2.38865713397468,"scale":9027.977411},{"level":17,"resolution":1.19432856685505,"scale":4513.988705},{"level":18,"resolution":0.597164283559817,"scale":2256.994353},{"level":19,"resolution":0.298582141647617,"scale":1128.497176}]},"initialExtent":{"xmin":-28872328.0888923,"ymin":-11237732.4896886,"xmax":28872328.0888923,"ymax":11237732.4896886,"spatialReference":{"wkid":102100}},"fullExtent":{"xmin":-20037507.0671618,"ymin":-19971868.8804086,"xmax":20037507.0671618,"ymax":19971868.8804086,"spatialReference":{"wkid":102100}},"units":"esriMeters","supportedImageFormatTypes":"PNG24,PNG,JPG,DIB,TIFF,EMF,PS,PDF,GIF,SVG,SVGZ,AI,BMP","documentInfo":{"Title":"World Street Map","Author":"Esri","Comments":"","Subject":"streets, highways, major roads, railways, water features, administrative boundaries, cities, parks, protected areas, landmarks ","Category":"transportation(Transportation Networks) ","Keywords":"World, Global, Europe, Japan, Hong Kong, North America, United States, Canada, Mexico, Southern Africa, Asia, South America, Australia, New Zealand, India, Argentina, Brazil, Chile, Venezuela, Andorra, Austria, Belgium, Czech Republic, Denmark, France, Germany, Great Britain, Greece, Hungary, Ireland, Italy, Luxembourg, Netherlands, Norway, Poland, Portugal, San Marino, Slovakia, Spain, Sweden, Switzerland, Russia, Thailand, Turkey, 2012","Credits":"Sources: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012"},"capabilities":"Map"};
         app.initOpenLayers(baseLayerInfo, initialBaseLayer, initialTheme, themeOptions, initialExtent);
+
+        return $configXML;
     }
 
     function displayError (message) {
@@ -1974,7 +1982,7 @@ module.exports = function ($) {
 
 },{"./accordion_group.js":2,"./accordion_group_sublist.js":4,"./baselayer.js":11,"./create_arcgis_rest_params.js":14,"./identify.js":22,"./layer.js":26,"./multigraph.js":34,"./theme.js":48}],37:[function(require,module,exports){
 module.exports = function ($, app) {
-    function printMap () {
+    function printMap ($configXML) {
         // go through all layers, and collect a list of objects
         // each object is a tile's URL and the tile's pixel location relative to the viewport
         var offsetX = parseInt(app.map.layerContainerDiv.style.left, 10);
@@ -2032,15 +2040,46 @@ module.exports = function ($, app) {
             }
         });
 
-        OpenLayers.Request.POST({
-            url: 'http://'+window.location.hostname+window.location.pathname+'cgi-bin/print.cgi',
-            data: OpenLayers.Util.getParameterString({width:size.w,height:size.h,tiles:tiles_json,legends:legends_json}),
+        // Note: in what follows, we use default values for the print configuration so that
+        // in viewer installations which do not configure <tool name="Print"> with details,
+        // we fall back on the previous seldon print behavior, which was hardcoded to work
+        // for FCAV.
+        var service_url = $configXML.find("tools tool[name=Print]").attr("service_url");
+        if (!service_url) {
+            service_url = 'http://'+window.location.hostname+window.location.pathname; // default
+        }
+        service_url = service_url.replace(/\/$/, "");
+        var service_name = $configXML.find("tools tool[name=Print]").attr("service_name");
+        if (!service_name) {
+            service_name = 'cgi-bin/print.cgi'; // default
+        }
+        var title = $configXML.find("tools tool[name=Print]").attr("title");
+        if (!title) {
+            title = "U.S Forest Change Assessment Viewer"; // default
+        }
+        // NOTE: use $.ajax() here rather than OpenLayers.Request.POST(), because OpenLayers.Request.POST()
+        // seems to act poorly when dealing with cross-domain requests (specifically, it omits passing
+        // the `data` object in that case!).  mbp Tue May 26 17:38:32 2015
+        $.ajax({
+            url: service_url + "/" + service_name,
+            type: "POST",
+            data: OpenLayers.Util.getParameterString({width:size.w,height:size.h,tiles:tiles_json,legends:legends_json,title:title}),
             headers:{'Content-Type':'application/x-www-form-urlencoded'},
-            callback: function(request) {
-                $("#printMapLoader").html('<center><a href="http://'+window.location.hostname+window.location.pathname+'cgi-bin/printed_map.jpg" style="color:blue" target="_new">print image result</a></center>');
+            success: function(data,status,jqxhr) {
+                data = data.replace(/\s+/, ""); // remove all whitespace from data string; what's left is the rel URL of the image
+                var href = service_url + "/cgi-bin/printed_map.jpg";
+                if (data) {
+                    href = service_url + "/" + data; // default
+                }
+                $("#printMapLoader").html('<center><a href="' + href + '" style="color:blue" target="_new">print image result</a></center>');
                 printPopup.dialog('option', 'title', 'Print Image Created!');
+            },
+            error:  function(jqxhr,status,err) {
+                $("#printMapLoader").html('<center>An error happended.</center>');
+                printPopup.dialog('option', 'title', 'NO Print Image Created!');
             }
         });
+
     }
 
     return printMap;

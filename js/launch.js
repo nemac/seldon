@@ -10,11 +10,13 @@ module.exports = function ($) {
 
         var app = this;
 
+        var $configXML;
+
         $.ajax({
             url: configFile,
             dataType: "xml",
             success: function (configXML) {
-                app.parseConfig(configXML, shareUrlInfo);
+                $configXML = app.parseConfig(configXML, shareUrlInfo);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 alert(textStatus);
@@ -152,7 +154,11 @@ module.exports = function ($) {
         // print button
         //
         $("#btnPrint").click(function () {
-            printMap();
+            if ($configXML !== undefined) {
+                printMap($configXML);
+            } else {
+                console.log("Can't print yet; config file not yet parsed");
+            }
         });
 
         //
