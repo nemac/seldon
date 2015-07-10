@@ -2238,13 +2238,11 @@ module.exports = function ($) {
         var maskParentLayers = app.maskParentLayers;
         var maskParentLayer, maskLayer;
         var i;
+        var maskId = "#" + maskName.replace("MaskFor", "");
 
         if (toggle) {
-            // if ForestOnly grey out the sub-forest types
-            if (maskName === "MaskForForest") {
-                $("#ConiferForest").attr("disabled", true);
-                $("#DeciduousForest").attr("disabled", true);
-                $("#MixedForest").attr("disabled", true);
+            if ($(maskId).attr('data-mask-grouper')) {
+                $('.mask-toggle[data-mask-parent="'+maskName+'"]').attr('disabled', true);
             }
 
             var seldonLayer;
@@ -2290,12 +2288,10 @@ module.exports = function ($) {
             }
         } //end if (toggle)
         else { //we have just turned off a mask
-            //if ForestOnly grey out the sub-forest types
-            if (maskName === "MaskForForest") {
-                $("#ConiferForest").attr("disabled", false);
-                $("#DeciduousForest").attr("disabled", false);
-                $("#MixedForest").attr("disabled", false);
+            if ($(maskId).attr('data-mask-grouper')) {
+                $('.mask-toggle[data-mask-parent="'+maskName+'"]').attr('disabled', false);
             }
+
             // Loop through app.masks and find maskName
             // When you find it, deactivate all of its maskLayers
             // Keep track of the number of mask in app.masks
