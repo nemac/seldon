@@ -24,10 +24,10 @@
     top: -630px;
     opacity: 0.8;
     z-index: -1;
-    background: url("../images/jumbotron-map.jpg") 0 0 repeat;
-    -webkit-animation:spin 900s linear infinite;
-    -moz-animation:spin 900s linear infinite;
-    animation:spin 900s linear infinite;
+    background: url("../images/jumbotron-map.png") 0 0 repeat;
+    -webkit-animation:spin 1200s linear infinite;
+    -moz-animation:spin 1200s linear infinite;
+    animation:spin 1200s linear infinite;
 }
 .jumbotron:hover:before {
     opacity: 1.0;
@@ -49,13 +49,13 @@
     float: left;
     padding: 0 2px 0 2px;
 }
-.panning:hover {
+.layers:hover {
     color: #d12913;
 }
-.zooming:hover {
+.views:hover {
     color: #0a82d1;
 }
-.integrating:hover {
+.mobile:hover {
     color: #8d07e0;
 }
 p.get-started {
@@ -64,14 +64,25 @@ p.get-started {
     border: 1px #e2e2e2 dashed;
     padding: 5px;
 }
-.fa-github-square {
-    font-size: 15pt;
+.icon-layers-alt {
+    font-size: 85pt;
 }
-.fa-download {
-    font-size: 10pt;
-    padding-right: 1px;
+.icon-mask {
+    font-size: 85pt;
+}
+.fa-globe, .feature-row .fa-print, .feature-row .fa-bar-chart, .feature-row .fa-map-marker, .feature-row .fa-link, .feature-row .fa-arrows, .feature-row .fa-mobile {
+    font-size: 95pt;
+}
+.feature-row .icon-mask {
+    font-size: 65pt;
+}
+.feature-row .icon-layers-alt {
+    font-size: 68pt;
 }
 
+.feature-row .fa:hover, .feature-row .icon-layers-alt:hover, .feature-row .icon-mask:hover{
+    color: #5797dd;
+}
 
 /* UNIVERSAL STYLES */
 .content {
@@ -81,11 +92,20 @@ p.get-started {
 .navbar {
     background-color: #5797dd;
 }
+.navbar-default .navbar-collapse {
+    border-color: #21486b;
+}
 .navbar-default .navbar-nav .active a, .navbar-default .navbar-nav .active a:hover, .navbar-default .navbar-nav li a:hover, .navbar-default .navbar-nav .open a:focus {
     background-color: #21486b;
 }
 .navbar-default .dropdown-menu {
     background-color: #62a4eb;
+}
+.navbar-default .navbar-nav .open a, .navbar-default .navbar-nav .open a:focus {
+    background-color: #21486b;
+}
+.navbar .navbar-toggle:hover .icon-bar {
+    background-color: #d4d4d4;
 }
 .lead {
     color: rgba(97, 98, 111, 0.85);
@@ -96,15 +116,6 @@ footer {
     font-size: 8pt;
     color: #bebcbc;
     clear: both;
-}
-footer a.icon {
-    color: #dedede;
-}
-footer a:hover.icon {
-    color: #0a82d1;
-}
-footer a:active.icon {
-    color: #056aad;
 }
 footer a {
     color: #bebcbc;
@@ -124,66 +135,21 @@ pre.prettyprint {
     border: 1px solid #cccccc;
 }
 
-
-/* CREDITS PAGE */
-.credit-logo  {
-    padding-right: 15px;
-    padding-left: 15px;
-    float: left;
-}
-
-
-/* DOWNLOAD PAGE */
-table.release-table {
-    margin-left: 10px;
-    width: auto;
-    border-collapse: collapse;
-}
-table.release-table td, table.release-table th {
-    padding: 6px 10px 6px 10px;
-    border: 1px solid gray;
-}
-table.release-table td.notes {
-    text-align: center;
-}
-table.release-table tr:nth-of-type(even) {
-    background: #ededed;
-}
-
-
 /* EXAMPLES PAGE */
-.example-nav {
-    font-size: 9pt;
-    float: left;
-    width: 20%;
+.thumbnail {
+  border-radius: 4px;
 }
-.example-nav li.active a {
-    color: #000;
-    font-weight: bold;
-}
-.example-content {
-    font-size: 9pt;
+.caption h3 {
     text-align: center;
 }
-.example-content .multigraph {
-    width: 80%;
-    height: 400px;
-    float: left;
-}
-.example-download {
-    float: left;
-}
-.example-open {
-    float: right;
-}
-pre.example {
-    overflow: auto;
-    width: 80%;
-    height: 500px;
+.caption p {
     text-align: left;
 }
-h3.example-title {
-    text-align: center;
+
+
+/* FEATURES PAGE */
+.feature-row {
+    padding-top: 20px;
 }
 
 
@@ -191,15 +157,6 @@ h3.example-title {
 @media (max-width: 768px) {
     .content {
         margin-top: 60px;
-    }
-    .example-nav {
-        display: none;
-    }
-    .example-intro-text {
-        display: none;
-    }
-    .example-content .multigraph {
-        width: 100%;
     }
     pre.example {
         width: 100%;
@@ -219,11 +176,12 @@ h3.example-title {
     .credit-logo {
         display: none;
     }
+    .fa-user-plus, .fa-train, .fa-user-secret {
+    font-size: 75pt;
+    }
 }
 
 /* Elements to change or disappear when NOT on smartphone */
 @media (min-width: 768px) {
-    .example-mobile-nav {
-        display: none;
-    }
+
 }

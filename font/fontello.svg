@@ -1,12 +1,14 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg xmlns="http://www.w3.org/2000/svg">
-<metadata>Copyright (C) 2014 by original authors @ fontello.com</metadata>
+<metadata>Copyright (C) 2015 by original authors @ fontello.com</metadata>
 <defs>
 <font id="fontello" horiz-adv-x="1000" >
 <font-face font-family="fontello" font-weight="400" font-stretch="normal" units-per-em="1000" ascent="850" descent="-150" />
 <missing-glyph horiz-adv-x="1000" />
+<glyph glyph-name="layers-alt" unicode="&#xe800;" d="m18 127l446-111 447 111 0-111-447-113-446 113 0 111z m0 224l446-112 447 112 0-112-447-112-446 112 0 112z m0 223l446-112 447 112 0-112-447-111-446 111 0 112z m0 223l446-112 447 112 0-112-447-111-446 111 0 112z" horiz-adv-x="928" />
 <glyph glyph-name="layers" unicode="&#xe801;" d="m18 183l446-112 447 112 0-112-447-112-446 112 0 112z m0 223l446-112 447 112 0-112-447-111-446 111 0 112z m0 223l446 112 447-112 0-111-447-112-446 112 0 111z" horiz-adv-x="928" />
+<glyph glyph-name="mask" unicode="&#xe802;" d="m979 558c-2 23-23 40-46 37-87-14-291-95-433-95-142 0-346 81-433 95-23 3-44-13-46-37-7-77-21-280-21-311 0-42 174-137 300-137 123 0 148 137 200 137s77-137 200-137c126 0 300 95 300 137 0 31-14 234-21 311z m-596-244c-18-16-67-53-127-42-59 12-95 66-108 88-3 5-2 12 2 16 18 16 67 54 127 42 60-12 96-66 108-88 3-5 2-12-2-16z m469 46c-12-22-49-76-108-88-60-11-109 26-127 42-4 4-5 11-2 16 12 22 48 76 108 88 60 12 109-26 127-42 4-4 5-11 2-16z" horiz-adv-x="1000" />
 </font>
 </defs>
 </svg>
