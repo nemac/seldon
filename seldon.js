@@ -71,14 +71,32 @@ module.exports = function ($) {
 },{}],7:[function(require,module,exports){
 module.exports = function ($) {
     function addAccordionSublistItems (s, items) {
+//mbp if (s.heading === "Climate Modely") {
+//mbp     console.log(s.heading);
+//mbp }
         var contents = $('<div class="layer"></div>');
-        contents.append(items);
+//mbp //console.log('contents');
+//mbp //console.log(contents[0].childElementCount);
+        items.forEach(function(it) {
+            contents.append($(it));
+//mbp //console.log('  after it: ' + contents[0].childElementCount);
+//mbp //console.log(contents.html());
+        });
+        //contents.append(items);
         var layer = {
             name : name,
             contentElement : contents
         };
         s.items.push(layer);
+//mbp if (s.heading === "Climate Modely") {
+//mbp     console.log('before');
+//mbp     console.log(s.contentElement.html());
+//mbp }
         s.contentElement.append(layer.contentElement);
+//mbp if (s.heading === "Climate Modely") {
+//mbp     console.log('after');
+//mbp     console.log(s.contentElement.html());
+//mbp }
     }
 
     return addAccordionSublistItems;
@@ -551,13 +569,16 @@ module.exports = function ($, app) {
         var requestUrl = createWMSGetFeatureInfoRequestURL(service.url, service.name, service.srs, e.xy.x, e.xy.y);
 
         if (seldon.useProxyScript === "True") {
-            requestUrl = $(location).attr('href') + "/cgi-bin/proxy.cgi?url=" + encodeURIComponent(requestUrl);
+            requestUrl = $(location).attr('href') + "proxy?url=" + encodeURIComponent(requestUrl);
         }
 
+console.log("id req url: " + requestUrl);
         $.ajax({
             url: requestUrl,
             dataType: "text",
             success: function (response) {
+console.log("   id req success");
+console.log(response);
                 var $gml = $($.parseXML(response));
                 var $group = $("#" + service.label + "-label");
                 var newTableContents = '';
@@ -588,6 +609,7 @@ module.exports = function ($, app) {
                 if (!newTableContents) $group.find(".layer-results").text("N/A");
             },
             error: function(jqXHR, textStatus, errorThrown) {
+console.log("   id req failure");
                 alert(textStatus);
             }
         });
@@ -2341,9 +2363,6 @@ module.exports = function ($) {
     var arrayContainsElement = require("./array_contains_element.js");
 
     function setTheme (theme, options) {
-        var createLayerToggleDropdownBox = require("./layer_select.js")($, this);
-        var createLayerToggleRadioButton = require("./layer_radio.js")($, this);
-
         var app = this,
             $layerPickerAccordion = $("#layerPickerAccordion"),
             flag;
@@ -2430,6 +2449,9 @@ module.exports = function ($) {
     };
 
     function setThemeLayers (app, theme, options, $layerPickerAccordion, lids) {
+        var createLayerToggleDropdownBox = require("./layer_select.js")($, app);
+        var createLayerToggleRadioButton = require("./layer_radio.js")($, app);
+
         //jdm: re-wrote loop using traditional for loops (more vintage-IE friendly)
         //vintage-IE does work with jquery each loops, but seems to be slower
         // for (var a = 0, b = theme.accordionGroups.length; a < b; a++) {
@@ -2459,6 +2481,11 @@ module.exports = function ($) {
             var sublistItems = [];
             for (var i = 0, j = accGp.sublists.length; i < j; i++) {
                 var sublist = accGp.sublists[i];
+//mbp if (sublist.label === "Climate Modely") {
+//mbp   console.log('start Climate Modely');
+//mbp   console.log(g.sublists.length);
+//mbp }
+//mbp console.log('sublists['+i+'].label='+sublist.label);
                 var sublistObj = {
                     heading : sublist.label,
                     items : [],
@@ -2469,6 +2496,14 @@ module.exports = function ($) {
                 var sublistLayerItems = [];
                 for (var k = 0, l = sublist.layers.length; k < l; k++) {
                     var layer = sublist.layers[k];
+if (sublist.label === "Tree Species") {
+    if (k === 0) {
+        console.log('starting Tree Species stuff');
+    }
+    console.log('k=' + k);
+    //console.log(sublistLayerItems);
+}
+//mbp console.log('   layer.name='+layer.name);
                     // remove any previously defined listeners for this layer, in case this isn't the first
                     // time we've been here
                     layer.removeAllListeners("activate");
@@ -2488,7 +2523,7 @@ module.exports = function ($) {
                     labelElem = document.createElement("label");
                     brElem = document.createElement("br");
                     textElem = document.createTextNode(layer.name);
-                    labelElem.setAttribute("for", "chk" + layer.lid);
+                    //mbp labelElem.setAttribute("for", "chk" + layer.lid);
                     labelElem.appendChild(textElem);
 
                     //jdm 5/28/13: if there is a mask for this layer then we will provide a status
@@ -2519,7 +2554,11 @@ module.exports = function ($) {
                                 createLayerPropertiesIcon(layer),
                                 brElem
                             ];
+console.log('adding a radio button');
+console.log('  sublist.label: ' + sublist.label);
+console.log('  layer.name: ' + layer.name);
                         } else if (sublist.type === "dropdownbox") { //dropdownbox type
+if (sublist.label === "Tree Species" && k === 0) { console.log(' asdfasdf dropdownbox'); }
                             selectBoxLayers.push(layer);
                             app.dropdownBoxLayers.push(layer);
 
@@ -2527,7 +2566,9 @@ module.exports = function ($) {
                             // the dropdownbox such that only one call to createLayerToggleDropdownBox.
                             // Assumption #1: A dropdownbox is always preceded in the config file by a 
                             // radiobutton and therefore the dropdownbox needs to know about its corresponding radiobutton group
+console.log('selectBoxLayers.length='+selectBoxLayers.length+'; sublist.layers.length='+sublist.layers.length);
                             if ((selectBoxLayers.length + 1) >= sublist.layers.length) {
+console.log('what ho!');
                                 var dropdownBox = createLayerToggleDropdownBox(layer, selectBoxLayers, sublist.label.replace(/\s+/g, ''));
                                 app.dropdownBoxList.push(dropdownBox);
                                 controlGroup = [dropdownBox];
@@ -2541,6 +2582,10 @@ module.exports = function ($) {
                             ];
                         }
                     }
+if (sublist.label === "Tree Species" && k === 0) {
+    console.log('pushing sublistLayerItems with k=0');
+    console.log(controlGroup);
+}
                     sublistLayerItems.push(controlGroup);
 
                     // Decide whether to activate the layer.  If we received a layer list in the
@@ -2565,8 +2610,32 @@ module.exports = function ($) {
                         }
                     }
                 } // end loop for sublist.layers
+console.log('sublistLayerItems')
+console.log(sublistLayerItems);
                 app.addAccordionSublistItems(sublistObj, sublistLayerItems);
+//if (sublistObj.heading === "Climate Modely") {
+//    console.log('sublistObj');
+//  if (g.sublists.length > 0) {
+//    console.log('  heading: ' + g.sublists[0].heading);
+//    console.log('  html: ' + g.sublists[0].contentElement.html());
+//  }
+//}
+//mbp if (sublist.label === "Climate Modely") {
+//mbp   console.log('end Climate Modely');
+//mbp   console.log(g.sublists.length);
+//mbp   console.log(g.sublists[0].contentElement.html());
+//mbp }
+
+console.log('sublist i='+i);
+console.log(g.sublists[i].heading);
+console.log(g.sublists[i].contentElement.html());
+
             } // end loop for accGp.sublists
+console.log('addAccordionSublists');
+console.log(g.sublists[0].heading);
+console.log(g.sublists[0].contentElement.html());
+console.log(g.sublists);
+//console.log(sublistItems);
             app.addAccordionSublists(g, sublistItems);
             if (++a < theme.accordionGroups.length) {
                 ro1.step();

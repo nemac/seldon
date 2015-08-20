@@ -116,13 +116,16 @@ module.exports = function ($, app) {
         var requestUrl = createWMSGetFeatureInfoRequestURL(service.url, service.name, service.srs, e.xy.x, e.xy.y);
 
         if (seldon.useProxyScript === "True") {
-            requestUrl = $(location).attr('href') + "/cgi-bin/proxy.cgi?url=" + encodeURIComponent(requestUrl);
+            requestUrl = $(location).attr('href') + "proxy?url=" + encodeURIComponent(requestUrl);
         }
 
+//console.log("id req url: " + requestUrl);
         $.ajax({
             url: requestUrl,
             dataType: "text",
             success: function (response) {
+//console.log("   id req success");
+//console.log(response);
                 var $gml = $($.parseXML(response));
                 var $group = $("#" + service.label + "-label");
                 var newTableContents = '';
@@ -153,6 +156,7 @@ module.exports = function ($, app) {
                 if (!newTableContents) $group.find(".layer-results").text("N/A");
             },
             error: function(jqXHR, textStatus, errorThrown) {
+//console.log("   id req failure");
                 alert(textStatus);
             }
         });
