@@ -57,7 +57,7 @@ module.exports = function ($, app) {
 
                 $.each(app.map.layers, function () {
                     var name, label;
-                    if (!this.isBaseLayer && this.params) {
+                    if (!this.isBaseLayer && this.params && (!("seldonLayer" in this) || (String(this.seldonLayer.identify) !== "false"))) {
                         name  = this.params.LAYERS;
 
                         // Added by mbp Mon Aug 24 15:54:58 2015 to adjust for ArcGIS server WMS differences:
@@ -91,6 +91,9 @@ module.exports = function ($, app) {
                     }
                 });
                 html = html + "</table>";
+
+                // If there are no services to query, stop now, before the popup is shown
+                if (services.length === 0) { return; }
 
                 var popup = $(document.createElement('div'));
                 popup.attr("id", "identify_popup");
