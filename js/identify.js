@@ -59,11 +59,17 @@ module.exports = function ($, app) {
                     var name, label;
                     if (!this.isBaseLayer && this.params) {
                         name  = this.params.LAYERS;
-                        label = (String(name).indexOf("MaskFor") !== -1) ? name.substring(0, name.indexOf("MaskFor")) : name;
+
+                        // Added by mbp Mon Aug 24 15:54:58 2015 to adjust for ArcGIS server WMS differences:
+                        if (String(name).match(/^\d+$/)) {
+                            label = this.name;
+                        } else {
+                            label = (String(name).indexOf("MaskFor") !== -1) ? name.substring(0, name.indexOf("MaskFor")) : name;
+                        }
 
                         if (layersAdded.indexOf(label) !== -1) return;
 
-                        layersAdded.push(label)
+                        layersAdded.push(label);
                         services.push({
                             url   : this.url,
                             srs   : this.projection.projCode,
@@ -116,9 +122,8 @@ module.exports = function ($, app) {
         var requestUrl = createWMSGetFeatureInfoRequestURL(service.url, service.name, service.srs, e.xy.x, e.xy.y);
 
         if (seldon.useProxyScript === "True") {
-            requestUrl = $(location).attr('href') + "/cgi-bin/proxy.cgi?url=" + encodeURIComponent(requestUrl);
+            requestUrl = $(location).attr('href') + "proxy?url=" + encodeURIComponent(requestUrl);
         }
-
         $.ajax({
             url: requestUrl,
             dataType: "text",
@@ -127,6 +132,7 @@ module.exports = function ($, app) {
                 var $group = $("#" + service.label + "-label");
                 var newTableContents = '';
                 var i;
+                var layerIDCount = 0;
 
                 $group.find("img").remove();
 
@@ -153,7 +159,7 @@ module.exports = function ($, app) {
                 if (!newTableContents) $group.find(".layer-results").text("N/A");
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                alert(textStatus);
+                //alert(textStatus);
             }
         });
     }
