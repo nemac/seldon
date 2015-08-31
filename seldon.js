@@ -71,6 +71,7 @@ module.exports = function ($) {
 },{}],7:[function(require,module,exports){
 module.exports = function ($) {
     function addAccordionSublistItems (s, items) {
+        var collapseThreshold = 30;
         var contents = $('<div class="layer"></div>');
         contents.append(items);
         var layer = {
@@ -79,6 +80,15 @@ module.exports = function ($) {
         };
         s.items.push(layer);
         s.contentElement.append(layer.contentElement);
+
+        if (items.length > collapseThreshold) {
+            contents.addClass('showLessSublist');
+            contents.after(
+                '<button class="show-more-layers">More</button>' +
+                '<button disabled class="show-less-layers">Less' +
+                '<button class="show-all-layers">All</button>' 
+            );
+        }
     }
 
     return addAccordionSublistItems;
@@ -787,6 +797,7 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
         OpenLayers.Util.getElement("latLonTracker").innerHTML = "Lat: " + sprintf("%.5f", lonlat.lat) + " Lon: " + sprintf("%.5f", lonlat.lon) + "";
     });
     app.map.addControl(new OpenLayers.Control.PanZoomBar());
+
 }
 
 module.exports = initOpenLayers;
@@ -2238,13 +2249,22 @@ module.exports = function ($) {
         var maskParentLayers = app.maskParentLayers;
         var maskParentLayer, maskLayer;
         var i;
+        var maskId = "#" + maskName.replace("MaskFor", "");
+
 
         if (toggle) {
             // if ForestOnly grey out the sub-forest types
+            /*
             if (maskName === "MaskForForest") {
                 $("#ConiferForest").attr("disabled", true);
                 $("#DeciduousForest").attr("disabled", true);
                 $("#MixedForest").attr("disabled", true);
+            }
+            */
+
+            // MG 7/9/2015
+            if ($(maskId).attr('data-mask-grouper')) {
+                $('.mask-toggle[data-mask-parent="'+maskName+'"]').attr('disabled', true);
             }
 
             var seldonLayer;
@@ -2291,11 +2311,19 @@ module.exports = function ($) {
         } //end if (toggle)
         else { //we have just turned off a mask
             //if ForestOnly grey out the sub-forest types
+            /*
             if (maskName === "MaskForForest") {
                 $("#ConiferForest").attr("disabled", false);
                 $("#DeciduousForest").attr("disabled", false);
                 $("#MixedForest").attr("disabled", false);
             }
+            */
+            // MG 7/9/2015
+            if ($(maskId).attr('data-mask-grouper')) {
+                $('.mask-toggle[data-mask-parent="'+maskName+'"]').attr('disabled', false);
+            }
+
+
             // Loop through app.masks and find maskName
             // When you find it, deactivate all of its maskLayers
             // Keep track of the number of mask in app.masks
@@ -2462,7 +2490,8 @@ module.exports = function ($) {
                 var sublistObj = {
                     heading : sublist.label,
                     items : [],
-                    contentElement : $('<div><h4>' + sublist.label + '</h4></div>')
+                    contentElement : $(
+                        '<div><h4>' + sublist.label + '</h4></div>')
                 };
                 g.sublists.push(sublistObj);
                 sublistItems.push(sublistObj.contentElement);
@@ -2581,6 +2610,7 @@ module.exports = function ($) {
             }
         }, 5);
         ro1.step();
+
         // } //end loop for theme.accordionGroups
 
         return defaultAccordionGroup;
@@ -2592,6 +2622,44 @@ module.exports = function ($) {
         $('#layerPickerDialog').scrollTop(0);
         $('#mapToolsDialog').scrollTop(0);
         app.emit("themechange");
+
+        var showLessSublistHeight = parseInt($('.layer.showLessSublist').css('height').slice(0,-2))
+        $('button.show-all-layers').on('click', function (event) {
+            var $this = $(this);
+            $this.prop('disabled', true);
+            $this.siblings('button.show-more-layers').prop('disabled', true);
+            $this.siblings('button.show-less-layers').prop('disabled', false);
+            $this.siblings('.layer').css('height','').removeClass('showLessSublist');
+        });
+
+        // To keep consistency across viewports, when 'More' is clicked
+        // the height of a sublist increases relative to pixel height of a layer's checkbox
+        var heightOfLayerCheckbox = $('.layer :checkbox').css('height').slice(0, -2);
+        var heightIncFactor = 10;
+        var heightInc = heightOfLayerCheckbox * heightIncFactor;
+        $('button.show-more-layers').on('click', function (event) {
+            var $this = $(this);
+            var $sublist = $this.siblings('.layer');
+            var heightInPx = parseInt($sublist.css('height').slice(0,-2));
+            var scrollHeightInPx = $sublist.prop('scrollHeight');
+            if (heightInPx+heightInc > scrollHeightInPx) {
+                $sublist.removeClass('showLessSublist');
+                $this.prop('disabled', true);
+                $this.siblings('button.show-all-layers').prop('disabled', true);
+                //$siblings('button.show-less-layers').prop('disabled', false);
+            } else {
+                $sublist.css('height', '+='+heightInc);
+                $this.siblings('button.show-less-layers').prop('disabled', false);
+            }
+        });
+
+        $('button.show-less-layers').on('click', function (event) {
+            $this = $(this);
+            $this.prop('disabled', true);
+            $this.siblings('button.show-more-layers').prop('disabled', false);
+            $this.siblings('button.show-all-layers').prop('disabled', false);
+            $this.siblings('.layer').css('height', '').addClass('showLessSublist');
+        });
 
         //jdm 6/28/13: do a check to see if there is a corresponding active mask in options.shareUrlMasks
         //can be multiple mask per a parent layer
