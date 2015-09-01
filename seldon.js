@@ -19,41 +19,7 @@ function AccordionGroup (settings) {
     this.selectedInConfig = settings.selectedInConfig;
 }
 
-module.exports = AccordionGroup;{
-    // The tab key will cycle through the settings when first created
-    // Visit http://wbond.net/sublime_packages/sftp/settings for help
-    
-    // sftp, ftp or ftps
-    "type": "sftp",
-
-    "sync_down_on_open": true,
-    "sync_same_age": true,
-    
-    "host": "example.com",
-    "user": "username",
-    //"password": "password",
-    //"port": "22",
-    
-    "remote_path": "/example/path/",
-    //"file_permissions": "664",
-    //"dir_permissions": "775",
-    
-    //"extra_list_connections": 0,
-
-    "connect_timeout": 30,
-    //"keepalive": 120,
-    //"ftp_passive_mode": true,
-    //"ftp_obey_passive_host": false,
-    //"ssh_key_file": "~/.ssh/id_rsa",
-    //"sftp_flags": ["-F", "/path/to/ssh_config"],
-    
-    //"preserve_modification_times": false,
-    //"remote_time_offset_in_hours": 0,
-    //"remote_encoding": "utf-8",
-    //"remote_locale": "C",
-    //"allow_config_upload": false,
-}
-
+module.exports = AccordionGroup;
 
 },{}],3:[function(require,module,exports){
 function setAccordionGroup (accordionGroup) {
@@ -118,9 +84,11 @@ module.exports = function ($) {
         if (items.length > collapseThreshold) {
             contents.addClass('showLessSublist');
             contents.after(
+                '<div class="sublist-buttons">'+
                 '<button class="show-more-layers">More</button>' +
                 '<button disabled class="show-less-layers">Less' +
-                '<button class="show-all-layers">All</button>' 
+                '<button class="show-all-layers">All ('+items.length+')</button>'+
+                '</div>'
             );
         }
     }
@@ -2657,23 +2625,26 @@ module.exports = function ($) {
         $('#mapToolsDialog').scrollTop(0);
         app.emit("themechange");
 
-        var showLessSublistHeight = parseInt($('.layer.showLessSublist').css('height').slice(0,-2))
+        var heightOfLayerCheckbox = $('.layer :checkbox').outerHeight(true);
+        var showLessHeight = heightOfLayerCheckbox
+        $('.layer.showLessSublist').css('height')
+        parseInt($('.layer.showLessSublist').css('height').slice(0,-2))
         $('button.show-all-layers').on('click', function (event) {
             var $this = $(this);
             $this.prop('disabled', true);
             $this.siblings('button.show-more-layers').prop('disabled', true);
             $this.siblings('button.show-less-layers').prop('disabled', false);
-            $this.siblings('.layer').css('height','').removeClass('showLessSublist');
+            $this.parent().siblings('.layer').css('height','').removeClass('showLessSublist');
         });
+
 
         // To keep consistency across viewports, when 'More' is clicked
         // the height of a sublist increases relative to pixel height of a layer's checkbox
-        var heightIncFactor = 50,
-            heightOfLayerCheckbox = $('.layer :checkbox').css('height').slice(0, -2),
+        var heightIncFactor = 30,
             heightInc = heightOfLayerCheckbox * heightIncFactor;
         $('button.show-more-layers').on('click', function (event) {
             var $this = $(this),
-                $sublist = $this.siblings('.layer'),
+                $sublist = $this.parent().siblings('.layer'),
                 heightInPx = parseInt($sublist.css('height').slice(0,-2)),
                 scrollHeightInPx = $sublist.prop('scrollHeight');
             if (heightInPx+heightInc > scrollHeightInPx) {
@@ -2691,7 +2662,7 @@ module.exports = function ($) {
             $this.prop('disabled', true);
             $this.siblings('button.show-more-layers').prop('disabled', false);
             $this.siblings('button.show-all-layers').prop('disabled', false);
-            $this.siblings('.layer').css('height', '').addClass('showLessSublist');
+            $this.parent().siblings('.layer').css('height', '').addClass('showLessSublist');
         });
 
         //jdm 6/28/13: do a check to see if there is a corresponding active mask in options.shareUrlMasks

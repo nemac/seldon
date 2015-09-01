@@ -193,6 +193,23 @@ Footer Styles
 /*
 Map Layers & Map Tools Styles
 */
+
+.sublist-buttons {
+    margin-top: 5px;
+    margin-left: 3px;
+}
+
+.sublist-buttons button {
+    padding-left: .5em;
+    padding-right: .5em;
+    min-width: 5em;
+}
+
+.showLessSublist {
+    overflow: hidden;
+    height: 17.9em;
+}
+
 #mapToolsDialog {
     position: relative;
     z-index: 10003;
