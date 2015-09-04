@@ -72,8 +72,10 @@ module.exports = function ($) {
 module.exports = function ($) {
     function addAccordionSublistItems (s, items) {
         var collapseThreshold = 30;
-        var contents = $('<div class="layer"></div>');
-        contents.append(items);
+        var contents = $('<div class="layer-group"></div>');
+        for (var i=0, l=items.length; i<l; i++) {
+            contents.append($('<div class="layer"></div>').append(items[i]));
+        }
         var layer = {
             name : name,
             contentElement : contents
@@ -84,7 +86,7 @@ module.exports = function ($) {
         if (items.length > collapseThreshold) {
             contents.addClass('showLessSublist');
             contents.after(
-                '<div class="sublist-buttons">'+
+                '<div class="sublist-buttons ui-buttonset">'+
                 '<button class="show-more-layers">More</button>' +
                 '<button disabled class="show-less-layers">Less' +
                 '<button class="show-all-layers">All ('+items.length+')</button>'+
@@ -2517,7 +2519,7 @@ module.exports = function ($) {
                     });
 
                     labelElem = document.createElement("label");
-                    brElem = document.createElement("br");
+                    //brElem = document.createElement("br");
                     textElem = document.createTextNode(layer.name);
                     labelElem.setAttribute("for", "chk" + layer.lid);
                     labelElem.appendChild(textElem);
@@ -2625,30 +2627,34 @@ module.exports = function ($) {
         $('#mapToolsDialog').scrollTop(0);
         app.emit("themechange");
 
-        var heightOfLayerCheckbox = $('.layer :checkbox').outerHeight(true);
-        var showLessHeight = heightOfLayerCheckbox
-        $('.layer.showLessSublist').css('height')
-        parseInt($('.layer.showLessSublist').css('height').slice(0,-2))
+        var heightOfLayerDiv = $('.layer').outerHeight(true),
+            initialLessSublistHeightFactor = 10,
+            initialLessSublistHeight = heightOfLayerDiv * initialLessSublistHeightFactor + 'px',
+            heightIncFactor = 30,
+            heightInc = heightOfLayerDiv * heightIncFactor;
+
+        $('.showLessSublist').css('height', initialLessSublistHeight);
+
         $('button.show-all-layers').on('click', function (event) {
-            var $this = $(this);
+            var $this = $(this),
+                $sublist = $this.parent().siblings('.layer-group'),
+                sublistScrollHeight = $sublist.prop('scrollHeight') + 'px';
             $this.prop('disabled', true);
             $this.siblings('button.show-more-layers').prop('disabled', true);
             $this.siblings('button.show-less-layers').prop('disabled', false);
-            $this.parent().siblings('.layer').css('height','').removeClass('showLessSublist');
+            $sublist.css('height', sublistScrollHeight);
         });
-
 
         // To keep consistency across viewports, when 'More' is clicked
         // the height of a sublist increases relative to pixel height of a layer's checkbox
-        var heightIncFactor = 30,
-            heightInc = heightOfLayerCheckbox * heightIncFactor;
+
         $('button.show-more-layers').on('click', function (event) {
             var $this = $(this),
-                $sublist = $this.parent().siblings('.layer'),
+                $sublist = $this.parent().siblings('.layer-group'),
                 heightInPx = parseInt($sublist.css('height').slice(0,-2)),
                 scrollHeightInPx = $sublist.prop('scrollHeight');
             if (heightInPx+heightInc > scrollHeightInPx) {
-                $sublist.removeClass('showLessSublist');
+                $sublist.css('height', sublistScrollHeight);
                 $this.prop('disabled', true);
                 $this.siblings('button.show-all-layers').prop('disabled', true);
             } else {
@@ -2658,11 +2664,11 @@ module.exports = function ($) {
         });
 
         $('button.show-less-layers').on('click', function (event) {
-            $this = $(this);
+            var $this = $(this);
+            $this.parent().siblings('.layer-group').css('height', initialLessSublistHeight);
             $this.prop('disabled', true);
             $this.siblings('button.show-more-layers').prop('disabled', false);
             $this.siblings('button.show-all-layers').prop('disabled', false);
-            $this.parent().siblings('.layer').css('height', '').addClass('showLessSublist');
         });
 
         //jdm 6/28/13: do a check to see if there is a corresponding active mask in options.shareUrlMasks

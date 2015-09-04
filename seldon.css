@@ -194,6 +194,25 @@ Footer Styles
 Map Layers & Map Tools Styles
 */
 
+.layer-group {
+    transition: height .3s;
+    overflow: hidden;
+}
+
+.layer input {
+    vertical-align: bottom;
+    padding: 1px;
+    margin: 3px 4px .8px 1px;
+}
+
+.layer img {
+    vertical-align: bottom;
+}
+
+.layer {
+    height: 21px;
+}
+
 .sublist-buttons {
     margin-top: 5px;
     margin-left: 3px;
@@ -203,11 +222,6 @@ Map Layers & Map Tools Styles
     padding-left: .5em;
     padding-right: .5em;
     min-width: 5em;
-}
-
-.showLessSublist {
-    overflow: hidden;
-    height: 17.9em;
 }
 
 #mapToolsDialog {
