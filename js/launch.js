@@ -7,7 +7,7 @@ module.exports = function ($) {
     function launch (configFile, shareUrlInfo) {
         var deactivateActiveOpenLayersControls = require("./deactivate_controls.js")(this, activeBtn);
         var printMap = require("./print.js")($, this);
-
+        var setupCollapsibleSublists = require("./setup_collapsible_sublists.js")($);
         var app = this;
 
         var $configXML;
@@ -77,6 +77,7 @@ module.exports = function ($) {
         });
         app.addListener("themechange", function () {
             app.updateShareMapUrl();
+            setupCollapsibleSublists();
         });
         app.addListener("baselayerchange", function () {
             app.updateShareMapUrl();

@@ -199,6 +199,10 @@ Map Layers & Map Tools Styles
     overflow: hidden;
 }
 
+.layer {
+    height: 21px;
+}
+
 .layer input {
     vertical-align: bottom;
     padding: 1px;
@@ -207,10 +211,6 @@ Map Layers & Map Tools Styles
 
 .layer img {
     vertical-align: bottom;
-}
-
-.layer {
-    height: 21px;
 }
 
 .sublist-buttons {

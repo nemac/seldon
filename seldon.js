@@ -87,9 +87,9 @@ module.exports = function ($) {
             contents.addClass('showLessSublist');
             contents.after(
                 '<div class="sublist-buttons ui-buttonset">'+
-                '<button class="show-more-layers">More</button>' +
-                '<button disabled class="show-less-layers">Less' +
-                '<button class="show-all-layers">All ('+items.length+')</button>'+
+                    '<button class="show-more-layers">More</button>' +
+                    '<button disabled class="show-less-layers">Less' +
+                    '<button class="show-all-layers">All ('+items.length+')</button>'+
                 '</div>'
             );
         }
@@ -195,7 +195,7 @@ module.exports = function ($) {
     return App;
 }
 
-},{"./accordion_clear.js":1,"./accordion_group_set.js":3,"./accordion_section_add.js":5,"./accordion_sublist_add.js":6,"./accordion_sublist_item_add.js":7,"./add_mask_legend.js":8,"./count.js":13,"./extent_print.js":16,"./extent_save.js":17,"./extent_zoom.js":18,"./extent_zoom_next.js":19,"./extent_zoom_previous.js":20,"./init_openlayers.js":24,"./launch.js":25,"./parse_config.js":36,"./set_base_layer.js":40,"./set_mask_by_layer.js":41,"./set_mask_by_mask.js":42,"./set_theme.js":43,"./share_url.js":45,"./update_share_url.js":49}],10:[function(require,module,exports){
+},{"./accordion_clear.js":1,"./accordion_group_set.js":3,"./accordion_section_add.js":5,"./accordion_sublist_add.js":6,"./accordion_sublist_item_add.js":7,"./add_mask_legend.js":8,"./count.js":13,"./extent_print.js":16,"./extent_save.js":17,"./extent_zoom.js":18,"./extent_zoom_next.js":19,"./extent_zoom_previous.js":20,"./init_openlayers.js":24,"./launch.js":25,"./parse_config.js":36,"./set_base_layer.js":40,"./set_mask_by_layer.js":41,"./set_mask_by_mask.js":42,"./set_theme.js":43,"./share_url.js":46,"./update_share_url.js":50}],10:[function(require,module,exports){
 function arrayContainsElement (array, element) {
     var i;
     if (array === undefined) {
@@ -700,7 +700,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":12,"./stringContainsChar.js":47}],23:[function(require,module,exports){
+},{"./clicktool.js":12,"./stringContainsChar.js":48}],23:[function(require,module,exports){
 module.exports = function (app) {
     var ShareUrlInfo = require('./share.js');
 
@@ -717,7 +717,7 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":44}],24:[function(require,module,exports){
+},{"./share.js":45}],24:[function(require,module,exports){
 function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
     var app = this;
 
@@ -801,7 +801,6 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
         OpenLayers.Util.getElement("latLonTracker").innerHTML = "Lat: " + sprintf("%.5f", lonlat.lat) + " Lon: " + sprintf("%.5f", lonlat.lon) + "";
     });
     app.map.addControl(new OpenLayers.Control.PanZoomBar());
-
 }
 
 module.exports = initOpenLayers;
@@ -816,7 +815,7 @@ module.exports = function ($) {
     function launch (configFile, shareUrlInfo) {
         var deactivateActiveOpenLayersControls = require("./deactivate_controls.js")(this, activeBtn);
         var printMap = require("./print.js")($, this);
-
+        var setupCollapsibleSublists = require("./setup_collapsible_sublists.js")($);
         var app = this;
 
         var $configXML;
@@ -886,6 +885,7 @@ module.exports = function ($) {
         });
         app.addListener("themechange", function () {
             app.updateShareMapUrl();
+            setupCollapsibleSublists();
         });
         app.addListener("baselayerchange", function () {
             app.updateShareMapUrl();
@@ -1123,7 +1123,7 @@ module.exports = function ($) {
     return launch;
 }
 
-},{"./deactivate_controls.js":15,"./print.js":37,"./splash.js":46}],26:[function(require,module,exports){
+},{"./deactivate_controls.js":15,"./print.js":37,"./setup_collapsible_sublists.js":44,"./splash.js":47}],26:[function(require,module,exports){
 module.exports = function ($, app) {
     var stringContainsChar = require('./stringContainsChar.js');
 
@@ -1326,7 +1326,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{"./stringContainsChar.js":47}],27:[function(require,module,exports){
+},{"./stringContainsChar.js":48}],27:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -1995,7 +1995,7 @@ module.exports = function ($) {
     return parseConfig;
 }
 
-},{"./accordion_group.js":2,"./accordion_group_sublist.js":4,"./baselayer.js":11,"./create_arcgis_rest_params.js":14,"./identify.js":22,"./layer.js":26,"./multigraph.js":34,"./theme.js":48}],37:[function(require,module,exports){
+},{"./accordion_group.js":2,"./accordion_group_sublist.js":4,"./baselayer.js":11,"./create_arcgis_rest_params.js":14,"./identify.js":22,"./layer.js":26,"./multigraph.js":34,"./theme.js":49}],37:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap ($configXML) {
         // go through all layers, and collect a list of objects
@@ -2253,22 +2253,13 @@ module.exports = function ($) {
         var maskParentLayers = app.maskParentLayers;
         var maskParentLayer, maskLayer;
         var i;
-        var maskId = "#" + maskName.replace("MaskFor", "");
-
 
         if (toggle) {
             // if ForestOnly grey out the sub-forest types
-            /*
             if (maskName === "MaskForForest") {
                 $("#ConiferForest").attr("disabled", true);
                 $("#DeciduousForest").attr("disabled", true);
                 $("#MixedForest").attr("disabled", true);
-            }
-            */
-
-            // MG 7/9/2015
-            if ($(maskId).attr('data-mask-grouper')) {
-                $('.mask-toggle[data-mask-parent="'+maskName+'"]').attr('disabled', true);
             }
 
             var seldonLayer;
@@ -2315,19 +2306,11 @@ module.exports = function ($) {
         } //end if (toggle)
         else { //we have just turned off a mask
             //if ForestOnly grey out the sub-forest types
-            /*
             if (maskName === "MaskForForest") {
                 $("#ConiferForest").attr("disabled", false);
                 $("#DeciduousForest").attr("disabled", false);
                 $("#MixedForest").attr("disabled", false);
             }
-            */
-            // MG 7/9/2015
-            if ($(maskId).attr('data-mask-grouper')) {
-                $('.mask-toggle[data-mask-parent="'+maskName+'"]').attr('disabled', false);
-            }
-
-
             // Loop through app.masks and find maskName
             // When you find it, deactivate all of its maskLayers
             // Keep track of the number of mask in app.masks
@@ -2494,8 +2477,7 @@ module.exports = function ($) {
                 var sublistObj = {
                     heading : sublist.label,
                     items : [],
-                    contentElement : $(
-                        '<div><h4>' + sublist.label + '</h4></div>')
+                    contentElement : $('<div><h4>' + sublist.label + '</h4></div>')
                 };
                 g.sublists.push(sublistObj);
                 sublistItems.push(sublistObj.contentElement);
@@ -2519,7 +2501,7 @@ module.exports = function ($) {
                     });
 
                     labelElem = document.createElement("label");
-                    //brElem = document.createElement("br");
+                    brElem = document.createElement("br");
                     textElem = document.createTextNode(layer.name);
                     labelElem.setAttribute("for", "chk" + layer.lid);
                     labelElem.appendChild(textElem);
@@ -2614,7 +2596,6 @@ module.exports = function ($) {
             }
         }, 5);
         ro1.step();
-
         // } //end loop for theme.accordionGroups
 
         return defaultAccordionGroup;
@@ -2626,50 +2607,6 @@ module.exports = function ($) {
         $('#layerPickerDialog').scrollTop(0);
         $('#mapToolsDialog').scrollTop(0);
         app.emit("themechange");
-
-        var heightOfLayerDiv = $('.layer').outerHeight(true),
-            initialLessSublistHeightFactor = 10,
-            initialLessSublistHeight = heightOfLayerDiv * initialLessSublistHeightFactor + 'px',
-            heightIncFactor = 30,
-            heightInc = heightOfLayerDiv * heightIncFactor;
-
-        $('.showLessSublist').css('height', initialLessSublistHeight);
-
-        $('button.show-all-layers').on('click', function (event) {
-            var $this = $(this),
-                $sublist = $this.parent().siblings('.layer-group'),
-                sublistScrollHeight = $sublist.prop('scrollHeight') + 'px';
-            $this.prop('disabled', true);
-            $this.siblings('button.show-more-layers').prop('disabled', true);
-            $this.siblings('button.show-less-layers').prop('disabled', false);
-            $sublist.css('height', sublistScrollHeight);
-        });
-
-        // To keep consistency across viewports, when 'More' is clicked
-        // the height of a sublist increases relative to pixel height of a layer's checkbox
-
-        $('button.show-more-layers').on('click', function (event) {
-            var $this = $(this),
-                $sublist = $this.parent().siblings('.layer-group'),
-                heightInPx = parseInt($sublist.css('height').slice(0,-2)),
-                scrollHeightInPx = $sublist.prop('scrollHeight');
-            if (heightInPx+heightInc > scrollHeightInPx) {
-                $sublist.css('height', sublistScrollHeight);
-                $this.prop('disabled', true);
-                $this.siblings('button.show-all-layers').prop('disabled', true);
-            } else {
-                $sublist.css('height', '+='+heightInc);
-                $this.siblings('button.show-less-layers').prop('disabled', false);
-            }
-        });
-
-        $('button.show-less-layers').on('click', function (event) {
-            var $this = $(this);
-            $this.parent().siblings('.layer-group').css('height', initialLessSublistHeight);
-            $this.prop('disabled', true);
-            $this.siblings('button.show-more-layers').prop('disabled', false);
-            $this.siblings('button.show-all-layers').prop('disabled', false);
-        });
 
         //jdm 6/28/13: do a check to see if there is a corresponding active mask in options.shareUrlMasks
         //can be multiple mask per a parent layer
@@ -2708,7 +2645,55 @@ module.exports = function ($) {
     return setTheme;
 }
 
-},{"./array_contains_element.js":10,"./layer_checkbox.js":27,"./layer_icon.js":29,"./layer_radio.js":30,"./layer_select.js":32,"./repeating_operation.js":38,"./share.js":44}],44:[function(require,module,exports){
+},{"./array_contains_element.js":10,"./layer_checkbox.js":27,"./layer_icon.js":29,"./layer_radio.js":30,"./layer_select.js":32,"./repeating_operation.js":38,"./share.js":45}],44:[function(require,module,exports){
+module.exports = function ($) {
+    function setupCollapsibleSublists () {
+
+        var heightOfLayerDiv = $('.layer').outerHeight(true),
+            heightIncFactor = 30,
+            heightInc = heightOfLayerDiv * heightIncFactor,
+            initialLessSublistHeightFactor = 10,
+            initialLessSublistHeight = heightOfLayerDiv * initialLessSublistHeightFactor + 'px';
+
+        $('.showLessSublist').css('height', initialLessSublistHeight);
+
+        $('button.show-all-layers').on('click', function (event) {
+            var $this = $(this),
+                $sublist = $this.parent().siblings('.layer-group'),
+                sublistScrollHeight = $sublist.prop('scrollHeight') + 'px';
+            $this.prop('disabled', true);
+            $this.siblings('button.show-more-layers').prop('disabled', true);
+            $this.siblings('button.show-less-layers').prop('disabled', false);
+            $sublist.css('height', sublistScrollHeight);
+        });
+
+        $('button.show-more-layers').on('click', function (event) {
+            var $this = $(this),
+                $sublist = $this.parent().siblings('.layer-group'),
+                heightInPx = parseInt($sublist.css('height').slice(0,-2)),
+                scrollHeightInPx = $sublist.prop('scrollHeight');
+            if (heightInPx+heightInc > scrollHeightInPx) {
+                $sublist.css('height', sublistScrollHeight);
+                $this.prop('disabled', true);
+                $this.siblings('button.show-all-layers').prop('disabled', true);
+            } else {
+                $sublist.css('height', '+='+heightInc);
+                $this.siblings('button.show-less-layers').prop('disabled', false);
+            }
+        });
+
+        $('button.show-less-layers').on('click', function (event) {
+            var $this = $(this);
+            $this.parent().siblings('.layer-group').css('height', initialLessSublistHeight);
+            $this.prop('disabled', true);
+            $this.siblings('button.show-more-layers').prop('disabled', false);
+            $this.siblings('button.show-all-layers').prop('disabled', false);
+        });
+    }
+
+    return setupCollapsibleSublists;
+}
+},{}],45:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) settings = {};
 
@@ -2805,7 +2790,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 module.exports = function ($) {
     var stringContainsChar = require("./stringContainsChar.js");
     var ShareUrlInfo = require("./share.js");
@@ -2875,7 +2860,7 @@ module.exports = function ($) {
     return shareUrl;
 }
 
-},{"./share.js":44,"./stringContainsChar.js":47}],46:[function(require,module,exports){
+},{"./share.js":45,"./stringContainsChar.js":48}],47:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $document    = $(document),
@@ -2895,14 +2880,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],47:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -2929,7 +2914,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],49:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 module.exports = function ($) {
     function updateShareMapUrl () {
         if (this.currentTheme) {
