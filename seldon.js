@@ -86,10 +86,10 @@ module.exports = function ($) {
         if (items.length > collapseThreshold) {
             contents.addClass('showLessSublist');
             contents.after(
-                '<div class="sublist-buttons ui-buttonset">'+
-                    '<button class="show-more-layers">More</button>' +
+                '<div class="sublist-buttons">'+
+                    '<button class="left active show-more-layers">More</button>' +
                     '<button disabled class="show-less-layers">Less' +
-                    '<button class="show-all-layers">All ('+items.length+')</button>'+
+                    '<button class="right active show-all-layers">All ('+items.length+')</button>'+
                 '</div>'
             );
         }
@@ -195,7 +195,7 @@ module.exports = function ($) {
     return App;
 }
 
-},{"./accordion_clear.js":1,"./accordion_group_set.js":3,"./accordion_section_add.js":5,"./accordion_sublist_add.js":6,"./accordion_sublist_item_add.js":7,"./add_mask_legend.js":8,"./count.js":13,"./extent_print.js":16,"./extent_save.js":17,"./extent_zoom.js":18,"./extent_zoom_next.js":19,"./extent_zoom_previous.js":20,"./init_openlayers.js":24,"./launch.js":25,"./parse_config.js":36,"./set_base_layer.js":40,"./set_mask_by_layer.js":41,"./set_mask_by_mask.js":42,"./set_theme.js":43,"./share_url.js":46,"./update_share_url.js":50}],10:[function(require,module,exports){
+},{"./accordion_clear.js":1,"./accordion_group_set.js":3,"./accordion_section_add.js":5,"./accordion_sublist_add.js":6,"./accordion_sublist_item_add.js":7,"./add_mask_legend.js":8,"./count.js":14,"./extent_print.js":17,"./extent_save.js":18,"./extent_zoom.js":19,"./extent_zoom_next.js":20,"./extent_zoom_previous.js":21,"./init_openlayers.js":25,"./launch.js":26,"./parse_config.js":37,"./set_base_layer.js":41,"./set_mask_by_layer.js":42,"./set_mask_by_mask.js":43,"./set_theme.js":44,"./share_url.js":46,"./update_share_url.js":50}],10:[function(require,module,exports){
 function arrayContainsElement (array, element) {
     var i;
     if (array === undefined) {
@@ -260,6 +260,56 @@ var ClickTool = OpenLayers.Class(OpenLayers.Control, {
 module.exports = ClickTool;
 
 },{}],13:[function(require,module,exports){
+module.exports = function ($) {
+    function setupCollapsibleSublists () {
+
+        var heightOfLayerDiv = $('.layer').outerHeight(true),
+            heightIncFactor = 30,
+            heightInc = heightOfLayerDiv * heightIncFactor,
+            initialLessSublistHeightFactor = 10,
+            initialLessSublistHeight = heightOfLayerDiv * initialLessSublistHeightFactor + 'px';
+
+        $('.showLessSublist').css('height', initialLessSublistHeight);
+
+        $('button.show-all-layers').on('click', function (event) {
+            var $this = $(this),
+                $sublist = $this.parent().siblings('.layer-group'),
+                sublistScrollHeight = $sublist.prop('scrollHeight') + 'px';
+            $this.removeClass('active').prop('disabled', true);
+            $this.siblings('button.show-more-layers').removeClass('active').prop('disabled', true);
+            $this.siblings('button.show-less-layers').addClass('active').prop('disabled', false);
+            $sublist.css('height', sublistScrollHeight);
+        });
+
+        $('button.show-more-layers').on('click', function (event) {
+            $this.blur();
+            var $this = $(this),
+                $sublist = $this.parent().siblings('.layer-group'),
+                heightInPx = parseInt($sublist.css('height').slice(0,-2)),
+                scrollHeightInPx = $sublist.prop('scrollHeight');
+            if (heightInPx+heightInc > scrollHeightInPx) {
+                $sublist.css('height', sublistScrollHeight);
+                $this.removeClass('active').prop('disabled', true);
+                $this.siblings('button.show-all-layers').removeClass('active').prop('disabled', true);
+            } else {
+                $sublist.css('height', '+='+heightInc);
+                $this.siblings('button.show-less-layers').addClass('active').prop('disabled', false);
+            }
+
+        });
+
+        $('button.show-less-layers').on('click', function (event) {
+            var $this = $(this);
+            $this.parent().siblings('.layer-group').css('height', initialLessSublistHeight);
+            $this.removeClass('active').prop('disabled', true);
+            $this.siblings('button.show-more-layers').addClass('active').prop('disabled', false);
+            $this.siblings('button.show-all-layers').addClass('active').prop('disabled', false);
+        });
+    }
+
+    return setupCollapsibleSublists;
+}
+},{}],14:[function(require,module,exports){
 function count (array, value) {
     var counter = 0,
         i;
@@ -271,7 +321,7 @@ function count (array, value) {
 
 module.exports = count;
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports = function ($) {
     function createArcGIS93RestParams ($layer) {
         //  $layer is a jQuery object corresponding to a <restLayer> section in the config file.
@@ -314,7 +364,7 @@ module.exports = function ($) {
     return createArcGIS93RestParams;
 }
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     function deactivateActiveOpenLayersControls () {
         var controls,
@@ -337,7 +387,7 @@ module.exports = function (app, activeBtn) {
     return deactivateActiveOpenLayersControls;
 }
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 function printSavedExtents () {
     // This function is for debugging only and is not normally used.  It returns an HTML
     // table showing the current savedExtents list, and the current position within the list.
@@ -363,7 +413,7 @@ function printSavedExtents () {
 
 module.exports = printSavedExtents;
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var extentsAreEqual = require("./extents_equal.js");
 
 // save the current extent into the savedExtents array, if it is different from
@@ -401,7 +451,7 @@ function formatExtent (extent) {
 
 module.exports = saveCurrentExtent;
 
-},{"./extents_equal.js":21}],18:[function(require,module,exports){
+},{"./extents_equal.js":22}],19:[function(require,module,exports){
 function zoomToExtent (extent, save) {
     if (save === undefined) {
         save = true;
@@ -415,7 +465,7 @@ function zoomToExtent (extent, save) {
 
 module.exports = zoomToExtent;
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 function zoomToNextExtent () {
     if (this.currentSavedExtentIndex < this.savedExtents.length-1) {
         ++this.currentSavedExtentIndex;
@@ -425,7 +475,7 @@ function zoomToNextExtent () {
 
 module.exports = zoomToNextExtent;
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 function zoomToPreviousExtent () {
     if (this.currentSavedExtentIndex > 0) {
         --this.currentSavedExtentIndex;
@@ -435,7 +485,7 @@ function zoomToPreviousExtent () {
 
 module.exports = zoomToPreviousExtent;
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 function extentsAreEqual (e1, e2) {
     var tolerance = 0.001;
     return ((Math.abs(e1.left - e2.left)        <= tolerance)
@@ -446,7 +496,7 @@ function extentsAreEqual (e1, e2) {
 
 module.exports = extentsAreEqual;
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js'),
         stringContainsChar = require('./stringContainsChar.js');
@@ -700,7 +750,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":12,"./stringContainsChar.js":48}],23:[function(require,module,exports){
+},{"./clicktool.js":12,"./stringContainsChar.js":48}],24:[function(require,module,exports){
 module.exports = function (app) {
     var ShareUrlInfo = require('./share.js');
 
@@ -717,7 +767,7 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":45}],24:[function(require,module,exports){
+},{"./share.js":45}],25:[function(require,module,exports){
 function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
     var app = this;
 
@@ -805,7 +855,7 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
 
 module.exports = initOpenLayers;
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 module.exports = function ($) {
     var createSplashScreen = require("./splash.js")($);
 
@@ -815,7 +865,7 @@ module.exports = function ($) {
     function launch (configFile, shareUrlInfo) {
         var deactivateActiveOpenLayersControls = require("./deactivate_controls.js")(this, activeBtn);
         var printMap = require("./print.js")($, this);
-        var setupCollapsibleSublists = require("./setup_collapsible_sublists.js")($);
+        var setupCollapsibleSublists = require("./collapsible_sublist_setup.js")($);
         var app = this;
 
         var $configXML;
@@ -1123,7 +1173,7 @@ module.exports = function ($) {
     return launch;
 }
 
-},{"./deactivate_controls.js":15,"./print.js":37,"./setup_collapsible_sublists.js":44,"./splash.js":47}],26:[function(require,module,exports){
+},{"./collapsible_sublist_setup.js":13,"./deactivate_controls.js":16,"./print.js":38,"./splash.js":47}],27:[function(require,module,exports){
 module.exports = function ($, app) {
     var stringContainsChar = require('./stringContainsChar.js');
 
@@ -1326,7 +1376,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{"./stringContainsChar.js":48}],27:[function(require,module,exports){
+},{"./stringContainsChar.js":48}],28:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -1356,7 +1406,7 @@ module.exports = function ($) {
     return createLayerToggleCheckbox;
 }
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 // This function gets called every time the layer properties icon gets clicked
 module.exports = function ($) {
     function createLayerPropertiesDialog (layer) {
@@ -1445,7 +1495,7 @@ module.exports = function ($) {
 }
 
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 module.exports = function ($) {
     var createLayerPropertiesDialog = require("./layer_dialog.js")($);
 
@@ -1463,7 +1513,7 @@ module.exports = function ($) {
     return createLayerPropertiesIcon;
 }
 
-},{"./layer_dialog.js":28}],30:[function(require,module,exports){
+},{"./layer_dialog.js":29}],31:[function(require,module,exports){
 module.exports = function ($, app) {
     var generalRadioHandler = require("./layer_radio_handler.js")($, app);
 
@@ -1499,7 +1549,7 @@ module.exports = function ($, app) {
     return createLayerToggleRadioButton;
 }
 
-},{"./layer_radio_handler.js":31}],31:[function(require,module,exports){
+},{"./layer_radio_handler.js":32}],32:[function(require,module,exports){
 module.exports = function ($, app) {
     var Layer = require('./layer.js')($, app);
 
@@ -1578,7 +1628,7 @@ module.exports = function ($, app) {
     return radioHandler;
 }
 
-},{"./layer.js":26}],32:[function(require,module,exports){
+},{"./layer.js":27}],33:[function(require,module,exports){
 module.exports = function ($, app) {
     var radioHandler = require("./layer_radio_handler.js")($, app);
 
@@ -1609,7 +1659,7 @@ module.exports = function ($, app) {
     return createLayerToggleDropdownBox;
 }
 
-},{"./layer_radio_handler.js":31}],33:[function(require,module,exports){
+},{"./layer_radio_handler.js":32}],34:[function(require,module,exports){
 function Mask (maskName) {
     window.EventEmitter.call(this);
     this.maskName = maskName;
@@ -1618,7 +1668,7 @@ function Mask (maskName) {
 
 module.exports = Mask;
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js');
 
@@ -1706,7 +1756,7 @@ module.exports = function ($, app) {
     return createMultigraphTool;
 }
 
-},{"./clicktool.js":12}],35:[function(require,module,exports){
+},{"./clicktool.js":12}],36:[function(require,module,exports){
 module.exports = function ($) {
     //jdm: override of js remove function
     //This is very useful for removing items from array by value
@@ -1761,7 +1811,7 @@ module.exports = function ($) {
     }));
 }
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 module.exports = function ($) {
     var createArcGIS93RestParams = require("./create_arcgis_rest_params.js")($);
     var AccordionGroup           = require("./accordion_group.js");
@@ -1995,7 +2045,7 @@ module.exports = function ($) {
     return parseConfig;
 }
 
-},{"./accordion_group.js":2,"./accordion_group_sublist.js":4,"./baselayer.js":11,"./create_arcgis_rest_params.js":14,"./identify.js":22,"./layer.js":26,"./multigraph.js":34,"./theme.js":49}],37:[function(require,module,exports){
+},{"./accordion_group.js":2,"./accordion_group_sublist.js":4,"./baselayer.js":11,"./create_arcgis_rest_params.js":15,"./identify.js":23,"./layer.js":27,"./multigraph.js":35,"./theme.js":49}],38:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap ($configXML) {
         // go through all layers, and collect a list of objects
@@ -2100,7 +2150,7 @@ module.exports = function ($, app) {
     return printMap;
 };
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 function RepeatingOperation (op, yieldEveryIteration) {
     var count = 0;
     var instance = this;
@@ -2116,7 +2166,7 @@ function RepeatingOperation (op, yieldEveryIteration) {
 
 module.exports = RepeatingOperation;
 
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2131,7 +2181,7 @@ module.exports = RepeatingOperation;
     window.seldon = seldon;
 }(jQuery));
 
-},{"./app.js":9,"./init.js":23,"./overrides.js":35}],40:[function(require,module,exports){
+},{"./app.js":9,"./init.js":24,"./overrides.js":36}],41:[function(require,module,exports){
 module.exports = function ($) {
     function setBaseLayer (baseLayer) {
         var app = this;
@@ -2167,7 +2217,7 @@ module.exports = function ($) {
 }
 
 
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 module.exports = function ($) {
     function setMaskByLayer (toggle, parentLayer) {
         var Layer = require("./layer.js")($, this);
@@ -2239,7 +2289,7 @@ module.exports = function ($) {
     return setMaskByLayer;
 }
 
-},{"./layer.js":26}],42:[function(require,module,exports){
+},{"./layer.js":27}],43:[function(require,module,exports){
 module.exports = function ($) {
     var Mask = require("./mask.js");
 
@@ -2347,7 +2397,7 @@ module.exports = function ($) {
     return setMaskByMask;
 }
 
-},{"./layer.js":26,"./mask.js":33}],43:[function(require,module,exports){
+},{"./layer.js":27,"./mask.js":34}],44:[function(require,module,exports){
 module.exports = function ($) {
     var RepeatingOperation = require("./repeating_operation.js");
     var ShareUrlInfo = require("./share.js");
@@ -2645,55 +2695,7 @@ module.exports = function ($) {
     return setTheme;
 }
 
-},{"./array_contains_element.js":10,"./layer_checkbox.js":27,"./layer_icon.js":29,"./layer_radio.js":30,"./layer_select.js":32,"./repeating_operation.js":38,"./share.js":45}],44:[function(require,module,exports){
-module.exports = function ($) {
-    function setupCollapsibleSublists () {
-
-        var heightOfLayerDiv = $('.layer').outerHeight(true),
-            heightIncFactor = 30,
-            heightInc = heightOfLayerDiv * heightIncFactor,
-            initialLessSublistHeightFactor = 10,
-            initialLessSublistHeight = heightOfLayerDiv * initialLessSublistHeightFactor + 'px';
-
-        $('.showLessSublist').css('height', initialLessSublistHeight);
-
-        $('button.show-all-layers').on('click', function (event) {
-            var $this = $(this),
-                $sublist = $this.parent().siblings('.layer-group'),
-                sublistScrollHeight = $sublist.prop('scrollHeight') + 'px';
-            $this.prop('disabled', true);
-            $this.siblings('button.show-more-layers').prop('disabled', true);
-            $this.siblings('button.show-less-layers').prop('disabled', false);
-            $sublist.css('height', sublistScrollHeight);
-        });
-
-        $('button.show-more-layers').on('click', function (event) {
-            var $this = $(this),
-                $sublist = $this.parent().siblings('.layer-group'),
-                heightInPx = parseInt($sublist.css('height').slice(0,-2)),
-                scrollHeightInPx = $sublist.prop('scrollHeight');
-            if (heightInPx+heightInc > scrollHeightInPx) {
-                $sublist.css('height', sublistScrollHeight);
-                $this.prop('disabled', true);
-                $this.siblings('button.show-all-layers').prop('disabled', true);
-            } else {
-                $sublist.css('height', '+='+heightInc);
-                $this.siblings('button.show-less-layers').prop('disabled', false);
-            }
-        });
-
-        $('button.show-less-layers').on('click', function (event) {
-            var $this = $(this);
-            $this.parent().siblings('.layer-group').css('height', initialLessSublistHeight);
-            $this.prop('disabled', true);
-            $this.siblings('button.show-more-layers').prop('disabled', false);
-            $this.siblings('button.show-all-layers').prop('disabled', false);
-        });
-    }
-
-    return setupCollapsibleSublists;
-}
-},{}],45:[function(require,module,exports){
+},{"./array_contains_element.js":10,"./layer_checkbox.js":28,"./layer_icon.js":30,"./layer_radio.js":31,"./layer_select.js":33,"./repeating_operation.js":39,"./share.js":45}],45:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) settings = {};
 
@@ -2928,4 +2930,4 @@ module.exports = function ($) {
     return updateShareMapUrl;
 }
 
-},{}]},{},[39]);
+},{}]},{},[40]);

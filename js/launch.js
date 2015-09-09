@@ -7,7 +7,7 @@ module.exports = function ($) {
     function launch (configFile, shareUrlInfo) {
         var deactivateActiveOpenLayersControls = require("./deactivate_controls.js")(this, activeBtn);
         var printMap = require("./print.js")($, this);
-        var setupCollapsibleSublists = require("./setup_collapsible_sublists.js")($);
+        var setupCollapsibleSublists = require("./collapsible_sublist_setup.js")($);
         var app = this;
 
         var $configXML;

@@ -15,10 +15,10 @@ module.exports = function ($) {
         if (items.length > collapseThreshold) {
             contents.addClass('showLessSublist');
             contents.after(
-                '<div class="sublist-buttons ui-buttonset">'+
-                    '<button class="show-more-layers">More</button>' +
+                '<div class="sublist-buttons">'+
+                    '<button class="left active show-more-layers">More</button>' +
                     '<button disabled class="show-less-layers">Less' +
-                    '<button class="show-all-layers">All ('+items.length+')</button>'+
+                    '<button class="right active show-all-layers">All ('+items.length+')</button>'+
                 '</div>'
             );
         }
