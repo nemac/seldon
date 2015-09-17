@@ -264,11 +264,11 @@ module.exports = function ($) {
     function setupCollapsibleSublists () {
 
         var heightOfLayerDiv = $('.layer').outerHeight(true),
+            initialLessSublistHeightFactor = 10,
             heightIncFactor = 30,
             heightInc = heightOfLayerDiv * heightIncFactor,
-            initialLessSublistHeightFactor = 10,
             initialLessSublistHeight = heightOfLayerDiv * initialLessSublistHeightFactor + 'px';
-
+        
         $('.showLessSublist').css('height', initialLessSublistHeight);
 
         $('button.show-all-layers').on('click', function (event) {
@@ -282,11 +282,12 @@ module.exports = function ($) {
         });
 
         $('button.show-more-layers').on('click', function (event) {
-            $this.blur();
-            var $this = $(this),
-                $sublist = $this.parent().siblings('.layer-group'),
+            var $this = $(this);
+                $this.blur();
+            var $sublist = $this.parent().siblings('.layer-group'),
                 heightInPx = parseInt($sublist.css('height').slice(0,-2)),
                 scrollHeightInPx = $sublist.prop('scrollHeight');
+
             if (heightInPx+heightInc > scrollHeightInPx) {
                 $sublist.css('height', sublistScrollHeight);
                 $this.removeClass('active').prop('disabled', true);

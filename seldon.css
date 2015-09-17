@@ -200,7 +200,8 @@ Map Layers & Map Tools Styles
 }
 
 .layer {
-    height: 21px;
+    min-height: 21px;
+    clear: both;
 }
 
 .layer input {
@@ -211,6 +212,7 @@ Map Layers & Map Tools Styles
 
 .layer img {
     vertical-align: bottom;
+    padding-bottom: 1px;
 }
 
 .sublist-buttons {
@@ -235,11 +237,13 @@ Map Layers & Map Tools Styles
 .sublist-buttons button.right {
     border-top-right-radius: 10px;
     border-bottom-right-radius: 10px;
+    border-left-width: 0px;
 }
 
 .sublist-buttons button.left {
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
+    border-right-width: 0px;
 }
 
 #mapToolsDialog {
