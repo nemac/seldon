@@ -263,8 +263,8 @@ module.exports = ClickTool;
 module.exports = function ($) {
     function setupCollapsibleSublists () {
 
-        var heightOfLayerDiv = $('.layer').outerHeight(true),
-            initialLessSublistHeightFactor = 10,
+        var heightOfLayerDiv = $('.layer').outerHeight(true);
+        var initialLessSublistHeightFactor = 10,
             heightIncFactor = 30,
             heightInc = heightOfLayerDiv * heightIncFactor,
             initialLessSublistHeight = heightOfLayerDiv * initialLessSublistHeightFactor + 'px';
