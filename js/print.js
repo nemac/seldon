@@ -35,7 +35,7 @@ module.exports = function ($, app) {
             }
         }
 
-        //the legend url's to pass along
+        //the legend url to pass along
         var layerLegendsURLs = [];
         $('#legend').find('div').each(function () {
             var innerDivImgSrc = $(this).children('img').attr('src');
