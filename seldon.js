@@ -2027,11 +2027,15 @@ module.exports = function ($, app) {
             }
         }
 
-        //the legend url's to pass along
+        //the legend url to pass along
         var layerLegendsURLs = [];
         $('#legend').find('div').each(function () {
-            var innerDivImgSrc = $(this).children('img').attr('src');
-            layerLegendsURLs.push({ url: innerDivImgSrc });
+            var url = $(this).children('img').attr('src');
+            if (!url.match(/^http/)) {
+                // it's a relative URL, so make it absolute
+                url = window.location.href.replace(/\/[^\/]*$/, "/") + url;
+            }
+            layerLegendsURLs.push({ url: url });
         });
 
         // hand off the list to our server-side script, which will do the heavy lifting
