@@ -45,7 +45,7 @@ module.exports = function ($, app) {
                     {
                         projection  : new OpenLayers.Projection(seldon.projection),
                         units       : "m",
-                        layers      : this.layers,
+                        layers      : this.layers + app.maskModifiers.join(''),
                         maxExtent   : new OpenLayers.Bounds(app.maxExtent),
                         transparent : true
                     },
