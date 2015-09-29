@@ -266,6 +266,11 @@ module.exports = function ($) {
             }
         });
 
+        $("[data-mask-grouper='true']").on("change", function () {
+            var disabled = $(this).is(':checked') ? true : false;
+            $("[data-mask-parent='" + this.value + "']").attr('disabled', disabled);
+        });
+
         $('.mask-modifier').on('change', function () {
             var value = $(this).is(':checked') ? this.value : "";
             var index = $(this).data("index");

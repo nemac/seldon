@@ -14,10 +14,6 @@ module.exports = function ($) {
         var maskId = "#" + maskName.replace("MaskFor", "");
 
         if (toggle) {
-            if ($(maskId).attr('data-mask-grouper')) {
-                $('.mask-toggle[data-mask-parent="'+maskName+'"]').attr('disabled', true);
-            }
-
             var seldonLayer;
 
             var mask = new Mask(maskName);
@@ -62,10 +58,6 @@ module.exports = function ($) {
             }
         } //end if (toggle)
         else { //we have just turned off a mask
-            if ($(maskId).attr('data-mask-grouper')) {
-                $('.mask-toggle[data-mask-parent="'+maskName+'"]').attr('disabled', false);
-            }
-
             // Loop through app.masks and find maskName
             // When you find it, deactivate all of its maskLayers
             // Keep track of the number of mask in app.masks
