@@ -274,6 +274,11 @@ module.exports = function ($) {
         $('.mask-modifier').on('change', function () {
             var value = $(this).is(':checked') ? this.value : "";
             var index = $(this).data("index");
+
+            if ($(this).data("maskGrouper") === true) {
+                app.handleMaskModifierGroup(this.value, $(this).is(':checked'));
+            }
+
             app.handleMaskModifier(value, index);
         });
 

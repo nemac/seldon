@@ -63,6 +63,7 @@ module.exports = function ($) {
         this.setMaskByMask            = require("./set_mask_by_mask.js")($);
         this.setMaskByLayer           = require("./set_mask_by_layer.js")($);
         this.handleMaskModifier       = require("./mask_modifier.js"); 
+        this.handleMaskModifierGroup  = require("./mask_modifier_group.js")($); 
         this.parseConfig              = require("./parse_config.js")($);
         this.initOpenLayers           = require("./init_openlayers.js");
         this.removeMaskFromLegend     = function (layer) {};
