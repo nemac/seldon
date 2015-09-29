@@ -131,6 +131,7 @@ module.exports = function ($) {
         this.themes                = []; // list of Theme instances holding info about themes from config file
         this.maskParentLayers      = []; // list of currently active global mask parent layers
         this.masks                 = [];
+        this.maskModifiers         = [];
         this.defaultMasks          = ["MaskForForest"];
         this.radioButtonList       = [];
         this.radioButtonLayers     = [];
@@ -168,6 +169,7 @@ module.exports = function ($) {
         this.addMaskToLegend          = require("./add_mask_legend.js")($); 
         this.setMaskByMask            = require("./set_mask_by_mask.js")($);
         this.setMaskByLayer           = require("./set_mask_by_layer.js")($);
+        this.handleMaskModifier       = require("./mask_modifier.js"); 
         this.parseConfig              = require("./parse_config.js")($);
         this.initOpenLayers           = require("./init_openlayers.js");
         this.removeMaskFromLegend     = function (layer) {};
@@ -181,7 +183,7 @@ module.exports = function ($) {
     return App;
 }
 
-},{"./accordion_clear.js":1,"./accordion_group_set.js":3,"./accordion_section_add.js":5,"./accordion_sublist_add.js":6,"./accordion_sublist_item_add.js":7,"./add_mask_legend.js":8,"./count.js":13,"./extent_print.js":16,"./extent_save.js":17,"./extent_zoom.js":18,"./extent_zoom_next.js":19,"./extent_zoom_previous.js":20,"./init_openlayers.js":24,"./launch.js":25,"./parse_config.js":36,"./set_base_layer.js":40,"./set_mask_by_layer.js":41,"./set_mask_by_mask.js":42,"./set_theme.js":43,"./share_url.js":45,"./update_share_url.js":49}],10:[function(require,module,exports){
+},{"./accordion_clear.js":1,"./accordion_group_set.js":3,"./accordion_section_add.js":5,"./accordion_sublist_add.js":6,"./accordion_sublist_item_add.js":7,"./add_mask_legend.js":8,"./count.js":13,"./extent_print.js":16,"./extent_save.js":17,"./extent_zoom.js":18,"./extent_zoom_next.js":19,"./extent_zoom_previous.js":20,"./init_openlayers.js":24,"./launch.js":25,"./mask_modifier.js":34,"./parse_config.js":37,"./set_base_layer.js":41,"./set_mask_by_layer.js":42,"./set_mask_by_mask.js":43,"./set_theme.js":44,"./share_url.js":46,"./update_share_url.js":50}],10:[function(require,module,exports){
 function arrayContainsElement (array, element) {
     var i;
     if (array === undefined) {
@@ -695,7 +697,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":12,"./stringContainsChar.js":47}],23:[function(require,module,exports){
+},{"./clicktool.js":12,"./stringContainsChar.js":48}],23:[function(require,module,exports){
 module.exports = function (app) {
     var ShareUrlInfo = require('./share.js');
 
@@ -712,7 +714,7 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":44}],24:[function(require,module,exports){
+},{"./share.js":45}],24:[function(require,module,exports){
 function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
     var app = this;
 
@@ -891,11 +893,11 @@ module.exports = function ($) {
             app.saveCurrentExtent();
             app.updateShareMapUrl();
             //jdm 4/28/15: removed this as it seem to be throwing things off
-			//when panning outside of current view extent.  Instead moved it to the bottom of 
-			//setTheme because that is where a change such as switching to the Alaska theme 
-			//can be caught.  However, in general it shouldn't be necessary to be updating the 
-			//maxExtent within the CONUS which will be the case 99% of the time
-			// app.map.setOptions({maxExtent: app.map.getExtent()});
+                        //when panning outside of current view extent.  Instead moved it to the bottom of 
+                        //setTheme because that is where a change such as switching to the Alaska theme 
+                        //can be caught.  However, in general it shouldn't be necessary to be updating the 
+                        //maxExtent within the CONUS which will be the case 99% of the time
+                        // app.map.setOptions({maxExtent: app.map.getExtent()});
         });
 
         //
@@ -937,9 +939,9 @@ module.exports = function ($) {
         $('#themeCombo').change(function () {
             var i = parseInt($(this).val(), 10);
             app.setTheme(app.themes[i]);
-			//jdm (4/28/15) moved to here to account for possibility of 
-			//significant extent change with theme change
-			app.map.setOptions({maxExtent: app.map.getExtent()});			
+                        //jdm (4/28/15) moved to here to account for possibility of 
+                        //significant extent change with theme change
+                        app.map.setOptions({maxExtent: app.map.getExtent()});                   
         });
         app.addListener("themechange", function () {
             $('#themeCombo').val(app.currentTheme.index);
@@ -1069,6 +1071,12 @@ module.exports = function ($) {
             }
         });
 
+        $('.mask-modifier').on('change', function () {
+            var value = $(this).is(':checked') ? this.value : "";
+            var index = $(this).data("index");
+            app.handleMaskModifier(value, index);
+        });
+
         $('textarea').focus(function () {
             var $this = $(this);
 
@@ -1117,7 +1125,7 @@ module.exports = function ($) {
     return launch;
 }
 
-},{"./deactivate_controls.js":15,"./print.js":37,"./splash.js":46}],26:[function(require,module,exports){
+},{"./deactivate_controls.js":15,"./print.js":38,"./splash.js":47}],26:[function(require,module,exports){
 module.exports = function ($, app) {
     var stringContainsChar = require('./stringContainsChar.js');
 
@@ -1165,7 +1173,7 @@ module.exports = function ($, app) {
                     {
                         projection  : new OpenLayers.Projection(seldon.projection),
                         units       : "m",
-                        layers      : this.layers,
+                        layers      : this.layers + app.maskModifiers.join(''),
                         maxExtent   : new OpenLayers.Bounds(app.maxExtent),
                         transparent : true
                     },
@@ -1320,7 +1328,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{"./stringContainsChar.js":47}],27:[function(require,module,exports){
+},{"./stringContainsChar.js":48}],27:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -1613,6 +1621,33 @@ function Mask (maskName) {
 module.exports = Mask;
 
 },{}],34:[function(require,module,exports){
+function handleMaskModifier(name, index) {
+    var app = this;
+    var seldonLayer;
+    var i;
+
+    app.maskModifiers[index] = name;
+
+    for (i = 0; i < app.map.layers.length; i++) {
+        seldonLayer = app.map.layers[i].seldonLayer;
+        if (seldonLayer && ("mask" in seldonLayer)) {
+            seldonLayer.openLayersLayer.params.LAYERS = seldonLayer.layers + app.maskModifiers.join('');
+            seldonLayer.openLayersLayer.redraw(true);
+        }
+    }
+
+    for (i = 0; i < app.maskParentLayers.length; i++) {
+        seldonLayer = app.maskParentLayers[i];
+        if (seldonLayer && ("mask" in seldonLayer)) {
+            seldonLayer.openLayersLayer.params.LAYERS = seldonLayer.layers + app.maskModifiers.join('');
+            seldonLayer.openLayersLayer.redraw(true);
+        }
+    }
+}
+
+module.exports = handleMaskModifier;
+
+},{}],35:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js');
 
@@ -1700,7 +1735,7 @@ module.exports = function ($, app) {
     return createMultigraphTool;
 }
 
-},{"./clicktool.js":12}],35:[function(require,module,exports){
+},{"./clicktool.js":12}],36:[function(require,module,exports){
 module.exports = function ($) {
     //jdm: override of js remove function
     //This is very useful for removing items from array by value
@@ -1755,7 +1790,7 @@ module.exports = function ($) {
     }));
 }
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 module.exports = function ($) {
     var createArcGIS93RestParams = require("./create_arcgis_rest_params.js")($);
     var AccordionGroup           = require("./accordion_group.js");
@@ -1989,7 +2024,7 @@ module.exports = function ($) {
     return parseConfig;
 }
 
-},{"./accordion_group.js":2,"./accordion_group_sublist.js":4,"./baselayer.js":11,"./create_arcgis_rest_params.js":14,"./identify.js":22,"./layer.js":26,"./multigraph.js":34,"./theme.js":48}],37:[function(require,module,exports){
+},{"./accordion_group.js":2,"./accordion_group_sublist.js":4,"./baselayer.js":11,"./create_arcgis_rest_params.js":14,"./identify.js":22,"./layer.js":26,"./multigraph.js":35,"./theme.js":49}],38:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap ($configXML) {
         // go through all layers, and collect a list of objects
@@ -2098,7 +2133,7 @@ module.exports = function ($, app) {
     return printMap;
 };
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 function RepeatingOperation (op, yieldEveryIteration) {
     var count = 0;
     var instance = this;
@@ -2114,7 +2149,7 @@ function RepeatingOperation (op, yieldEveryIteration) {
 
 module.exports = RepeatingOperation;
 
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2129,7 +2164,7 @@ module.exports = RepeatingOperation;
     window.seldon = seldon;
 }(jQuery));
 
-},{"./app.js":9,"./init.js":23,"./overrides.js":35}],40:[function(require,module,exports){
+},{"./app.js":9,"./init.js":23,"./overrides.js":36}],41:[function(require,module,exports){
 module.exports = function ($) {
     function setBaseLayer (baseLayer) {
         var app = this;
@@ -2165,7 +2200,7 @@ module.exports = function ($) {
 }
 
 
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 module.exports = function ($) {
     function setMaskByLayer (toggle, parentLayer) {
         var Layer = require("./layer.js")($, this);
@@ -2237,7 +2272,7 @@ module.exports = function ($) {
     return setMaskByLayer;
 }
 
-},{"./layer.js":26}],42:[function(require,module,exports){
+},{"./layer.js":26}],43:[function(require,module,exports){
 module.exports = function ($) {
     var Mask = require("./mask.js");
 
@@ -2262,6 +2297,7 @@ module.exports = function ($) {
 
             var mask = new Mask(maskName);
             app.masks.push(mask);
+            var cleanMaskName = maskName.replace("/","");
 
             // Loop through app.map.layers making sure that
             // app.maskParentLayers is correct
@@ -2276,20 +2312,20 @@ module.exports = function ($) {
             for (i = 0; i < maskParentLayers.length; i++) {
                 maskParentLayer = maskParentLayers[i];
                 maskLayer = new Layer({
-                    lid         : maskParentLayer.lid + maskName.replace("/",""),
+                    lid         : maskParentLayer.lid + cleanMaskName,
                     visible     : "true",
                     url         : maskParentLayer.url,
                     srs         : maskParentLayer.srs,
-                    layers      : maskParentLayer.layers + maskName.replace("/",""),
+                    layers      : maskParentLayer.layers + cleanMaskName,
                     identify    : maskParentLayer.identify,
-                    name        : maskParentLayer.lid + maskName.replace("/",""),
+                    name        : maskParentLayer.lid + cleanMaskName,
                     mask        : "false",
                     legend      : maskParentLayer.legend,
                     index       : maskParentLayer.index,
                     parentLayer : maskParentLayer
                 });
                 maskLayer.activate();
-		maskLayer.setTransparency(maskParentLayer.transparency);
+                maskLayer.setTransparency(maskParentLayer.transparency);
                 mask.maskLayers.push(maskLayer);
                 if (maskParentLayer.visible === "true") {
                     maskParentLayer.deactivate();
@@ -2341,7 +2377,7 @@ module.exports = function ($) {
     return setMaskByMask;
 }
 
-},{"./layer.js":26,"./mask.js":33}],43:[function(require,module,exports){
+},{"./layer.js":26,"./mask.js":33}],44:[function(require,module,exports){
 module.exports = function ($) {
     var RepeatingOperation = require("./repeating_operation.js");
     var ShareUrlInfo = require("./share.js");
@@ -2625,7 +2661,7 @@ module.exports = function ($) {
     return setTheme;
 }
 
-},{"./array_contains_element.js":10,"./layer_checkbox.js":27,"./layer_icon.js":29,"./layer_radio.js":30,"./layer_select.js":32,"./repeating_operation.js":38,"./share.js":44}],44:[function(require,module,exports){
+},{"./array_contains_element.js":10,"./layer_checkbox.js":27,"./layer_icon.js":29,"./layer_radio.js":30,"./layer_select.js":32,"./repeating_operation.js":39,"./share.js":45}],45:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) settings = {};
 
@@ -2722,7 +2758,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 module.exports = function ($) {
     var stringContainsChar = require("./stringContainsChar.js");
     var ShareUrlInfo = require("./share.js");
@@ -2792,7 +2828,7 @@ module.exports = function ($) {
     return shareUrl;
 }
 
-},{"./share.js":44,"./stringContainsChar.js":47}],46:[function(require,module,exports){
+},{"./share.js":45,"./stringContainsChar.js":48}],47:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $document    = $(document),
@@ -2812,14 +2848,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],47:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -2846,7 +2882,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],49:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 module.exports = function ($) {
     function updateShareMapUrl () {
         if (this.currentTheme) {
@@ -2860,4 +2896,4 @@ module.exports = function ($) {
     return updateShareMapUrl;
 }
 
-},{}]},{},[39]);
+},{}]},{},[40]);
