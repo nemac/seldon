@@ -22,6 +22,7 @@ module.exports = function ($) {
 
             var mask = new Mask(maskName);
             app.masks.push(mask);
+            var cleanMaskName = maskName.replace("/","");
 
             // Loop through app.map.layers making sure that
             // app.maskParentLayers is correct
@@ -36,20 +37,20 @@ module.exports = function ($) {
             for (i = 0; i < maskParentLayers.length; i++) {
                 maskParentLayer = maskParentLayers[i];
                 maskLayer = new Layer({
-                    lid         : maskParentLayer.lid + maskName.replace("/",""),
+                    lid         : maskParentLayer.lid + cleanMaskName,
                     visible     : "true",
                     url         : maskParentLayer.url,
                     srs         : maskParentLayer.srs,
-                    layers      : maskParentLayer.layers + maskName.replace("/",""),
+                    layers      : maskParentLayer.layers + cleanMaskName,
                     identify    : maskParentLayer.identify,
-                    name        : maskParentLayer.lid + maskName.replace("/",""),
+                    name        : maskParentLayer.lid + cleanMaskName,
                     mask        : "false",
                     legend      : maskParentLayer.legend,
                     index       : maskParentLayer.index,
                     parentLayer : maskParentLayer
                 });
                 maskLayer.activate();
-		maskLayer.setTransparency(maskParentLayer.transparency);
+                maskLayer.setTransparency(maskParentLayer.transparency);
                 mask.maskLayers.push(maskLayer);
                 if (maskParentLayer.visible === "true") {
                     maskParentLayer.deactivate();
