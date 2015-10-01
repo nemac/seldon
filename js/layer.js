@@ -39,13 +39,15 @@ module.exports = function ($, app) {
                     options
                 );
             } else {
+                var layer = this.layers + (("mask" in this) ? app.maskModifiers.join("") : "");
+
                 this.openLayersLayer = new OpenLayers.Layer.WMS(
                     this.name,
                     this.url,
                     {
                         projection  : new OpenLayers.Projection(seldon.projection),
                         units       : "m",
-                        layers      : this.layers + app.maskModifiers.join(''),
+                        layers      : layer,
                         maxExtent   : new OpenLayers.Bounds(app.maxExtent),
                         transparent : true
                     },
