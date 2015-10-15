@@ -184,7 +184,7 @@ module.exports = function ($) {
     return App;
 }
 
-},{"./accordion_clear.js":1,"./accordion_group_set.js":3,"./accordion_section_add.js":5,"./accordion_sublist_add.js":6,"./accordion_sublist_item_add.js":7,"./add_mask_legend.js":8,"./count.js":13,"./extent_print.js":16,"./extent_save.js":17,"./extent_zoom.js":18,"./extent_zoom_next.js":19,"./extent_zoom_previous.js":20,"./init_openlayers.js":24,"./launch.js":25,"./mask_modifier.js":34,"./mask_modifier_group.js":35,"./parse_config.js":38,"./set_base_layer.js":42,"./set_mask_by_layer.js":43,"./set_mask_by_mask.js":44,"./set_theme.js":45,"./share_url.js":47,"./update_share_url.js":51}],10:[function(require,module,exports){
+},{"./accordion_clear.js":1,"./accordion_group_set.js":3,"./accordion_section_add.js":5,"./accordion_sublist_add.js":6,"./accordion_sublist_item_add.js":7,"./add_mask_legend.js":8,"./count.js":13,"./extent_print.js":16,"./extent_save.js":17,"./extent_zoom.js":18,"./extent_zoom_next.js":19,"./extent_zoom_previous.js":20,"./init_openlayers.js":24,"./launch.js":25,"./mask_modifier.js":34,"./mask_modifier_group.js":35,"./parse_config.js":38,"./set_base_layer.js":43,"./set_mask_by_layer.js":44,"./set_mask_by_mask.js":45,"./set_theme.js":46,"./share_url.js":48,"./update_share_url.js":52}],10:[function(require,module,exports){
 function arrayContainsElement (array, element) {
     var i;
     if (array === undefined) {
@@ -698,7 +698,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":12,"./stringContainsChar.js":49}],23:[function(require,module,exports){
+},{"./clicktool.js":12,"./stringContainsChar.js":50}],23:[function(require,module,exports){
 module.exports = function (app) {
     var ShareUrlInfo = require('./share.js');
 
@@ -715,7 +715,7 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":46}],24:[function(require,module,exports){
+},{"./share.js":47}],24:[function(require,module,exports){
 function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
     var app = this;
 
@@ -806,6 +806,7 @@ module.exports = initOpenLayers;
 },{}],25:[function(require,module,exports){
 module.exports = function ($) {
     var createSplashScreen = require("./splash.js")($);
+    var handle_search = require("./search.js")($);
 
     var areasList = [];
     var activeBtn = [];
@@ -1062,6 +1063,19 @@ module.exports = function ($) {
             }
         });
 
+        // Location based search
+        $("#address_lookup").on("click", function () {
+            var location = $("#`address_field").val();
+            handle_search(location, app);
+        });
+
+        $("#address_field").on("keypress", function (e) {
+            if (e.which === 13) {
+                var location = $(this).val();
+                handle_search(location, app);
+            }
+        });
+
         //jdm: 7/9/12 - for global mask functionality
         $('.mask-toggle').on('click', function () {
             if ($(this).is(':checked')) {
@@ -1136,7 +1150,7 @@ module.exports = function ($) {
     return launch;
 }
 
-},{"./deactivate_controls.js":15,"./print.js":39,"./splash.js":48}],26:[function(require,module,exports){
+},{"./deactivate_controls.js":15,"./print.js":39,"./search.js":41,"./splash.js":49}],26:[function(require,module,exports){
 module.exports = function ($, app) {
     var stringContainsChar = require('./stringContainsChar.js');
 
@@ -1341,7 +1355,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{"./stringContainsChar.js":49}],27:[function(require,module,exports){
+},{"./stringContainsChar.js":50}],27:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -2070,7 +2084,7 @@ module.exports = function ($) {
     return parseConfig;
 }
 
-},{"./accordion_group.js":2,"./accordion_group_sublist.js":4,"./baselayer.js":11,"./create_arcgis_rest_params.js":14,"./identify.js":22,"./layer.js":26,"./multigraph.js":36,"./theme.js":50}],39:[function(require,module,exports){
+},{"./accordion_group.js":2,"./accordion_group_sublist.js":4,"./baselayer.js":11,"./create_arcgis_rest_params.js":14,"./identify.js":22,"./layer.js":26,"./multigraph.js":36,"./theme.js":51}],39:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap ($configXML) {
         // go through all layers, and collect a list of objects
@@ -2196,6 +2210,34 @@ function RepeatingOperation (op, yieldEveryIteration) {
 module.exports = RepeatingOperation;
 
 },{}],41:[function(require,module,exports){
+/**
+ * search.js includes contributions by William Clark (wclark1@unca.edu)
+ *
+ * This function takes a user specified location, transforms it to the appropriate extent
+ * coordinates and zooms the map to that location.
+ */
+module.exports = function ($) {
+    function handle_search (location, app) {
+        var rest_endpoint = "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/find?text=" + location + "&f=json";
+
+        $.getJSON(rest_endpoint, function (data) {
+            var locations = data["locations"][0];
+            if (locations === undefined) {
+                return;
+            }
+
+            var extent = locations["extent"];
+            var bounds = new OpenLayers.Bounds(extent.xmin, extent.ymin, extent.xmax, extent.ymax).transform(
+                new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913")
+            );
+            app.zoomToExtent(bounds, true);
+        });
+    }
+
+    return handle_search;
+}
+
+},{}],42:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2210,7 +2252,7 @@ module.exports = RepeatingOperation;
     window.seldon = seldon;
 }(jQuery));
 
-},{"./app.js":9,"./init.js":23,"./overrides.js":37}],42:[function(require,module,exports){
+},{"./app.js":9,"./init.js":23,"./overrides.js":37}],43:[function(require,module,exports){
 module.exports = function ($) {
     function setBaseLayer (baseLayer) {
         var app = this;
@@ -2246,7 +2288,7 @@ module.exports = function ($) {
 }
 
 
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 module.exports = function ($) {
     function setMaskByLayer (toggle, parentLayer) {
         var Layer = require("./layer.js")($, this);
@@ -2318,7 +2360,7 @@ module.exports = function ($) {
     return setMaskByLayer;
 }
 
-},{"./layer.js":26}],44:[function(require,module,exports){
+},{"./layer.js":26}],45:[function(require,module,exports){
 module.exports = function ($) {
     var Mask = require("./mask.js");
 
@@ -2415,7 +2457,7 @@ module.exports = function ($) {
     return setMaskByMask;
 }
 
-},{"./layer.js":26,"./mask.js":33}],45:[function(require,module,exports){
+},{"./layer.js":26,"./mask.js":33}],46:[function(require,module,exports){
 module.exports = function ($) {
     var RepeatingOperation = require("./repeating_operation.js");
     var ShareUrlInfo = require("./share.js");
@@ -2699,7 +2741,7 @@ module.exports = function ($) {
     return setTheme;
 }
 
-},{"./array_contains_element.js":10,"./layer_checkbox.js":27,"./layer_icon.js":29,"./layer_radio.js":30,"./layer_select.js":32,"./repeating_operation.js":40,"./share.js":46}],46:[function(require,module,exports){
+},{"./array_contains_element.js":10,"./layer_checkbox.js":27,"./layer_icon.js":29,"./layer_radio.js":30,"./layer_select.js":32,"./repeating_operation.js":40,"./share.js":47}],47:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) settings = {};
 
@@ -2796,7 +2838,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],47:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 module.exports = function ($) {
     var stringContainsChar = require("./stringContainsChar.js");
     var ShareUrlInfo = require("./share.js");
@@ -2866,7 +2908,7 @@ module.exports = function ($) {
     return shareUrl;
 }
 
-},{"./share.js":46,"./stringContainsChar.js":49}],48:[function(require,module,exports){
+},{"./share.js":47,"./stringContainsChar.js":50}],49:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $document    = $(document),
@@ -2886,14 +2928,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],49:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],50:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -2920,7 +2962,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],51:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 module.exports = function ($) {
     function updateShareMapUrl () {
         if (this.currentTheme) {
@@ -2934,4 +2976,4 @@ module.exports = function ($) {
     return updateShareMapUrl;
 }
 
-},{}]},{},[41]);
+},{}]},{},[42]);
