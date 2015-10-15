@@ -1,5 +1,6 @@
 module.exports = function ($) {
     var createSplashScreen = require("./splash.js")($);
+    var handle_search = require("./search.js")($);
 
     var areasList = [];
     var activeBtn = [];
@@ -253,6 +254,19 @@ module.exports = function ($) {
             if (e.which == 13) {
                 var areaExtent = $findArea.findArea('getAreaExtent', $findArea.val(), areasList);
                 app.zoomToExtent(areaExtent);
+            }
+        });
+
+        // Location based search
+        $("#address_lookup").on("click", function () {
+            var location = $("#`address_field").val();
+            handle_search(location, app);
+        });
+
+        $("#address_field").on("keypress", function (e) {
+            if (e.which === 13) {
+                var location = $(this).val();
+                handle_search(location, app);
             }
         });
 
