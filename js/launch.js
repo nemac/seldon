@@ -259,7 +259,7 @@ module.exports = function ($) {
 
         // Location based search
         $("#address_lookup").on("click", function () {
-            var location = $("#`address_field").val();
+            var location = $("#address_field").val();
             handle_search(location, app);
         });
 
