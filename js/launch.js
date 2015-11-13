@@ -1,6 +1,7 @@
 module.exports = function ($) {
     var createSplashScreen = require("./splash.js")($);
     var handle_search = require("./search.js")($);
+    var ga_events = require("./set_google_analytics_events.js");
 
     var areasList = [];
     var activeBtn = [];
@@ -18,6 +19,7 @@ module.exports = function ($) {
             dataType: "xml",
             success: function (configXML) {
                 $configXML = app.parseConfig(configXML, shareUrlInfo);
+                ga_events($);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 alert(textStatus);
@@ -89,9 +91,9 @@ module.exports = function ($) {
             app.saveCurrentExtent();
             app.updateShareMapUrl();
             //jdm 4/28/15: removed this as it seem to be throwing things off
-                        //when panning outside of current view extent.  Instead moved it to the bottom of 
-                        //setTheme because that is where a change such as switching to the Alaska theme 
-                        //can be caught.  However, in general it shouldn't be necessary to be updating the 
+                        //when panning outside of current view extent.  Instead moved it to the bottom of
+                        //setTheme because that is where a change such as switching to the Alaska theme
+                        //can be caught.  However, in general it shouldn't be necessary to be updating the
                         //maxExtent within the CONUS which will be the case 99% of the time
                         // app.map.setOptions({maxExtent: app.map.getExtent()});
         });
@@ -135,9 +137,9 @@ module.exports = function ($) {
         $('#themeCombo').change(function () {
             var i = parseInt($(this).val(), 10);
             app.setTheme(app.themes[i]);
-                        //jdm (4/28/15) moved to here to account for possibility of 
+                        //jdm (4/28/15) moved to here to account for possibility of
                         //significant extent change with theme change
-                        app.map.setOptions({maxExtent: app.map.getExtent()});                   
+                        app.map.setOptions({maxExtent: app.map.getExtent()});
         });
         app.addListener("themechange", function () {
             $('#themeCombo').val(app.currentTheme.index);

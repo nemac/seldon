@@ -184,7 +184,7 @@ module.exports = function ($) {
     return App;
 }
 
-},{"./accordion_clear.js":1,"./accordion_group_set.js":3,"./accordion_section_add.js":5,"./accordion_sublist_add.js":6,"./accordion_sublist_item_add.js":7,"./add_mask_legend.js":8,"./count.js":13,"./extent_print.js":16,"./extent_save.js":17,"./extent_zoom.js":18,"./extent_zoom_next.js":19,"./extent_zoom_previous.js":20,"./init_openlayers.js":24,"./launch.js":25,"./mask_modifier.js":34,"./mask_modifier_group.js":35,"./parse_config.js":38,"./set_base_layer.js":43,"./set_mask_by_layer.js":44,"./set_mask_by_mask.js":45,"./set_theme.js":46,"./share_url.js":48,"./update_share_url.js":52}],10:[function(require,module,exports){
+},{"./accordion_clear.js":1,"./accordion_group_set.js":3,"./accordion_section_add.js":5,"./accordion_sublist_add.js":6,"./accordion_sublist_item_add.js":7,"./add_mask_legend.js":8,"./count.js":13,"./extent_print.js":16,"./extent_save.js":17,"./extent_zoom.js":18,"./extent_zoom_next.js":19,"./extent_zoom_previous.js":20,"./init_openlayers.js":24,"./launch.js":25,"./mask_modifier.js":34,"./mask_modifier_group.js":35,"./parse_config.js":38,"./set_base_layer.js":43,"./set_mask_by_layer.js":45,"./set_mask_by_mask.js":46,"./set_theme.js":47,"./share_url.js":49,"./update_share_url.js":53}],10:[function(require,module,exports){
 function arrayContainsElement (array, element) {
     var i;
     if (array === undefined) {
@@ -698,7 +698,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":12,"./stringContainsChar.js":50}],23:[function(require,module,exports){
+},{"./clicktool.js":12,"./stringContainsChar.js":51}],23:[function(require,module,exports){
 module.exports = function (app) {
     var ShareUrlInfo = require('./share.js');
 
@@ -715,7 +715,7 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":47}],24:[function(require,module,exports){
+},{"./share.js":48}],24:[function(require,module,exports){
 function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
     var app = this;
 
@@ -807,6 +807,7 @@ module.exports = initOpenLayers;
 module.exports = function ($) {
     var createSplashScreen = require("./splash.js")($);
     var handle_search = require("./search.js")($);
+    var ga_events = require("./set_google_analytics_events.js");
 
     var areasList = [];
     var activeBtn = [];
@@ -824,6 +825,7 @@ module.exports = function ($) {
             dataType: "xml",
             success: function (configXML) {
                 $configXML = app.parseConfig(configXML, shareUrlInfo);
+                ga_events($);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 alert(textStatus);
@@ -895,9 +897,9 @@ module.exports = function ($) {
             app.saveCurrentExtent();
             app.updateShareMapUrl();
             //jdm 4/28/15: removed this as it seem to be throwing things off
-                        //when panning outside of current view extent.  Instead moved it to the bottom of 
-                        //setTheme because that is where a change such as switching to the Alaska theme 
-                        //can be caught.  However, in general it shouldn't be necessary to be updating the 
+                        //when panning outside of current view extent.  Instead moved it to the bottom of
+                        //setTheme because that is where a change such as switching to the Alaska theme
+                        //can be caught.  However, in general it shouldn't be necessary to be updating the
                         //maxExtent within the CONUS which will be the case 99% of the time
                         // app.map.setOptions({maxExtent: app.map.getExtent()});
         });
@@ -941,9 +943,9 @@ module.exports = function ($) {
         $('#themeCombo').change(function () {
             var i = parseInt($(this).val(), 10);
             app.setTheme(app.themes[i]);
-                        //jdm (4/28/15) moved to here to account for possibility of 
+                        //jdm (4/28/15) moved to here to account for possibility of
                         //significant extent change with theme change
-                        app.map.setOptions({maxExtent: app.map.getExtent()});                   
+                        app.map.setOptions({maxExtent: app.map.getExtent()});
         });
         app.addListener("themechange", function () {
             $('#themeCombo').val(app.currentTheme.index);
@@ -1150,7 +1152,7 @@ module.exports = function ($) {
     return launch;
 }
 
-},{"./deactivate_controls.js":15,"./print.js":39,"./search.js":41,"./splash.js":49}],26:[function(require,module,exports){
+},{"./deactivate_controls.js":15,"./print.js":39,"./search.js":41,"./set_google_analytics_events.js":44,"./splash.js":50}],26:[function(require,module,exports){
 module.exports = function ($, app) {
     var stringContainsChar = require('./stringContainsChar.js');
 
@@ -1355,7 +1357,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{"./stringContainsChar.js":50}],27:[function(require,module,exports){
+},{"./stringContainsChar.js":51}],27:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -2084,7 +2086,7 @@ module.exports = function ($) {
     return parseConfig;
 }
 
-},{"./accordion_group.js":2,"./accordion_group_sublist.js":4,"./baselayer.js":11,"./create_arcgis_rest_params.js":14,"./identify.js":22,"./layer.js":26,"./multigraph.js":36,"./theme.js":51}],39:[function(require,module,exports){
+},{"./accordion_group.js":2,"./accordion_group_sublist.js":4,"./baselayer.js":11,"./create_arcgis_rest_params.js":14,"./identify.js":22,"./layer.js":26,"./multigraph.js":36,"./theme.js":52}],39:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap ($configXML) {
         // go through all layers, and collect a list of objects
@@ -2289,6 +2291,136 @@ module.exports = function ($) {
 
 
 },{}],44:[function(require,module,exports){
+function ga_events ($) {
+
+  //check if google analytics installed only set listners if
+  //installed otherwise do nothing
+  if (typeof ga !== 'undefined') {
+
+    //track click in sharemap url
+    //  records the text of the textarea
+    $( ".shareMapUrl" ).click(function(event) {
+      $.ga.trackEvent({
+        category : 'Share Map URL',
+        action : 'Click',
+        label : $('.shareMapUrl').val()
+      });
+    });
+
+    //track change in base map
+    //  records the text of the option
+    $( "#mapTheme  #themeCombo" ).change(function(event) {
+      $.ga.trackEvent({
+        category : 'Map Theme',
+        action : 'Change',
+        label : $('#mapTheme  #themeCombo option:selected').text()
+      });
+    });
+
+    //track find area search when user click enter this forces serach
+    //  records the text the input
+    $( "#txtFindArea input#address_field" ).keyup(function(event) {
+      if (event.which === 13){
+        $.ga.trackEvent({
+          category : 'Find Area',
+          action : 'Search Enter',
+          label : $(this).val()
+        });
+      }
+    });
+
+    //track find area search when user click the serarch button
+    //  this also forces serach
+    //  records the text the input
+    $( "#txtFindArea  #address_lookup img" ).click(function(event) {
+      $.ga.trackEvent({
+        category : 'Find Area',
+        action : 'Search Button',
+        label : $( "#txtFindArea input#address_field" ).val()
+      });
+    });
+
+    //track change in base map
+    //  records the text of the option
+    $( "#mapBase  #baseCombo" ).change(function(event) {
+      $.ga.trackEvent({
+        category : 'Base Map',
+        action : 'Change',
+        label : $('#mapBase  #baseCombo option:selected').text()
+      });
+    });
+
+    //track nav bar clicks (zoom,pan,identify,toogles)
+    //  records the tittle attribute as the label
+    $('.header-bar .header-bar img.icon').gaTrackEvent({
+      category: 'Nav Bar',
+      action: 'click',
+      useLabel: true,
+      labelAttribute: "title",
+      useEvent: true,
+      event: 'click'
+    });
+
+    //track base layer toggles when check box clicked
+    // records the for attribute as the label
+    $("#mapToolsDialog label[for^='chk']").gaTrackEvent({
+      category: 'Map Tools',
+      action: 'Toogle',
+      useLabel: true,
+      labelAttribute: "for",
+      useEvent: true,
+      event: 'click'
+    });
+
+    //track base layer toggles when the label for the check box is clickded
+    //  records the id attribute as the label
+    $("#mapToolsDialog input").gaTrackEvent({
+      category: 'Map Tools',
+      action: 'Toogle',
+      useLabel: true,
+      labelAttribute: "id",
+      useEvent: true,
+      event: 'click'
+    });
+
+    //track Layer Picker toggles when check box clicked
+    // records the for attribute as the label
+    $("#layerPickerDialog label[for^='chk']").gaTrackEvent({
+      category: 'Base Layer',
+      action: 'Toogle',
+      useLabel: true,
+      labelAttribute: "for",
+      useEvent: true,
+      event: 'click'
+    });
+
+    //track Layer Picker toggles when the label for the check box is clickded
+    //  records the id attribute as the label
+    $("#layerPickerDialog input").gaTrackEvent({
+      category: 'Base Layer',
+      action: 'Toogle',
+      useLabel: true,
+      labelAttribute: "id",
+      useEvent: true,
+      event: 'click'
+    });
+
+    //track accordion header expand and un-expand
+    //  records the text of the header (h3)
+    $("h3.ui-accordion-header").gaTrackEvent({
+      category: 'Base Layer',
+      action: 'Toggle Accordion',
+      useLabel: true,
+      label: function(){return $(this).text();},
+      useEvent: true,
+      event: 'click'
+    });
+  }
+}
+
+module.exports = ga_events;
+
+},{}],45:[function(require,module,exports){
 module.exports = function ($) {
     function setMaskByLayer (toggle, parentLayer) {
         var Layer = require("./layer.js")($, this);
@@ -2360,7 +2492,7 @@ module.exports = function ($) {
     return setMaskByLayer;
 }
 
-},{"./layer.js":26}],45:[function(require,module,exports){
+},{"./layer.js":26}],46:[function(require,module,exports){
 module.exports = function ($) {
     var Mask = require("./mask.js");
 
@@ -2457,7 +2589,7 @@ module.exports = function ($) {
     return setMaskByMask;
 }
 
-},{"./layer.js":26,"./mask.js":33}],46:[function(require,module,exports){
+},{"./layer.js":26,"./mask.js":33}],47:[function(require,module,exports){
 module.exports = function ($) {
     var RepeatingOperation = require("./repeating_operation.js");
     var ShareUrlInfo = require("./share.js");
@@ -2741,7 +2873,7 @@ module.exports = function ($) {
     return setTheme;
 }
 
-},{"./array_contains_element.js":10,"./layer_checkbox.js":27,"./layer_icon.js":29,"./layer_radio.js":30,"./layer_select.js":32,"./repeating_operation.js":40,"./share.js":47}],47:[function(require,module,exports){
+},{"./array_contains_element.js":10,"./layer_checkbox.js":27,"./layer_icon.js":29,"./layer_radio.js":30,"./layer_select.js":32,"./repeating_operation.js":40,"./share.js":48}],48:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) settings = {};
 
@@ -2838,7 +2970,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 module.exports = function ($) {
     var stringContainsChar = require("./stringContainsChar.js");
     var ShareUrlInfo = require("./share.js");
@@ -2908,7 +3040,7 @@ module.exports = function ($) {
     return shareUrl;
 }
 
-},{"./share.js":47,"./stringContainsChar.js":50}],49:[function(require,module,exports){
+},{"./share.js":48,"./stringContainsChar.js":51}],50:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $document    = $(document),
@@ -2928,14 +3060,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],50:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],51:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -2962,7 +3094,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],52:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 module.exports = function ($) {
     function updateShareMapUrl () {
         if (this.currentTheme) {
