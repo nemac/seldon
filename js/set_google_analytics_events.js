@@ -16,6 +16,20 @@ function ga_events ($) {
   if (typeof ga !== 'undefined') {
     //check if event traking plugin is refrenced
     if (eventAdded){
+
+      //track map extent change
+      //  records the new map extent
+      seldon.app.map.events.register("moveend", seldon.app.map, function () {
+
+          var newMapExtent = seldon.app.map.getExtent();
+          //alert(ext);
+          $.ga.trackEvent({
+            category : 'Map Extent',
+            action : 'Change',
+            label : newMapExtent.toString()
+          });
+      });
+
       //track click in sharemap url
       //  records the text of the textarea
       $( ".shareMapUrl" ).click(function(event) {
