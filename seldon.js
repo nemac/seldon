@@ -2295,6 +2295,7 @@ function ga_events ($) {
 
 
   var eventAdded = false;
+  //check if trackevent is installed
   try {
     $.ga.trackEvent
     eventAdded = true;
