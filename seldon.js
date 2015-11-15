@@ -2441,6 +2441,84 @@ function ga_events ($) {
         useEvent: true,
         event: 'click'
       });
+
+      //track open layers pan zoom tool slide zoom
+      // records text for action
+      $( "img[src$='slider.png']" ).mouseup(function(event) {
+            $.ga.trackEvent({
+              category : 'OpenLayers Buttons',
+              action : 'Slide',
+              label : 'Zoom Slider'
+            });
+      })
+
+      //track open layers pan zoom tool
+      // records text for action
+      $( ".olButton" ).click(function(event) {
+
+        var eleId = $(this).attr('id');
+        switch (true) {
+          //zoom bar.  zoom to zoo level
+          case (eleId.indexOf("ZoombarOpenLayers_Map") > -1):
+            $.ga.trackEvent({
+              category : 'OpenLayers Buttons',
+              action : 'Click',
+              label : 'Zoom Bar'
+            });
+          break;
+          //pan left
+          case (eleId.indexOf("panleft") > -1):
+            $.ga.trackEvent({
+              category : 'OpenLayers Buttons',
+              action : 'Click',
+              label : 'Pan Left'
+            });
+          break;
+          //pan right
+          case (eleId.indexOf("panright") > -1):
+            $.ga.trackEvent({
+              category : 'OpenLayers Buttons',
+              action : 'Click',
+              label : 'Pan right'
+            });
+          break;
+          //pan up
+          case (eleId.indexOf("panup") > -1):
+            $.ga.trackEvent({
+              category : 'OpenLayers Buttons',
+              action : 'Click',
+              label : 'Pan up'
+            });
+          break;
+          //pan down
+          case (eleId.indexOf("pandown") > -1):
+            $.ga.trackEvent({
+              category : 'OpenLayers Buttons',
+              action : 'Click',
+              label : 'Pan down'
+            });
+          break;
+          //zoom in
+          case (eleId.indexOf("zoomin") > -1):
+            $.ga.trackEvent({
+              category : 'OpenLayers Buttons',
+              action : 'Click',
+              label : 'Zoom in'
+            });
+          break;
+          //zoom out
+          case (eleId.indexOf("zoomout") > -1):
+            $.ga.trackEvent({
+              category : 'OpenLayers Buttons',
+              action : 'Click',
+              label : 'Zoom Out'
+            });
+          break;
+
+          default:
+        }
+      })
+
     }//check event tracking exits
   }//check google analytics exits
 }
