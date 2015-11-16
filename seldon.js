@@ -2319,7 +2319,8 @@ function ga_events ($) {
           $.ga.trackEvent({
             category : 'Map Extent',
             action : 'Change',
-            label : newMapExtent.toString()
+            label : newMapExtent.toString(),
+            nonInteractive: true
           });
       });
 
