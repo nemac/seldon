@@ -246,6 +246,10 @@ module.exports = function ($, app) {
                     (children[i].nodeName === "value_0")) {
                     value = value + sprintf(" (%.2f %%)", parseFloat(value,10) * 200.0 / 255.0 - 100);
                 }
+				if ((stringStartsWith(layerName.toUpperCase(), "NDMI-ARCHIVE") || stringStartsWith(layerName.toUpperCase(), "NDVI-ARCHIVE") || stringStartsWith(layerName.toUpperCase(), "SWIR-ARCHIVE") || stringStartsWith(layerName.toUpperCase(), "SOUTHEAST-NDVI-CURRENT") || stringStartsWith(layerName.toUpperCase(), "SOUTHEAST-NDMI-CURRENT") || stringStartsWith(layerName.toUpperCase(), "SOUTHEAST-SWIR-CURRENT")) &&
+                    (children[i].nodeName === "value_0")) {
+                    value = sprintf("%.0f %%", parseFloat(value,10) - 128);
+                }
                 returnVals[i] = [children[i].nodeName, value];
             }
         }
