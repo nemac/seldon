@@ -22,6 +22,8 @@ ShareUrlInfo.parseUrl = function (url) {
     // Remove everything up to and including the first '?' char.
     url = url.replace(/^[^\?]*\?/, '');
 
+    url = url.replace(/\%2[c|C]/g, ',');
+
     $.each(url.split('&'), function () {
         var i = this.indexOf('='),
             name, value;
