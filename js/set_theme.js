@@ -117,6 +117,7 @@ module.exports = function ($) {
                     items : [],
                     contentElement : $('<div><h4>' + sublist.label + '</h4></div>')
                 };
+
                 g.sublists.push(sublistObj);
                 sublistItems.push(sublistObj.contentElement);
                 var sublistLayerItems = [];
