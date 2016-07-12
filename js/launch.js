@@ -81,7 +81,7 @@ module.exports = function ($) {
         });
         app.addListener("themechange", function () {
             app.updateShareMapUrl();
-            setupCollapsibleSublists();
+            setupCollapsibleSublists.bind(app)();
         });
         app.addListener("baselayerchange", function () {
             app.updateShareMapUrl();

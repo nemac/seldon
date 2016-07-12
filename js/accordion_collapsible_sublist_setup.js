@@ -1,9 +1,13 @@
 module.exports = function ($) {
     function setupCollapsibleSublists () {
+        var app = this;
 
         $('.ui-accordion-content h4').on('click', function (event) {
-            $this = $(this);
-            $this.siblings('.layer-group').toggleClass('collapsed');
+            var $this = $(this);
+            if (app.currentTheme.label === 'Archived Near-Real-Time Change Maps (MODIS NDVI)' &&
+                    $this.parent().parent().attr('id') === 'ui-accordion-layerPickerAccordion-panel-4') {
+                $this.siblings('.layer-group').toggleClass('collapsed');
+            }
 
         })
 
