@@ -93,7 +93,6 @@ module.exports = function ($) {
 },{}],8:[function(require,module,exports){
 module.exports = function ($) {
     function addAccordionSublistItems (s, items) {
-        console.log(s)
         var contents = $('<div class="layer-group"></div>');
         for (var i=0, l=items.length; i<l; i++) {
             contents.append($('<div class="layer"></div>').append(items[i]));
