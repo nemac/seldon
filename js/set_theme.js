@@ -209,7 +209,7 @@ module.exports = function ($) {
                         }
                     }
                 } // end loop for sublist.layers
-                app.addAccordionSublistItems(sublistObj, sublistLayerItems);
+                app.addAccordionSublistItems(sublistObj, sublistLayerItems, theme, accGp);
             } // end loop for accGp.sublists
             app.addAccordionSublists(g, sublistItems);
             if (++a < theme.accordionGroups.length) {

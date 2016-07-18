@@ -209,6 +209,11 @@ Map Layers & Map Tools Styles
     overflow: hidden;
 }
 
+.ui-accordion-content h4 span.ui-icon {
+    display: inline-block;
+    padding-right: 2px;
+}
+
 .layer {
     min-height: 21px;
     clear: both;
@@ -225,39 +230,6 @@ Map Layers & Map Tools Styles
     padding-bottom: 1px;
 }
 
-/*
-
-.sublist-buttons {
-    margin-top: 5px;
-}
-
-.sublist-buttons button {
-    min-height: 2em;
-    min-width: 5em;
-    padding-right: 1em;
-    padding-left: 1em;
-    background-color: #F3F3F3;
-    border: 1px solid #AEAEAE;
-    text-decoration: none;
-    margin: 0px 0px 0px 0px;
-}
-
-.sublist-buttons button.active:hover {
-    background-color: #D7D7D7;
-}
-
-.sublist-buttons button.right {
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
-    border-left-width: 0px;
-}
-
-.sublist-buttons button.left {
-    border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
-    border-right-width: 0px;
-}
-*/
 #mapToolsDialog {
     position: relative;
     z-index: 10003;

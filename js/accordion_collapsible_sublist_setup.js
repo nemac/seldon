@@ -10,9 +10,19 @@ module.exports = function ($) {
             // we use its seldon-generated id attribute.
             if (app.currentTheme.label === 'Archived Near-Real-Time Change Maps (MODIS NDVI)' &&
                 $this.parent().parent().attr('id') === 'ui-accordion-layerPickerAccordion-panel-4') {
-                // Class toggle triggers css change. A 'collapsed' layer-group div
-                // has a height of 0px and overflow set to hidden.
-                $this.siblings('.layer-group').toggleClass('collapsed');
+                // If the sublist is collapsed, uncollapse it and set the header icon
+                var $sublist = $this.siblings('.layer-group');
+                var $icon = $this.children('.ui-icon')
+                if ($sublist.hasClass('collapsed')) {
+                    $sublist.removeClass('collapsed');
+                    $icon.removeClass('ui-icon-triangle-1-e');
+                    $icon.addClass('ui-icon-triangle-1-s');
+                } else {
+                // If the sublist is uncollapse, collapse it and set the header icon
+                    $sublist.addClass('collapsed');
+                    $icon.removeClass('ui-icon-triangle-1-s');
+                    $icon.addClass('ui-icon-triangle-1-e');
+                }
             }
 
         })
