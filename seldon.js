@@ -93,7 +93,7 @@ module.exports = function ($) {
 },{}],8:[function(require,module,exports){
 module.exports = function ($) {
     function addAccordionSublistItems (s, items) {
-        var collapseThreshold = 30;
+        console.log(s)
         var contents = $('<div class="layer-group"></div>');
         for (var i=0, l=items.length; i<l; i++) {
             contents.append($('<div class="layer"></div>').append(items[i]));
@@ -104,21 +104,6 @@ module.exports = function ($) {
         };
         s.items.push(layer);
         s.contentElement.append(layer.contentElement);
-
-/*
-
-        if (items.length > collapseThreshold) {
-            contents.addClass('showLessSublist');
-            contents.after(
-                '<div class="sublist-buttons">'+
-                    '<button class="left active show-more-layers">More</button>' +
-                    '<button disabled class="show-less-layers">Less' +
-                    '<button class="right active show-all-layers">All ('+items.length+')</button>'+
-                '</div>'
-            );
-
-        }
-*/
 
     }
 
