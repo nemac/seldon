@@ -194,8 +194,9 @@ Footer Styles
 Map Layers & Map Tools Styles
 */
 
-.ui-accordion-content h4 {
+.ui-accordion-content h4.collapsed {
     cursor: pointer;
+    margin: none;
 }
 
 .layer-group {
@@ -207,11 +208,13 @@ Map Layers & Map Tools Styles
 .layer-group.collapsed {
     height: 0px;
     overflow: hidden;
+    padding-left: 12px;
 }
 
 .ui-accordion-content h4 span.ui-icon {
     display: inline-block;
     padding-right: 2px;
+    padding-top: 1px;
 }
 
 .layer {
