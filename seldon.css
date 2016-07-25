@@ -194,13 +194,13 @@ Footer Styles
 Map Layers & Map Tools Styles
 */
 
-.ui-accordion-content h4.collapsible {
+.ui-accordion-content h4.collapsible:not(.empty) {
     cursor: pointer;
     margin: 0px;
 }
 
 .ui-accordion-content h4.collapsible.empty {
-    margin-bottom: .7em;
+    margin: .4em 0 .4em 0;
 }
 
 .layer-group {
