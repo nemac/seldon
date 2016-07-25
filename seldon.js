@@ -115,11 +115,13 @@ module.exports = function ($) {
               theme.label === 'Archived Near-Real-Time Change Maps (MODIS NDVI)' &&
               accGp.label === 'Archived ForWarn Change Maps') {
             contents.addClass('collapsed');
+            contents.addClass('collapsible');
             s.contentElement
                 .children('h4')
                 .addClass('collapsed')
+                .addClass('collapsible')
                 .prepend('<span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-e"></span>')
-       } 
+       }
         for (var i=0, l=items.length; i<l; i++) {
             contents.append($('<div class="layer"></div>').append(items[i]));
         }

@@ -8,15 +8,17 @@ module.exports = function ($) {
         //  - collapse the sublist by default
         //  - add a triangle icon to the left of the sublist heading
         //    indicating collapse/expand interaction
-        if (items.length &&
-              theme.label === 'Archived Near-Real-Time Change Maps (MODIS NDVI)' &&
+        if (theme.label === 'Archived Near-Real-Time Change Maps (MODIS NDVI)' &&
               accGp.label === 'Archived ForWarn Change Maps') {
+            $header = s.contentElement.children('h4');
+            if (items.length === 0) {
+                $header.addClass('collapsible empty');
+            }
             contents.addClass('collapsed');
-            s.contentElement
-                .children('h4')
-                .addClass('collapsed')
+            contents.addClass('collapsible');
+            $header.addClass('collapsed')
                 .prepend('<span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-e"></span>')
-       } 
+       }
         for (var i=0, l=items.length; i<l; i++) {
             contents.append($('<div class="layer"></div>').append(items[i]));
         }

@@ -194,21 +194,28 @@ Footer Styles
 Map Layers & Map Tools Styles
 */
 
-.ui-accordion-content h4.collapsed {
+.ui-accordion-content h4.collapsible {
     cursor: pointer;
-    margin: none;
+    margin: 0px;
+}
+
+.ui-accordion-content h4.collapsible.empty {
+    margin-bottom: .7em;
 }
 
 .layer-group {
-    height: auto;
     overflow: auto;
+    height: auto;
     transition: height .3s;
+}
+
+.layer-group.collapsible {
+    padding-left: 15px;
 }
 
 .layer-group.collapsed {
     height: 0px;
     overflow: hidden;
-    padding-left: 12px;
 }
 
 .ui-accordion-content h4 span.ui-icon {
