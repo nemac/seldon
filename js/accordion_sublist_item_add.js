@@ -6,19 +6,20 @@ module.exports = function ($) {
         // 'Archived ForWarn Change Maps' (in the "Archived..." theme)
         // then make a few modifications to the sublist:
         //  - collapse the sublist by default
-        //  - add a triangle icon to the left of the sublist heading
+        //  - if the sublist is non-empty,
+        //    add a triangle icon to the left of the header
         //    indicating collapse/expand interaction
         if (theme.label === 'Archived Near-Real-Time Change Maps (MODIS NDVI)' &&
               accGp.label === 'Archived ForWarn Change Maps') {
-            $header = s.contentElement.children('h4');
+            var $header = s.contentElement.children('h4');
             if (items.length === 0) {
                 $header.addClass('collapsible empty');
+            } else {
+                $header.addClass('collapsible')
+                    .prepend('<span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-e"></span>')
+                contents.addClass('collapsible collapsed');
             }
-            contents.addClass('collapsed');
-            contents.addClass('collapsible');
-            $header.addClass('collapsed')
-                .prepend('<span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-e"></span>')
-       }
+        }
         for (var i=0, l=items.length; i<l; i++) {
             contents.append($('<div class="layer"></div>').append(items[i]));
         }
