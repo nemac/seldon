@@ -117,6 +117,7 @@ module.exports = function ($) {
                     items : [],
                     contentElement : $('<div><h4>' + sublist.label + '</h4></div>')
                 };
+
                 g.sublists.push(sublistObj);
                 sublistItems.push(sublistObj.contentElement);
                 var sublistLayerItems = [];
@@ -208,7 +209,7 @@ module.exports = function ($) {
                         }
                     }
                 } // end loop for sublist.layers
-                app.addAccordionSublistItems(sublistObj, sublistLayerItems);
+                app.addAccordionSublistItems(sublistObj, sublistLayerItems, theme, accGp);
             } // end loop for accGp.sublists
             app.addAccordionSublists(g, sublistItems);
             if (++a < theme.accordionGroups.length) {
