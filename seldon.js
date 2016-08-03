@@ -14,14 +14,24 @@ module.exports = function ($) {
     function setupCollapsibleSublists () {
         var app = this;
 
+        var theme_labels = [
+          'Archived Near-Real-Time Change Maps (MODIS NDVI)',
+          'Duration Products'
+        ];
+
+        var acc_ids = [
+          'ui-accordion-layerPickerAccordion-panel-5',
+          'ui-accordion-layerPickerAccordion-panel-4'
+        ];
+
         // Set a click handler on accordion section sublist headers
         $('.ui-accordion-content h4').on('click', function (event) {
             var $this = $(this);
             // Only trigger a collapse on a specific accordion section within the archived themen
             // The section we want is always the fifth accordion section;
             // we use its seldon-generated id attribute.
-            if (app.currentTheme.label === 'Archived Near-Real-Time Change Maps (MODIS NDVI)' &&
-                $this.parent().parent().attr('id') === 'ui-accordion-layerPickerAccordion-panel-4') {
+            if ($.inArray(app.currentTheme.label, theme_labels) !== -1 &&
+                $.inArray($this.parent().parent().attr('id'), acc_ids) !== -1) {
                 // If the sublist is collapsed, uncollapse it and set the header icon
                 var $sublist = $this.siblings('.layer-group');
                 var $icon = $this.children('.ui-icon')
@@ -41,6 +51,7 @@ module.exports = function ($) {
     }
     return setupCollapsibleSublists;
 }
+
 },{}],3:[function(require,module,exports){
 function AccordionGroup (settings) {
     if (!settings) { return; }
@@ -104,6 +115,15 @@ module.exports = function ($) {
 module.exports = function ($) {
     function addAccordionSublistItems (s, items, theme, accGp) {
         var contents = $('<div class="layer-group"></div>');
+
+        // hotfix for issue. Later refactor so these are not hard coded
+        var theme_labels = [
+          'Archived Near-Real-Time Change Maps (MODIS NDVI)',
+          'Duration Products'
+        ];
+
+        var acc_labels = ['Archived ForWarn Change Maps'];
+      
         // For FCAV: 
         // If the accordion section we are considering is
         // 'Archived ForWarn Change Maps' (in the "Archived..." theme)
@@ -112,8 +132,8 @@ module.exports = function ($) {
         //  - if the sublist is non-empty,
         //    add a triangle icon to the left of the header
         //    indicating collapse/expand interaction
-        if (theme.label === 'Archived Near-Real-Time Change Maps (MODIS NDVI)' &&
-              accGp.label === 'Archived ForWarn Change Maps') {
+        if ($.inArray(theme.label, theme_labels) !== -1 &&
+              $.inArray(accGp.label, acc_labels) !== -1) {
             var $header = s.contentElement.children('h4');
             if (items.length === 0) {
                 $header.addClass('collapsible empty');
