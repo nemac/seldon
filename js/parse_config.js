@@ -93,29 +93,36 @@ module.exports = function ($) {
             $wmsSubgroups = $wmsGroup.find("wmsSubgroup");
             for (j = 0, ll = $wmsSubgroups.length; j < ll; j++) {
                 $wmsSubgroup = $($wmsSubgroups[j]); // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
-                sublist = new AccordionGroupSublist({
-                    label : $wmsSubgroup.attr('label'),
-                    type  : $wmsSubgroup.attr('type')
-                });
+                sublist = new AccordionGroupSublist(
+                    $.extend({}, {
+                        label : $wmsSubgroup.attr('label'),
+                        type  : $wmsSubgroup.attr('type'),
+                        description : ($wmsSubgroup.attr('description') ? $wmsSubgroup.attr('description') : undefined )
+                    })
+                );
+
                 accordionGroup.sublists.push(sublist);
                 $wmsLayers = $wmsSubgroup.find("wmsLayer,restLayer");
                 for (k = 0, lll = $wmsLayers.length; k < lll; k++) {
                     $wmsLayer = $($wmsLayers[k]);
                     if ($wmsLayer[0].tagName === "wmsLayer") {
-                        layer = new Layer({
-                            type             : "WMS",
-                            name             : $wmsLayer.attr('name'),
-                            lid              : $wmsLayer.attr('lid'),
-                            visible          : $wmsLayer.attr('visible'),
-                            url              : $wmsLayer.attr('url'),
-                            srs              : $wmsLayer.attr('srs'),
-                            layers           : $wmsLayer.attr('layers'),
-                            styles           : $wmsLayer.attr('styles'),
-                            identify         : $wmsLayer.attr('identify'),
-                            legend           : $wmsLayer.attr('legend'),
-                            mask             : $wmsLayer.attr('mask'),
-                            selectedInConfig : ($wmsLayer.attr('selected') === "true")
-                        });
+                        layer = new Layer(
+                            $.extend({}, {
+                                type             : "WMS",
+                                name             : $wmsLayer.attr('name'),
+                                lid              : $wmsLayer.attr('lid'),
+                                visible          : $wmsLayer.attr('visible'),
+                                url              : $wmsLayer.attr('url'),
+                                srs              : $wmsLayer.attr('srs'),
+                                layers           : $wmsLayer.attr('layers'),
+                                styles           : $wmsLayer.attr('styles'),
+                                identify         : $wmsLayer.attr('identify'),
+                                legend           : $wmsLayer.attr('legend'),
+                                mask             : $wmsLayer.attr('mask'),
+                                selectedInConfig : ($wmsLayer.attr('selected') === "true"),
+                                description      : ($wmsLayer.attr('description') ? $wmsLayer.attr('description') : undefined)
+                            })
+                        );
                     } else {
                         layer = new Layer({
                             type             : "ArcGIS93Rest",
@@ -126,8 +133,9 @@ module.exports = function ($) {
                             identify         : $wmsLayer.attr('identify'),
                             legend           : $wmsLayer.attr('legend'),
                             selectedInConfig : ($wmsLayer.attr('selected') === "true"),
-                            params           : createArcGIS93RestParams($wmsLayer)
-                        });
+                            params           : createArcGIS93RestParams($wmsLayer),
+                            description      : ($wmsLayer.attr('description') ? $wmsLayer.attr('description') : undefined)
+                         })
                     }
                     layer.index = index;
                     sublist.layers.push(layer);

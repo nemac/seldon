@@ -4,6 +4,8 @@ module.exports = function ($) {
     var createLayerToggleCheckbox = require("./layer_checkbox.js")($);
     var createLayerPropertiesIcon = require("./layer_icon.js")($);
     var arrayContainsElement = require("./array_contains_element.js");
+    var SublistInfoButton = require("./accordion_sublist_info_button.js")($);
+    var LayerInfoButton = require("./layer_info_button.js")($);
 
     function setTheme (theme, options) {
         var createLayerToggleDropdownBox = require("./layer_select.js")($, this);
@@ -118,6 +120,11 @@ module.exports = function ($) {
                     contentElement : $('<div><h4>' + sublist.label + '</h4></div>')
                 };
 
+                if (sublist.description) {
+                    var sublistInfoButton = new SublistInfoButton(sublist)
+                    sublistObj.contentElement.prepend(sublistInfoButton.element)
+                }
+
                 g.sublists.push(sublistObj);
                 sublistItems.push(sublistObj.contentElement);
                 var sublistLayerItems = [];
@@ -150,21 +157,29 @@ module.exports = function ($) {
                     var $testForMask = layer.mask;
                     var radioButton;
                     var dropdownBox;
+                    var layerItems = [];
                     if ($testForMask) {
                         maskLabelElem = document.createElement("label");
                         maskTextElem = document.createTextNode(""); //empty until active, if active then put (m)
                         maskLabelElem.setAttribute("id", "mask-status" + layer.lid);
                         maskLabelElem.appendChild(maskTextElem);
-                        sublistLayerItems.push([createLayerToggleCheckbox(layer),
-                                                labelElem,
-                                                createLayerPropertiesIcon(layer),
-                                                maskLabelElem,brElem]);
+                        layerItems.push(
+                            createLayerToggleCheckbox(layer),
+                            labelElem,
+                            createLayerPropertiesIcon(layer),
+                            maskLabelElem
+                        );
+                        if (layer.description) {
+                            var layerInfoButton = new LayerInfoButton(layer);
+                            layerItems.push(layerInfoButton.element);
+                        }
+                        layerItems.push(brElem);
                     } else { //no mask for this layer (most will be of this type outside of FCAV)
                         // add the layer to the accordion group
                         if (sublist.type=="radiobutton") { //radio button type
-                            sublistLayerItems.push([radioButton=createLayerToggleRadioButton(layer, sublist.label.replace(/\s+/g, '')),
+                            layerItems.push(radioButton=createLayerToggleRadioButton(layer, sublist.label.replace(/\s+/g, '')),
                                                     labelElem,
-                                                    createLayerPropertiesIcon(layer),brElem]);
+                                                    createLayerPropertiesIcon(layer),brElem);
                             app.radioButtonList.push(radioButton);
                             app.radioButtonLayers.push(layer);
                         } else if (sublist.type=="dropdownbox") { //dropdownbox type
@@ -177,16 +192,24 @@ module.exports = function ($) {
                                 app.dropdownBoxLayers.push(layer);
                             } else {
                                 selectBoxLayers.push(layer);
-                                sublistLayerItems.push([dropdownBox=createLayerToggleDropdownBox(layer, selectBoxLayers, sublist.label.replace(/\s+/g, ''))]);
+                                layerItems.push(dropdownBox=createLayerToggleDropdownBox(layer, selectBoxLayers, sublist.label.replace(/\s+/g, '')));
                                 app.dropdownBoxList.push(dropdownBox);
                                 app.dropdownBoxLayers.push(layer);
                             }
                         } else { // assume checkbox type
-                            sublistLayerItems.push([createLayerToggleCheckbox(layer),
-                                                    labelElem,
-                                                    createLayerPropertiesIcon(layer),brElem]);
+                            layerItems.push(
+                                createLayerToggleCheckbox(layer),
+                                labelElem,
+                                createLayerPropertiesIcon(layer)
+                            );
+                            if (layer.description) {
+                                var layerInfoButton = new LayerInfoButton(layer);
+                                layerItems.push(layerInfoButton.element)
+                            }
+                            layerItems.push(brElem);
                         }
                     }
+                    sublistLayerItems.push(layerItems);
 
                     // Decide whether to activate the layer.  If we received a layer list in the
                     // options arg, active the layer only if it appears in that list.  If we
