@@ -1,11 +1,11 @@
 module.exports = function ($) {
   function LayerInfoButton(layer) {
-    var dialogDiv = '<div id="layer'+layer.lid+'InfoDialog"><p>'+layer.description+'</p></div>';
+    var dialogDiv = '<div class="more-info-dialog"><p>'+layer.description+'</p></div>';
     this.element = document.createElement('button');
     this.element.textContent = '?';
     this.element.onclick = function (event) {
       $(dialogDiv).dialog({
-          title : layer.lid + ' Information'
+          title : layer.lid + ' Info'
       })
     }
   }

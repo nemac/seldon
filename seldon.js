@@ -115,12 +115,12 @@ module.exports = function ($) {
 },{}],8:[function(require,module,exports){
 module.exports = function ($) {
   function SublistInfoButton(sublist) {
-    var dialogDiv = '<div class="sublistInfoDialog"><p>'+sublist.description+'</p></div>';
+    var dialogDiv = '<div class="more-info-dialog"><p>'+sublist.description+'</p></div>';
     this.element = document.createElement('button');
     this.element.textContent = '?';
     this.element.onclick = function (event) {
       $(dialogDiv).dialog({
-          title : sublist.label + ' Information'
+          title : sublist.label + ' Info'
       })
     }
   }
@@ -1586,12 +1586,12 @@ module.exports = function ($) {
 },{"./layer_dialog.js":30}],32:[function(require,module,exports){
 module.exports = function ($) {
   function LayerInfoButton(layer) {
-    var dialogDiv = '<div id="layer'+layer.lid+'InfoDialog"><p>'+layer.description+'</p></div>';
+    var dialogDiv = '<div class="more-info-dialog"><p>'+layer.description+'</p></div>';
     this.element = document.createElement('button');
     this.element.textContent = '?';
     this.element.onclick = function (event) {
       $(dialogDiv).dialog({
-          title : layer.lid + ' Information'
+          title : layer.lid + ' Info'
       })
     }
   }
@@ -2941,7 +2941,7 @@ module.exports = function ($) {
 
                 if (sublist.description) {
                     var sublistInfoButton = new SublistInfoButton(sublist)
-                    sublistObj.contentElement.prepend(sublistInfoButton.element)
+                    sublistObj.contentElement.children('.sublist-header').append(sublistInfoButton.element)
                 }
 
                 g.sublists.push(sublistObj);

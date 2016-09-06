@@ -128,7 +128,7 @@ module.exports = function ($) {
 
                 if (sublist.description) {
                     var sublistInfoButton = new SublistInfoButton(sublist)
-                    sublistObj.contentElement.prepend(sublistInfoButton.element)
+                    sublistObj.contentElement.children('.sublist-header').append(sublistInfoButton.element)
                 }
 
                 g.sublists.push(sublistObj);
