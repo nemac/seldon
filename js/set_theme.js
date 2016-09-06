@@ -4,8 +4,7 @@ module.exports = function ($) {
     var createLayerToggleCheckbox = require("./layer_checkbox.js")($);
     var createLayerPropertiesIcon = require("./layer_icon.js")($);
     var arrayContainsElement = require("./array_contains_element.js");
-    var SublistInfoButton = require("./accordion_sublist_info_button.js")($);
-    var LayerInfoButton = require("./layer_info_button.js")($);
+    var MoreInfoButton = require("./accordion_more_info_button.js")($);
 
     function setTheme (theme, options) {
         var createLayerToggleDropdownBox = require("./layer_select.js")($, this);
@@ -127,7 +126,7 @@ module.exports = function ($) {
                 };
 
                 if (sublist.description) {
-                    var sublistInfoButton = new SublistInfoButton(sublist)
+                    var sublistInfoButton = new MoreInfoButton(sublist)
                     sublistObj.contentElement.children('.sublist-header').append(sublistInfoButton.element)
                 }
 
@@ -176,7 +175,7 @@ module.exports = function ($) {
                             maskLabelElem
                         );
                         if (layer.description) {
-                            var layerInfoButton = new LayerInfoButton(layer);
+                            var layerInfoButton = new MoreInfoButton(layer);
                             layerItems.push(layerInfoButton.element);
                         }
                         layerItems.push(brElem);
@@ -209,7 +208,7 @@ module.exports = function ($) {
                                 createLayerPropertiesIcon(layer)
                             );
                             if (layer.description) {
-                                var layerInfoButton = new LayerInfoButton(layer);
+                                var layerInfoButton = new MoreInfoButton(layer);
                                 layerItems.push(layerInfoButton.element)
                             }
                             layerItems.push(brElem);
