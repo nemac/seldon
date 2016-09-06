@@ -117,7 +117,13 @@ module.exports = function ($) {
                 var sublistObj = {
                     heading : sublist.label,
                     items : [],
-                    contentElement : $('<div><h4>' + sublist.label + '</h4></div>')
+                    contentElement : $(
+                        '<div>'
+                            +'<div class="sublist-header">'
+                                +'<h4>' + sublist.label + '</h4>'
+                            +'</div>'
+                        +'</div>'
+                    )
                 };
 
                 if (sublist.description) {

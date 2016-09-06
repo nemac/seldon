@@ -1586,7 +1586,6 @@ module.exports = function ($) {
 },{"./layer_dialog.js":30}],32:[function(require,module,exports){
 module.exports = function ($) {
   function LayerInfoButton(layer) {
-    console.log(layer);
     var dialogDiv = '<div id="layer'+layer.lid+'InfoDialog"><p>'+layer.description+'</p></div>';
     this.element = document.createElement('button');
     this.element.textContent = '?';
@@ -2931,7 +2930,13 @@ module.exports = function ($) {
                 var sublistObj = {
                     heading : sublist.label,
                     items : [],
-                    contentElement : $('<div><h4>' + sublist.label + '</h4></div>')
+                    contentElement : $(
+                        '<div>'
+                            +'<div class="sublist-header">'
+                                +'<h4>' + sublist.label + '</h4>'
+                            +'</div>'
+                        +'</div>'
+                    )
                 };
 
                 if (sublist.description) {
