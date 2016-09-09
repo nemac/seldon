@@ -6,7 +6,7 @@ module.exports = function ($) {
     this.element.className = 'accordion-more-info-button';
     this.element.onclick = function (event) {
       $(dialogDiv).dialog({
-          title : el.label + ' Info'
+          title : (el.label || el.name) + ' Info'
       })
     }
   }
