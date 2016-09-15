@@ -194,9 +194,24 @@ Footer Styles
 Map Layers & Map Tools Styles
 */
 
-.more-info-dialog p {
+.more-info-dialog {
+    min-width: 380px !important;
+    min-height: 250px !important;
+}
+
+.more-info-content {
     padding-left: 1em;
     padding-right: 1em;
+}
+
+.more-info-content a:link {
+    text-decoration: underline;
+    color: blue;
+}
+
+.accordion-more-info-button {
+    padding: 0px 2px 0px 2px;
+    margin-left: 5px;
 }
 
 .ui-accordion-content .sublist-header h4 {
