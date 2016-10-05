@@ -1705,23 +1705,26 @@ module.exports = function ($, app) {
         }
 
         points.push({
-            "lonlat": lonlat
+            "lonlat" : lonlat,
+            "layer" : markerLayer
         });
     }
 
     function createPointItem (coords) {
         var itemString = '';
         itemString += '<div class="marker-point-item">';
-        itemString += '  <p class="marker-point-coords">';
-        itemString += '    <div class="marker-point-label">';
-        itemString += '      <span class="marker-point-coords-label">Lat:</span>';
-        itemString += '      <span class="marker-point-coords-coords">' + coords.lat + '</span>';
-        itemString += '    </div>';
-        itemString += '    <div class="marker-point-label">';
-        itemString += '      <span class="marker-point-coords-label">Lon:</span>';
-        itemString += '      <span class="marker-point-coords-coords">' + coords.lon + '</span>';
-        itemString += '    </div>';
-        itemString += '  </p>';
+        itemString += '  <div class="marker-point-label">';
+        itemString += '    <span class="marker-point-coords-label">Lat:</span>';
+        itemString += '    <span class="marker-point-coords-coords">' + coords.lat + '</span>';
+        itemString += '  </div>';
+        itemString += '  <div class="marker-point-label">';
+        itemString += '    <span class="marker-point-coords-label">Lon:</span>';
+        itemString += '    <span class="marker-point-coords-coords">' + coords.lon + '</span>';
+        itemString += '  </div>';
+        itemString += '  <div class="marker-point-label">';
+        itemString += '    <span class="marker-point-coords-label">Notes:</span>';
+        itemString += '    <div><textarea></textarea></div>';
+        itemString += '  </div>';
         itemString += '</div>';
         var item = $(itemString);
         $(".marker-points").append(item);
@@ -1733,17 +1736,18 @@ module.exports = function ($, app) {
         $("body").append(popup);
 
         $(".marker-button-download").click(exportFileHandler);
+        $(".marker-button-clear").click(clearPointsHandler);
 
         popup.dialog({
             width     : 300,
             height    : 400,
             resizable : false,
-            position  : { my: "top right", at: "top-20 right-20", of: "#map" },
+            position  : "right",
             title     : "Mark areas of interest",
             close : function (event, ui) {
                 var i;
                 for (i = 0; i < points.length; i++) {
-                    app.map.removeLayer(points[i]);
+//                    app.map.removeLayer(points[i].layer);
                 }
                 $(this).remove();
             }
@@ -1783,6 +1787,21 @@ module.exports = function ($, app) {
         });
 
         saveAs(csv, filename);
+    }
+
+    function clearPointsHandler (e) {
+        var i;
+
+        for (i = 0; i < points.length; i++) {
+            removeLayer(points[i].layer);
+        }
+
+        points = [];
+        $(".marker-points").empty();
+    }
+
+    function removeLayer (layer) {
+        app.map.removeLayer(layer);
     }
 
     return marker;
