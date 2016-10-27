@@ -96,7 +96,6 @@ module.exports = function ($, app) {
 
     function exportFileHandler () {
         var lat, lon, url;
-        var ZOOM = "10z";
         var SEP = "|";
         var i;
 
@@ -105,7 +104,7 @@ module.exports = function ($, app) {
         for (i = 0; i < points.length; i++) {
             lat = points[i].lonlat.lat;
             lon = points[i].lonlat.lon;
-            url = 'https://www.google.com/maps/@' + lat + ',' + lon + ',' + ZOOM;
+            url = makeMapUrl(lat, lon);
             csvContent += lat + SEP + lon + SEP + url + '\n';
         }
 
@@ -127,6 +126,33 @@ module.exports = function ($, app) {
         });
 
         saveAs(csv, filename);
+    }
+
+    function makeMapUrl (lat, lon) {
+        var ZOOM = "12z";
+        var degMinSec = getDegMinSec(lat, "lat") + "+" + getDegMinSec(lon, "lon");
+        return 'https://www.google.com/maps/place/' + degMinSec + '/@' + lat + ',' + lon + ',' + ZOOM;
+    }
+
+    function getDegMinSec (value, type) {
+        var direction;
+        if (type === "lat" && value >= 0) {
+            direction = "N";
+        } else if (type === "lat" && value < 0) {
+            direction = "S";
+        } else if (type === "lon" && value >= 0) {
+            direction = "E";
+        } else if (type === "lon" && value < 0) {
+            direction = "W";
+        }
+
+        value = Math.abs(value);
+
+        var degree = Math.floor(value);
+        value = (value - degree) * 60;
+        var minute = Math.floor(value);
+        var second = (value - minute) * 60;
+        return degree + "%C2%B0" + minute + "'" + second + "%22" + direction;
     }
 
     function clearPointsHandler (e) {
