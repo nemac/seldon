@@ -1723,7 +1723,7 @@ module.exports = function ($, app) {
         itemString += '  </div>';
         itemString += '  <div class="marker-point-label">';
         itemString += '    <span class="marker-point-coords-label">Notes:</span>';
-        itemString += '    <div><textarea></textarea></div>';
+        itemString += '    <div><textarea class="marker-point-notes"></textarea></div>';
         itemString += '  </div>';
         itemString += '</div>';
         var item = $(itemString);
@@ -1755,17 +1755,18 @@ module.exports = function ($, app) {
     }
 
     function exportFileHandler () {
-        var lat, lon, url;
+        var lat, lon, url, notes;
         var SEP = "|";
         var i;
 
         var csvContent = 'sep=' + SEP + '\n';
-        csvContent += 'lat' + SEP + 'long' + SEP + 'google maps link\n';
+        csvContent += 'lat' + SEP + 'long' + SEP + 'google maps link' + SEP + 'notes\n';
         for (i = 0; i < points.length; i++) {
             lat = points[i].lonlat.lat;
             lon = points[i].lonlat.lon;
             url = makeMapUrl(lat, lon);
-            csvContent += lat + SEP + lon + SEP + url + '\n';
+            notes = getNotes(i);
+            csvContent += lat + SEP + lon + SEP + url + SEP + notes + '\n';
         }
 
         var date = new Date();
@@ -1801,9 +1802,9 @@ module.exports = function ($, app) {
         } else if (type === "lat" && value < 0) {
             direction = "S";
         } else if (type === "lon" && value >= 0) {
-            direction = "W";
-        } else if (type === "lon" && value < 0) {
             direction = "E";
+        } else if (type === "lon" && value < 0) {
+            direction = "W";
         }
 
         value = Math.abs(value);
@@ -1813,6 +1814,10 @@ module.exports = function ($, app) {
         var minute = Math.floor(value);
         var second = (value - minute) * 60;
         return degree + "%C2%B0" + minute + "'" + second + "%22" + direction;
+    }
+
+    function getNotes (index) {
+        return $(".marker-point-item").eq(index).find(".marker-point-notes").val();
     }
 
     function clearPointsHandler (e) {
