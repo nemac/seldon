@@ -245,7 +245,6 @@ module.exports = function ($) {
         //
         $("#btnMarker").click(function () {
             deactivateActiveOpenLayersControls();
-            console.log(app)
             app.markerTool.activate();
             activeBtn = $(this);
             activeBtn.children().addClass('icon-active');
