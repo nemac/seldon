@@ -1669,11 +1669,19 @@ module.exports = function ($, app) {
 
     var points = [];
 
-    var pointStyle = new OpenLayers.StyleMap({
+    var pointStyleDefault = {
         pointRadius: 4,
         fillColor: "blue",
         fillOpacity: 0.75
-    });
+    };
+
+    var pointStyleHover = {
+        pointRadius: 5,
+        fillColor: "orange",
+        fillOpacity: 0.75
+    };
+
+    var pointStyle = new OpenLayers.StyleMap(pointStyleDefault);
 
     /**
      * Function that is exported. Creates handler for point marker functionality
@@ -1693,8 +1701,7 @@ module.exports = function ($, app) {
         );
 
         var feature = new OpenLayers.Feature.Vector(
-            new OpenLayers.Geometry.Point(coords.lon, coords.lat),
-            {some:'data'}
+            new OpenLayers.Geometry.Point(coords.lon, coords.lat)
         );
 
         markerLayer.addFeatures(feature);
@@ -1705,7 +1712,7 @@ module.exports = function ($, app) {
         }
 
         if ($(".marker-points").length) {
-            createPointItem(lonlat);
+            createPointItem(lonlat, markerLayer);
         }
 
         points.push({
@@ -1717,7 +1724,7 @@ module.exports = function ($, app) {
     /**
      * Creates and appends the html for documenting the points that have been marked
      */
-    function createPointItem (coords) {
+    function createPointItem (coords, layer) {
         var itemString = '';
         itemString += '<div class="marker-point-item">';
         itemString += '  <div class="marker-point-label">';
@@ -1734,7 +1741,22 @@ module.exports = function ($, app) {
         itemString += '  </div>';
         itemString += '</div>';
         var item = $(itemString);
+        item.data("point", layer)
+        item.on("mouseenter", handlePointHoverEnter)
+            .on("mouseleave", handlePointHoverLeave);
         $(".marker-points").append(item);
+    }
+
+    function handlePointHoverEnter (e) {
+        var point = $(this).data("point");
+        point.style = pointStyleHover;
+        point.redraw();
+    }
+
+    function handlePointHoverLeave (e) {
+        var point = $(this).data("point");
+        point.style = pointStyleDefault;
+        point.redraw();
     }
 
     /**
@@ -1848,6 +1870,9 @@ module.exports = function ($, app) {
         for (i = 0; i < points.length; i++) {
             removeLayer(points[i].layer);
         }
+
+        $(".marker-point-item").off("mouseenter", handlePointHoverEnter)
+            .off("mouseleave", handlePointHoverLeave);
 
         points = [];
         $(".marker-points").empty();
