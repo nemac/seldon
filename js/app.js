@@ -35,6 +35,7 @@ module.exports = function ($) {
         this.currentTheme          = undefined;
         this.identifyTool          = undefined;
         this.multigraphTool        = undefined;
+        this.markerTool        = undefined;
 
         // array of saved extent objects; each entry is a JavaScript object of the form
         //     { left : VALUE, bottom : VALUE, right : VALUE, top : VALUE }

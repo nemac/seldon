@@ -216,6 +216,7 @@ module.exports = function ($) {
         this.currentTheme          = undefined;
         this.identifyTool          = undefined;
         this.multigraphTool        = undefined;
+        this.markerTool        = undefined;
 
         // array of saved extent objects; each entry is a JavaScript object of the form
         //     { left : VALUE, bottom : VALUE, right : VALUE, top : VALUE }
@@ -258,7 +259,7 @@ module.exports = function ($) {
     return App;
 }
 
-},{"./accordion_clear.js":1,"./accordion_group_set.js":4,"./accordion_section_add.js":6,"./accordion_sublist_add.js":7,"./accordion_sublist_item_add.js":8,"./add_mask_legend.js":9,"./count.js":14,"./extent_print.js":17,"./extent_save.js":18,"./extent_zoom.js":19,"./extent_zoom_next.js":20,"./extent_zoom_previous.js":21,"./init_openlayers.js":25,"./launch.js":26,"./mask_modifier.js":35,"./mask_modifier_group.js":36,"./parse_config.js":39,"./set_base_layer.js":44,"./set_mask_by_layer.js":46,"./set_mask_by_mask.js":47,"./set_theme.js":48,"./share_url.js":50,"./update_share_url.js":54}],11:[function(require,module,exports){
+},{"./accordion_clear.js":1,"./accordion_group_set.js":4,"./accordion_section_add.js":6,"./accordion_sublist_add.js":7,"./accordion_sublist_item_add.js":8,"./add_mask_legend.js":9,"./count.js":14,"./extent_print.js":17,"./extent_save.js":18,"./extent_zoom.js":19,"./extent_zoom_next.js":20,"./extent_zoom_previous.js":21,"./init_openlayers.js":25,"./launch.js":26,"./mask_modifier.js":36,"./mask_modifier_group.js":37,"./parse_config.js":40,"./set_base_layer.js":45,"./set_mask_by_layer.js":47,"./set_mask_by_mask.js":48,"./set_theme.js":49,"./share_url.js":51,"./update_share_url.js":55}],11:[function(require,module,exports){
 function arrayContainsElement (array, element) {
     var i;
     if (array === undefined) {
@@ -776,7 +777,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":13,"./stringContainsChar.js":52}],24:[function(require,module,exports){
+},{"./clicktool.js":13,"./stringContainsChar.js":53}],24:[function(require,module,exports){
 module.exports = function (app) {
     var ShareUrlInfo = require('./share.js');
 
@@ -793,7 +794,7 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":49}],25:[function(require,module,exports){
+},{"./share.js":50}],25:[function(require,module,exports){
 function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
     var app = this;
 
@@ -807,19 +808,19 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
 
     var maxExtentBounds;
     if (theme.xmax && theme.xmin && theme.ymax && theme.ymin) {
-	maxExtentBounds = new OpenLayers.Bounds(
-	    theme.xmin,
-	    theme.ymin,
-	    theme.xmax,
-	    theme.ymax
-	);
+    maxExtentBounds = new OpenLayers.Bounds(
+        theme.xmin,
+        theme.ymin,
+        theme.xmax,
+        theme.ymax
+    );
     } else {
-	maxExtentBounds = new OpenLayers.Bounds(
+    maxExtentBounds = new OpenLayers.Bounds(
             app.maxExtent.left,
             app.maxExtent.bottom,
             app.maxExtent.right,
             app.maxExtent.top
-	);
+    );
     }
 
     if (initialExtent === undefined) {
@@ -850,7 +851,8 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
             app.zoomInTool,
             app.zoomOutTool,
             app.identifyTool,
-            app.multigraphTool
+            app.multigraphTool,
+            app.markerTool
         ],
         eventListeners:
         {
@@ -1127,6 +1129,16 @@ module.exports = function ($) {
         });
 
         //
+        // marker button
+        //
+        $("#btnMarker").click(function () {
+            deactivateActiveOpenLayersControls();
+            app.markerTool.activate();
+            activeBtn = $(this);
+            activeBtn.children().addClass('icon-active');
+        });
+
+        //
         // splash screen
         //
         createSplashScreen();
@@ -1232,7 +1244,7 @@ module.exports = function ($) {
     return launch;
 }
 
-},{"./accordion_collapsible_sublist_setup.js":2,"./deactivate_controls.js":16,"./print.js":40,"./search.js":42,"./set_google_analytics_events.js":45,"./splash.js":51}],27:[function(require,module,exports){
+},{"./accordion_collapsible_sublist_setup.js":2,"./deactivate_controls.js":16,"./print.js":41,"./search.js":43,"./set_google_analytics_events.js":46,"./splash.js":52}],27:[function(require,module,exports){
 module.exports = function ($, app) {
     var stringContainsChar = require('./stringContainsChar.js');
 
@@ -1437,7 +1449,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{"./stringContainsChar.js":52}],28:[function(require,module,exports){
+},{"./stringContainsChar.js":53}],28:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -1721,6 +1733,244 @@ module.exports = function ($, app) {
 }
 
 },{"./layer_radio_handler.js":32}],34:[function(require,module,exports){
+/**
+ * Adds functionality that allows users to mark points on a map,
+ * then download a csv of the points and some metadata about them.
+ */
+module.exports = function ($, app) {
+    var ClickTool = require('./clicktool.js');
+    var saveAs = require('../libs/FileSaver/FileSaver.js').saveAs;
+
+    var popupId = "marker-dialog";
+
+    var points = [];
+
+    var pointStyleDefault = {
+        pointRadius: 4,
+        fillColor: "blue",
+        fillOpacity: 0.75
+    };
+
+    var pointStyleHover = {
+        pointRadius: 5,
+        fillColor: "orange",
+        fillOpacity: 0.75
+    };
+
+    var pointStyle = new OpenLayers.StyleMap(pointStyleDefault);
+
+    /**
+     * Function that is exported. Creates handler for point marker functionality
+     */
+    function marker () {
+        return new ClickTool(markerHandler);
+    }
+
+    function markerHandler (e) {
+        var coords = app.map.getLonLatFromPixel(e.xy);
+        var lonlat = app.map.getLonLatFromPixel(e.xy);
+        lonlat.transform(app.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
+
+        var markerLayer = new OpenLayers.Layer.Vector(
+            "markerLayer",
+            {styleMap: pointStyle}
+        );
+
+        var feature = new OpenLayers.Feature.Vector(
+            new OpenLayers.Geometry.Point(coords.lon, coords.lat)
+        );
+
+        markerLayer.addFeatures(feature);
+        app.map.addLayer(markerLayer);
+
+        if (!$("#" + popupId).length) {
+            createPopup();
+        }
+
+        if ($(".marker-points").length) {
+            createPointItem(lonlat, markerLayer);
+        }
+
+        points.push({
+            "lonlat" : lonlat,
+            "layer" : markerLayer
+        });
+    }
+
+    /**
+     * Creates and appends the html for documenting the points that have been marked
+     */
+    function createPointItem (coords, layer) {
+        var itemString = '';
+        itemString += '<div class="marker-point-item">';
+        itemString += '  <div class="marker-point-label">';
+        itemString += '    <span class="marker-point-coords-label">Lat:</span>';
+        itemString += '    <span class="marker-point-coords-coords">' + coords.lat + '</span>';
+        itemString += '  </div>';
+        itemString += '  <div class="marker-point-label">';
+        itemString += '    <span class="marker-point-coords-label">Lon:</span>';
+        itemString += '    <span class="marker-point-coords-coords">' + coords.lon + '</span>';
+        itemString += '  </div>';
+        itemString += '  <div class="marker-point-label">';
+        itemString += '    <span class="marker-point-coords-label">Notes:</span>';
+        itemString += '    <div><textarea class="marker-point-notes"></textarea></div>';
+        itemString += '  </div>';
+        itemString += '</div>';
+        var item = $(itemString);
+        item.data("point", layer)
+        item.on("mouseenter", handlePointHoverEnter)
+            .on("mouseleave", handlePointHoverLeave);
+        $(".marker-points").append(item);
+    }
+
+    /**
+     * Makes point distinct when you hover over the text area for it
+     */
+    function handlePointHoverEnter (e) {
+        var point = $(this).data("point");
+        point.style = pointStyleHover;
+        point.redraw();
+    }
+
+    /**
+     * Returns point to default style when you loeave the text area for it
+     */
+    function handlePointHoverLeave (e) {
+        var point = $(this).data("point");
+        point.style = pointStyleDefault;
+        point.redraw();
+    }
+
+    /**
+     * Creates the popup for managing points, and binds the relevant events
+     */
+    function createPopup () {
+        var popup = $('<div id="' + popupId + '"><div class="marker-points"></div><div class="marker-button-wrapper"><button class="marker-button-download">Download Points</button><button class="marker-button-clear">Clear Points</button></div></div>');
+
+        $("body").append(popup);
+
+        $(".marker-button-download").click(exportFileHandler);
+        $(".marker-button-clear").click(clearPointsHandler);
+
+        popup.dialog({
+            width     : 300,
+            height    : 400,
+            resizable : false,
+            position  : { my: "right top", at: "right-5 top+120" },
+            title     : "Mark areas of interest",
+            close : function (event, ui) {
+                clearPointsHandler();
+                $(this).remove();
+            }
+        });
+    }
+
+    /**
+     * Creates the csv file that users can save
+     */
+    function exportFileHandler () {
+        var lat, lon, url, notes;
+        var SEP = "|";
+        var i;
+
+        var csvContent = 'sep=' + SEP + '\n';
+        csvContent += 'lat' + SEP + 'long' + SEP + 'google maps link' + SEP + 'notes\n';
+        for (i = 0; i < points.length; i++) {
+            lat = points[i].lonlat.lat;
+            lon = points[i].lonlat.lon;
+            url = makeMapUrl(lat, lon);
+            notes = getNotes(i);
+            csvContent += lat + SEP + lon + SEP + url + SEP + notes + '\n';
+        }
+
+        var date = new Date();
+        var year = date.getFullYear().toString();
+        var month = (date.getMonth() + 1).toString();
+        if (month.length === 1) {
+            month = "0" + month;
+        }
+        var day = date.getDate().toString();
+        if (day.length === 1) {
+            day = "0" + day;
+        }
+
+        var filename = 'poi_' + year + month + day + '.csv';
+
+        var csv = new Blob([csvContent], {
+            type: "text/csv;"
+        });
+
+        saveAs(csv, filename);
+    }
+
+    /**
+     * Creates the google maps url that lets the user get directions to their selections
+     */
+    function makeMapUrl (lat, lon) {
+        var ZOOM = "12z";
+        var degMinSec = getDegMinSec(lat, "lat") + "+" + getDegMinSec(lon, "lon");
+        return 'https://www.google.com/maps/place/' + degMinSec + '/@' + lat + ',' + lon + ',' + ZOOM;
+    }
+
+    /**
+     * Converts decimal lon/lat to deg/min/sec
+     */
+    function getDegMinSec (value, type) {
+        var direction;
+        if (type === "lat" && value >= 0) {
+            direction = "N";
+        } else if (type === "lat" && value < 0) {
+            direction = "S";
+        } else if (type === "lon" && value >= 0) {
+            direction = "E";
+        } else if (type === "lon" && value < 0) {
+            direction = "W";
+        }
+
+        value = Math.abs(value);
+
+        var degree = Math.floor(value);
+        value = (value - degree) * 60;
+        var minute = Math.floor(value);
+        var second = (value - minute) * 60;
+        return degree + "%C2%B0" + minute + "'" + second + "%22" + direction;
+    }
+
+    /**
+     * Gets the value of the notes field for a point
+     */
+    function getNotes (index) {
+        return $(".marker-point-item").eq(index).find(".marker-point-notes").val();
+    }
+
+    /**
+     * Removes the points from the map and removes the metadata for each point
+     */
+    function clearPointsHandler () {
+        var i;
+
+        for (i = 0; i < points.length; i++) {
+            removeLayer(points[i].layer);
+        }
+
+        $(".marker-point-item").off("mouseenter", handlePointHoverEnter)
+            .off("mouseleave", handlePointHoverLeave);
+
+        points = [];
+        $(".marker-points").empty();
+    }
+
+    /**
+     * Helper function that removes a layer from the map
+     */
+    function removeLayer (layer) {
+        app.map.removeLayer(layer);
+    }
+
+    return marker;
+}
+
+},{"../libs/FileSaver/FileSaver.js":56,"./clicktool.js":13}],35:[function(require,module,exports){
 function Mask (maskName) {
     window.EventEmitter.call(this);
     this.maskName = maskName;
@@ -1729,7 +1979,7 @@ function Mask (maskName) {
 
 module.exports = Mask;
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 function handleMaskModifier(name, index) {
     var app = this;
     var seldonLayer;
@@ -1756,7 +2006,7 @@ function handleMaskModifier(name, index) {
 
 module.exports = handleMaskModifier;
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 module.exports = function ($) {
     /**
      * When a mask grouper is enabled this function removes any modifiers from
@@ -1789,7 +2039,7 @@ module.exports = function ($) {
 }
 
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js');
 
@@ -1877,7 +2127,7 @@ module.exports = function ($, app) {
     return createMultigraphTool;
 }
 
-},{"./clicktool.js":13}],38:[function(require,module,exports){
+},{"./clicktool.js":13}],39:[function(require,module,exports){
 module.exports = function ($) {
     //jdm: override of js remove function
     //This is very useful for removing items from array by value
@@ -1932,7 +2182,7 @@ module.exports = function ($) {
     }));
 }
 
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 module.exports = function ($) {
     var createArcGIS93RestParams = require("./create_arcgis_rest_params.js")($);
     var AccordionGroup           = require("./accordion_group.js");
@@ -1944,6 +2194,7 @@ module.exports = function ($) {
         var Layer = require("./layer.js")($, this);
         var createIdentifyTool = require("./identify.js")($, this);
         var createMultigraphTool = require("./multigraph.js")($, this);
+        var marker = require("./marker.js")($, this);
 
         var app = this,
             $configXML = $(configXML),
@@ -2143,6 +2394,7 @@ module.exports = function ($) {
         app.dragPanTool    = new OpenLayers.Control.DragPan();
         app.identifyTool   = createIdentifyTool();
         app.multigraphTool = createMultigraphTool($configXML);
+        app.markerTool = marker();
 
         var initialExtent;
 
@@ -2166,7 +2418,7 @@ module.exports = function ($) {
     return parseConfig;
 }
 
-},{"./accordion_group.js":3,"./accordion_group_sublist.js":5,"./baselayer.js":12,"./create_arcgis_rest_params.js":15,"./identify.js":23,"./layer.js":27,"./multigraph.js":37,"./theme.js":53}],40:[function(require,module,exports){
+},{"./accordion_group.js":3,"./accordion_group_sublist.js":5,"./baselayer.js":12,"./create_arcgis_rest_params.js":15,"./identify.js":23,"./layer.js":27,"./marker.js":34,"./multigraph.js":38,"./theme.js":54}],41:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap ($configXML) {
         // go through all layers, and collect a list of objects
@@ -2275,7 +2527,7 @@ module.exports = function ($, app) {
     return printMap;
 };
 
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 function RepeatingOperation (op, yieldEveryIteration) {
     var count = 0;
     var instance = this;
@@ -2291,7 +2543,7 @@ function RepeatingOperation (op, yieldEveryIteration) {
 
 module.exports = RepeatingOperation;
 
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 /**
  * search.js includes contributions by William Clark (wclark1@unca.edu)
  *
@@ -2319,7 +2571,7 @@ module.exports = function ($) {
     return handle_search;
 }
 
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2334,7 +2586,7 @@ module.exports = function ($) {
     window.seldon = seldon;
 }(jQuery));
 
-},{"./app.js":10,"./init.js":24,"./overrides.js":38}],44:[function(require,module,exports){
+},{"./app.js":10,"./init.js":24,"./overrides.js":39}],45:[function(require,module,exports){
 module.exports = function ($) {
     function setBaseLayer (baseLayer) {
         var app = this;
@@ -2370,7 +2622,7 @@ module.exports = function ($) {
 }
 
 
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 function ga_events ($) {
 
 
@@ -2606,7 +2858,7 @@ function ga_events ($) {
 
 module.exports = ga_events;
 
-},{}],46:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 module.exports = function ($) {
     function setMaskByLayer (toggle, parentLayer) {
         var Layer = require("./layer.js")($, this);
@@ -2678,7 +2930,7 @@ module.exports = function ($) {
     return setMaskByLayer;
 }
 
-},{"./layer.js":27}],47:[function(require,module,exports){
+},{"./layer.js":27}],48:[function(require,module,exports){
 module.exports = function ($) {
     var Mask = require("./mask.js");
 
@@ -2775,7 +3027,7 @@ module.exports = function ($) {
     return setMaskByMask;
 }
 
-},{"./layer.js":27,"./mask.js":34}],48:[function(require,module,exports){
+},{"./layer.js":27,"./mask.js":35}],49:[function(require,module,exports){
 module.exports = function ($) {
     var RepeatingOperation = require("./repeating_operation.js");
     var ShareUrlInfo = require("./share.js");
@@ -3060,7 +3312,7 @@ module.exports = function ($) {
     return setTheme;
 }
 
-},{"./array_contains_element.js":11,"./layer_checkbox.js":28,"./layer_icon.js":30,"./layer_radio.js":31,"./layer_select.js":33,"./repeating_operation.js":41,"./share.js":49}],49:[function(require,module,exports){
+},{"./array_contains_element.js":11,"./layer_checkbox.js":28,"./layer_icon.js":30,"./layer_radio.js":31,"./layer_select.js":33,"./repeating_operation.js":42,"./share.js":50}],50:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) settings = {};
 
@@ -3159,7 +3411,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],50:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 module.exports = function ($) {
     var stringContainsChar = require("./stringContainsChar.js");
     var ShareUrlInfo = require("./share.js");
@@ -3229,7 +3481,7 @@ module.exports = function ($) {
     return shareUrl;
 }
 
-},{"./share.js":49,"./stringContainsChar.js":52}],51:[function(require,module,exports){
+},{"./share.js":50,"./stringContainsChar.js":53}],52:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $document    = $(document),
@@ -3249,14 +3501,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],52:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],53:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -3283,7 +3535,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],54:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 module.exports = function ($) {
     function updateShareMapUrl () {
         if (this.currentTheme) {
@@ -3297,4 +3549,194 @@ module.exports = function ($) {
     return updateShareMapUrl;
 }
 
-},{}]},{},[43]);
+},{}],56:[function(require,module,exports){
+/* FileSaver.js
+ * A saveAs() FileSaver implementation.
+ * 1.3.2
+ * 2016-06-16 18:25:19
+ *
+ * By Eli Grey, http://eligrey.com
+ * License: MIT
+ *   See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
+ */
+
+/*global self */
+/*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
+
+/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
+
+var saveAs = saveAs || (function(view) {
+	"use strict";
+	// IE <10 is explicitly unsupported
+	if (typeof view === "undefined" || typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
+		return;
+	}
+	var
+		  doc = view.document
+		  // only get URL when necessary in case Blob.js hasn't overridden it yet
+		, get_URL = function() {
+			return view.URL || view.webkitURL || view;
+		}
+		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
+		, can_use_save_link = "download" in save_link
+		, click = function(node) {
+			var event = new MouseEvent("click");
+			node.dispatchEvent(event);
+		}
+		, is_safari = /constructor/i.test(view.HTMLElement) || view.safari
+		, is_chrome_ios =/CriOS\/[\d]+/.test(navigator.userAgent)
+		, throw_outside = function(ex) {
+			(view.setImmediate || view.setTimeout)(function() {
+				throw ex;
+			}, 0);
+		}
+		, force_saveable_type = "application/octet-stream"
+		// the Blob API is fundamentally broken as there is no "downloadfinished" event to subscribe to
+		, arbitrary_revoke_timeout = 1000 * 40 // in ms
+		, revoke = function(file) {
+			var revoker = function() {
+				if (typeof file === "string") { // file is an object URL
+					get_URL().revokeObjectURL(file);
+				} else { // file is a File
+					file.remove();
+				}
+			};
+			setTimeout(revoker, arbitrary_revoke_timeout);
+		}
+		, dispatch = function(filesaver, event_types, event) {
+			event_types = [].concat(event_types);
+			var i = event_types.length;
+			while (i--) {
+				var listener = filesaver["on" + event_types[i]];
+				if (typeof listener === "function") {
+					try {
+						listener.call(filesaver, event || filesaver);
+					} catch (ex) {
+						throw_outside(ex);
+					}
+				}
+			}
+		}
+		, auto_bom = function(blob) {
+			// prepend BOM for UTF-8 XML and text/* types (including HTML)
+			// note: your browser will automatically convert UTF-16 U+FEFF to EF BB BF
+			if (/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(blob.type)) {
+				return new Blob([String.fromCharCode(0xFEFF), blob], {type: blob.type});
+			}
+			return blob;
+		}
+		, FileSaver = function(blob, name, no_auto_bom) {
+			if (!no_auto_bom) {
+				blob = auto_bom(blob);
+			}
+			// First try a.download, then web filesystem, then object URLs
+			var
+				  filesaver = this
+				, type = blob.type
+				, force = type === force_saveable_type
+				, object_url
+				, dispatch_all = function() {
+					dispatch(filesaver, "writestart progress write writeend".split(" "));
+				}
+				// on any filesys errors revert to saving with object URLs
+				, fs_error = function() {
+					if ((is_chrome_ios || (force && is_safari)) && view.FileReader) {
+						// Safari doesn't allow downloading of blob urls
+						var reader = new FileReader();
+						reader.onloadend = function() {
+							var url = is_chrome_ios ? reader.result : reader.result.replace(/^data:[^;]*;/, 'data:attachment/file;');
+							var popup = view.open(url, '_blank');
+							if(!popup) view.location.href = url;
+							url=undefined; // release reference before dispatching
+							filesaver.readyState = filesaver.DONE;
+							dispatch_all();
+						};
+						reader.readAsDataURL(blob);
+						filesaver.readyState = filesaver.INIT;
+						return;
+					}
+					// don't create more object URLs than needed
+					if (!object_url) {
+						object_url = get_URL().createObjectURL(blob);
+					}
+					if (force) {
+						view.location.href = object_url;
+					} else {
+						var opened = view.open(object_url, "_blank");
+						if (!opened) {
+							// Apple does not allow window.open, see https://developer.apple.com/library/safari/documentation/Tools/Conceptual/SafariExtensionGuide/WorkingwithWindowsandTabs/WorkingwithWindowsandTabs.html
+							view.location.href = object_url;
+						}
+					}
+					filesaver.readyState = filesaver.DONE;
+					dispatch_all();
+					revoke(object_url);
+				}
+			;
+			filesaver.readyState = filesaver.INIT;
+
+			if (can_use_save_link) {
+				object_url = get_URL().createObjectURL(blob);
+				setTimeout(function() {
+					save_link.href = object_url;
+					save_link.download = name;
+					click(save_link);
+					dispatch_all();
+					revoke(object_url);
+					filesaver.readyState = filesaver.DONE;
+				});
+				return;
+			}
+
+			fs_error();
+		}
+		, FS_proto = FileSaver.prototype
+		, saveAs = function(blob, name, no_auto_bom) {
+			return new FileSaver(blob, name || blob.name || "download", no_auto_bom);
+		}
+	;
+	// IE 10+ (native saveAs)
+	if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
+		return function(blob, name, no_auto_bom) {
+			name = name || blob.name || "download";
+
+			if (!no_auto_bom) {
+				blob = auto_bom(blob);
+			}
+			return navigator.msSaveOrOpenBlob(blob, name);
+		};
+	}
+
+	FS_proto.abort = function(){};
+	FS_proto.readyState = FS_proto.INIT = 0;
+	FS_proto.WRITING = 1;
+	FS_proto.DONE = 2;
+
+	FS_proto.error =
+	FS_proto.onwritestart =
+	FS_proto.onprogress =
+	FS_proto.onwrite =
+	FS_proto.onabort =
+	FS_proto.onerror =
+	FS_proto.onwriteend =
+		null;
+
+	return saveAs;
+}(
+	   typeof self !== "undefined" && self
+	|| typeof window !== "undefined" && window
+	|| this.content
+));
+// `self` is undefined in Firefox for Android content script context
+// while `this` is nsIContentFrameMessageManager
+// with an attribute `content` that corresponds to the window
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports.saveAs = saveAs;
+} else if ((typeof define !== "undefined" && define !== null) && (define.amd !== null)) {
+  define("FileSaver.js", function() {
+    return saveAs;
+  });
+}
+
+},{}]},{},[44]);

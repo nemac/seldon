@@ -9,6 +9,7 @@ module.exports = function ($) {
         var Layer = require("./layer.js")($, this);
         var createIdentifyTool = require("./identify.js")($, this);
         var createMultigraphTool = require("./multigraph.js")($, this);
+        var marker = require("./marker.js")($, this);
 
         var app = this,
             $configXML = $(configXML),
@@ -208,6 +209,7 @@ module.exports = function ($) {
         app.dragPanTool    = new OpenLayers.Control.DragPan();
         app.identifyTool   = createIdentifyTool();
         app.multigraphTool = createMultigraphTool($configXML);
+        app.markerTool = marker();
 
         var initialExtent;
 
