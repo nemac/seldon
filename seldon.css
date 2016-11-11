@@ -460,6 +460,63 @@ Open Layers element Styles
     font-weight: bold;
 }
 
+/**
+ * Default styles for the point marker
+ */
+#marker-dialog {
+    position: relative;
+}
+
+.marker-button-wrapper {
+    position: absolute;
+    bottom: 0;
+    text-align: center;
+    width: 100%;
+    border-top: 1px solid #aaa;
+}
+
+.marker-button-wrapper button {
+    display: block;
+    margin: 5px auto;
+    border-radius: 20px;
+    border: 0;
+    color: white;
+    padding: 5px 5px 7px;
+    width: 176px;
+    cursor: pointer;
+}
+
+.marker-button-download {
+    background: green;
+}
+
+.marker-button-clear {
+    background: red;
+}
+
+.marker-point-item {
+    border-bottom: 1px solid #ccc;
+    padding: 20px 15px;
+}
+
+.marker-point-label {
+    line-height: 1.4em;
+}
+
+.marker-point-label textarea {
+    width: 100%;
+    max-width: 100%;
+}
+
+.marker-point-coords-label {
+    font-weight: bold;
+}
+
+.marker-points {
+    height: 286px;
+    overflow: scroll;
+}
+
 /*
 jQuery element Styles
 */
