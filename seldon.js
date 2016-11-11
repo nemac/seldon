@@ -1057,7 +1057,6 @@ module.exports = function ($) {
         //
         $("#btnMarker").click(function () {
             deactivateActiveOpenLayersControls();
-            console.log(app)
             app.markerTool.activate();
             activeBtn = $(this);
             activeBtn.children().addClass('icon-active');
@@ -1658,10 +1657,13 @@ module.exports = function ($, app) {
 }
 
 },{"./layer_radio_handler.js":31}],33:[function(require,module,exports){
+/**
+ * Adds functionality that allows users to mark points on a map,
+ * then download a csv of the points and some metadata about them.
+ */
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js');
     var saveAs = require('../libs/FileSaver/FileSaver.js').saveAs;
-    console.log(saveAs)
 
     var popupId = "marker-dialog";
 
@@ -1673,8 +1675,10 @@ module.exports = function ($, app) {
         fillOpacity: 0.75
     });
 
+    /**
+     * Function that is exported. Creates handler for point marker functionality
+     */
     function marker () {
-//        createPopup();
         return new ClickTool(markerHandler);
     }
 
@@ -1710,6 +1714,9 @@ module.exports = function ($, app) {
         });
     }
 
+    /**
+     * Creates and appends the html for documenting the points that have been marked
+     */
     function createPointItem (coords) {
         var itemString = '';
         itemString += '<div class="marker-point-item">';
@@ -1730,6 +1737,9 @@ module.exports = function ($, app) {
         $(".marker-points").append(item);
     }
 
+    /**
+     * Creates the popup for managing points, and binds the relevant events
+     */
     function createPopup () {
         var popup = $('<div id="' + popupId + '"><div class="marker-points"></div><div class="marker-button-wrapper"><button class="marker-button-download">Download Points</button><button class="marker-button-clear">Clear Points</button></div></div>');
 
@@ -1742,18 +1752,18 @@ module.exports = function ($, app) {
             width     : 300,
             height    : 400,
             resizable : false,
-            position  : "right",
+            position  : { my: "right top", at: "right-5 top+120" },
             title     : "Mark areas of interest",
             close : function (event, ui) {
-                var i;
-                for (i = 0; i < points.length; i++) {
-//                    app.map.removeLayer(points[i].layer);
-                }
+                clearPointsHandler();
                 $(this).remove();
             }
         });
     }
 
+    /**
+     * Creates the csv file that users can save
+     */
     function exportFileHandler () {
         var lat, lon, url, notes;
         var SEP = "|";
@@ -1789,12 +1799,18 @@ module.exports = function ($, app) {
         saveAs(csv, filename);
     }
 
+    /**
+     * Creates the google maps url that lets the user get directions to their selections
+     */
     function makeMapUrl (lat, lon) {
         var ZOOM = "12z";
         var degMinSec = getDegMinSec(lat, "lat") + "+" + getDegMinSec(lon, "lon");
         return 'https://www.google.com/maps/place/' + degMinSec + '/@' + lat + ',' + lon + ',' + ZOOM;
     }
 
+    /**
+     * Converts decimal lon/lat to deg/min/sec
+     */
     function getDegMinSec (value, type) {
         var direction;
         if (type === "lat" && value >= 0) {
@@ -1816,11 +1832,17 @@ module.exports = function ($, app) {
         return degree + "%C2%B0" + minute + "'" + second + "%22" + direction;
     }
 
+    /**
+     * Gets the value of the notes field for a point
+     */
     function getNotes (index) {
         return $(".marker-point-item").eq(index).find(".marker-point-notes").val();
     }
 
-    function clearPointsHandler (e) {
+    /**
+     * Removes the points from the map and removes the metadata for each point
+     */
+    function clearPointsHandler () {
         var i;
 
         for (i = 0; i < points.length; i++) {
@@ -1831,6 +1853,9 @@ module.exports = function ($, app) {
         $(".marker-points").empty();
     }
 
+    /**
+     * Helper function that removes a layer from the map
+     */
     function removeLayer (layer) {
         app.map.removeLayer(layer);
     }
