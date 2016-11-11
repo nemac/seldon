@@ -1747,12 +1747,18 @@ module.exports = function ($, app) {
         $(".marker-points").append(item);
     }
 
+    /**
+     * Makes point distinct when you hover over the text area for it
+     */
     function handlePointHoverEnter (e) {
         var point = $(this).data("point");
         point.style = pointStyleHover;
         point.redraw();
     }
 
+    /**
+     * Returns point to default style when you loeave the text area for it
+     */
     function handlePointHoverLeave (e) {
         var point = $(this).data("point");
         point.style = pointStyleDefault;
@@ -3498,7 +3504,7 @@ var saveAs = saveAs || (function(view) {
 			var event = new MouseEvent("click");
 			node.dispatchEvent(event);
 		}
-		, is_safari = /constructor/i.test(view.HTMLElement)
+		, is_safari = /constructor/i.test(view.HTMLElement) || view.safari
 		, is_chrome_ios =/CriOS\/[\d]+/.test(navigator.userAgent)
 		, throw_outside = function(ex) {
 			(view.setImmediate || view.setTimeout)(function() {
