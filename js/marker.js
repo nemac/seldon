@@ -60,6 +60,15 @@ module.exports = function ($, app) {
             "lonlat" : lonlat,
             "layer" : markerLayer
         });
+
+        if (typeof ga !== 'undefined') {
+         ga('send', {
+            'hitType': 'event',          // Required.
+            'eventCategory': 'User Generated Points',   // Required.
+            'eventAction': 'Create New Point',      // Required.
+            'eventLabel': lonlat.lon + ', ' + lonlat.lat
+          });
+        }
     }
 
     /**
@@ -86,6 +95,7 @@ module.exports = function ($, app) {
         item.on("mouseenter", handlePointHoverEnter)
             .on("mouseleave", handlePointHoverLeave);
         $(".marker-points").append(item);
+
     }
 
     /**
@@ -165,6 +175,15 @@ module.exports = function ($, app) {
             type: "text/csv;"
         });
 
+        if (typeof ga !== 'undefined') { 
+         ga('send', {
+            'hitType': 'event',          // Required.
+            'eventCategory': 'User Generated Points',   // Required.
+            'eventAction': 'Click',      // Required.
+            'eventLabel': 'Download Points'
+          });
+        }
+
         saveAs(csv, filename);
     }
 
@@ -201,11 +220,22 @@ module.exports = function ($, app) {
         return degree + "%C2%B0" + minute + "'" + second + "%22" + direction;
     }
 
+
     /**
      * Gets the value of the notes field for a point
      */
     function getNotes (index) {
-        return $(".marker-point-item").eq(index).find(".marker-point-notes").val();
+      if (typeof ga !== 'undefined') {
+        var label = $(".marker-point-item").eq(index).find(".marker-point-notes").val();
+        ga('send', {
+          'hitType': 'event',          // Required.
+          'eventCategory': 'User Generated Points',   // Required.
+          'eventAction': 'Notes',      // Required.
+          'eventLabel': label
+        });
+      }
+
+      return $(".marker-point-item").eq(index).find(".marker-point-notes").val();    
     }
 
     /**
@@ -220,6 +250,15 @@ module.exports = function ($, app) {
 
         $(".marker-point-item").off("mouseenter", handlePointHoverEnter)
             .off("mouseleave", handlePointHoverLeave);
+
+        if (typeof ga !== 'undefined') {
+         ga('send', {
+            'hitType': 'event',          // Required.
+            'eventCategory': 'User Generated Points',   // Required.
+            'eventAction': 'Click',      // Required.
+            'eventLabel': 'Clear Points'
+          });
+        }
 
         points = [];
         $(".marker-points").empty();
