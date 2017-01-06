@@ -2152,7 +2152,7 @@ module.exports = function ($, app) {
                 var seldonMultigraph = $('#seldonMultigraph'+app.graphCount+''),
                     promise = seldonMultigraph.multigraph({
                         //NOTE: coords.lon and coords.lat on the next line are really x,y coords in EPSG:900913, not lon/lat:
-                        'mugl'   : muglPrefix + coords.lon + "," + coords.lat,
+                        'mugl'   : muglPrefix + lonlat.lon + "," + lonlat.lat,
                         'swf'    : "libs/seldon/libs/Multigraph.swf"
                     });
                 seldonMultigraph.multigraph('done', function (m) {
