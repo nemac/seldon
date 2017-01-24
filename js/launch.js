@@ -243,6 +243,16 @@ module.exports = function ($) {
         });
 
         //
+        // marker button
+        //
+        $("#btnMarker").click(function () {
+            deactivateActiveOpenLayersControls();
+            app.markerTool.activate();
+            activeBtn = $(this);
+            activeBtn.children().addClass('icon-active');
+        });
+
+        //
         // splash screen
         //
         createSplashScreen();

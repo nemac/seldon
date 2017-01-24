@@ -150,6 +150,39 @@ function ga_events ($) {
         event: 'click'
       });
 
+
+      //track user generated points.
+      //  records download points
+      $( "#marker-dialog .marker-button-wrapper .marker-button-download" ).click(function(event) {
+        $.ga.trackEvent({
+          category: 'User Generated Points',
+          action: 'Click',
+          label : 'Download Points'
+        });
+      });
+
+
+      //track user generated points.
+      //  records clear points
+      $( "#marker-dialog .marker-button-wrapper .marker-button-clear" ).click(function(event) {
+        $.ga.trackEvent({
+          category: 'User Generated Points',
+          action: 'Click',
+          label : 'Clear Points'
+        });
+      });
+
+
+      //track user generated points.
+      //  records notes
+      $( "#marker-dialog .marker-point-label .marker-point-coords-label" ).focusout(function(event) {
+          $.ga.trackEvent({
+            category : 'User Generated Points',
+            action : 'Notes',
+            label : $(this).val()
+          });
+      });
+
       //track open layers pan zoom tool slide zoom
       // records text for action
       $( "img[src$='slider.png']" ).mouseup(function(event) {
