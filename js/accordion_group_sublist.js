@@ -3,6 +3,7 @@ function AccordionGroupSublist (settings) {
     this.layers = [];
     this.label  = settings.label;
     this.type   = settings.type;
+    if (settings.description) this.description = settings.description
 }
 
 module.exports = AccordionGroupSublist;

@@ -22,7 +22,8 @@ module.exports = function ($) {
                     mask        : 'false',
                     legend      : parentLayer.legend,
                     index       : parentLayer.index,
-                    parentLayer : parentLayer
+                    parentLayer : parentLayer,
+                    description : (parentLayer.description ? parentLayer.description : undefined)
                 });
                 maskLayer.activate();
 
