@@ -194,17 +194,17 @@ Footer Styles
 Map Layers & Map Tools Styles
 */
 
-.more-info-dialog {
+.tooltip-dialog {
     min-width: 380px !important;
     min-height: 250px !important;
 }
 
-.more-info-content {
+.tooltip-content {
     padding-left: 1em;
     padding-right: 1em;
 }
 
-.more-info-content a:link {
+.tooltip-content a:link {
     text-decoration: underline;
     color: blue;
 }

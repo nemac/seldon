@@ -96,6 +96,7 @@ module.exports = function ($) {
                 $wmsSubgroup = $($wmsSubgroups[j]); // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
                 sublist = new AccordionGroupSublist(
                     $.extend({}, {
+                        sid   : $wmsSubgroup.attr('sid'),
                         label : $wmsSubgroup.attr('label'),
                         type  : $wmsSubgroup.attr('type'),
                         description : ($wmsSubgroup.attr('description') ? $wmsSubgroup.attr('description') : undefined )
