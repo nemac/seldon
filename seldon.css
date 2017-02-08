@@ -212,6 +212,11 @@ Map Layers & Map Tools Styles
 .accordion-more-info-button {
     padding: 0px 2px 0px 2px;
     margin-left: 5px;
+    border: 0;
+    background: #fff;
+    background: transparent;
+    font-weight: bold;
+    cursor: pointer;
 }
 
 .ui-accordion-content .sublist-header h4 {
