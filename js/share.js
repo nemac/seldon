@@ -7,6 +7,7 @@ function ShareUrlInfo (settings) {
     this.extent            = settings.extent || {};
     this.layerLids         = settings.layerLids || [];
     this.layerMask         = settings.layerMask || [];
+    this.maskModifiers     = settings.maskModifiers || [];
     this.layerAlphas       = settings.layerAlphas || [];
 }
 
@@ -61,6 +62,11 @@ ShareUrlInfo.parseUrl = function (url) {
             info.layerMask.push(this);
         });
     }
+    if (vars.modifiers) {
+        $.each(vars.modifiers.split(','), function () {
+            info.maskModifiers.push(this);
+        });
+    }
     if (vars.alphas) {
         $.each(vars.alphas.split(','), function () {
             info.layerAlphas.push(this);
@@ -78,6 +84,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
          + 'theme={{{theme}}}'
          + '&layers={{{layers}}}'
          + '&mask={{{mask}}}'
+         + '{{{modifiers}}}'
          + '&alphas={{{alphas}}}'
          + '&accgp={{{accgp}}}'
          + '&basemap={{{basemap}}}'
@@ -87,6 +94,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
             theme   : this.themeName,
             layers  : this.layerLids.join(','),
             mask    : this.layerMask.join(','),
+            modifiers : this.maskModifiers.length > 0 ? "&modifiers=" + this.maskModifiers.join(',') : "",
             alphas  : this.layerAlphas.join(','),
             accgp   : this.accordionGroupGid,
             basemap : this.baseLayerName,
