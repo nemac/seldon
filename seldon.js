@@ -2041,6 +2041,7 @@ function handleMaskModifier(name, index) {
             seldonLayer.openLayersLayer.redraw(true);
         }
     }
+    app.updateShareMapUrl();
 }
 
 module.exports = handleMaskModifier;
@@ -2377,6 +2378,12 @@ module.exports = function ($) {
             }
             for (i = 0, l = shareUrlInfo.layerMask.length; i < l; i++) {
                 themeOptions.shareUrlMasks[i]=shareUrlInfo.layerMask[i];
+            }
+            if (themeOptions.maskModifiers === undefined) {
+                themeOptions.maskModifiers = [];
+            }
+            for (i = 0, l = shareUrlInfo.maskModifiers.length; i < l; i++) {
+                themeOptions.maskModifiers.push(shareUrlInfo.maskModifiers[i]);
             }
         }
 
@@ -3358,6 +3365,20 @@ module.exports = function ($) {
             }
         }
 
+        if (options.maskModifiers !== undefined) {
+            var modifier, checkbox;
+            for (var m = 0; m < options.maskModifiers.length; m++) {
+                modifier = options.maskModifiers[m];
+                checkbox = $("#" + modifier);
+                if (checkbox.data("mask-grouper") === true) {
+                    app.handleMaskModifierGroup(modifier, true);
+                    $("[data-mask-parent='" + modifier + "']").attr('disabled', true);
+                }
+                app.handleMaskModifier(modifier, checkbox.data("index"));
+                checkbox.prop("checked", true);
+            }
+        }
+
         //if zoom parameter on theme to to that extent
         if (theme.zoom) {
             var zoomExtent = {
@@ -3378,7 +3399,6 @@ module.exports = function ($) {
             $('#mask-status'+ app.maskParentLayers[mp].lid).text("(m)");
             $("#chk"+app.maskParentLayers[mp].lid).prop('checked', true);
         }
-
     }
 
     return setTheme;
@@ -3394,6 +3414,7 @@ function ShareUrlInfo (settings) {
     this.extent            = settings.extent || {};
     this.layerLids         = settings.layerLids || [];
     this.layerMask         = settings.layerMask || [];
+    this.maskModifiers     = settings.maskModifiers || [];
     this.layerAlphas       = settings.layerAlphas || [];
 }
 
@@ -3448,6 +3469,11 @@ ShareUrlInfo.parseUrl = function (url) {
             info.layerMask.push(this);
         });
     }
+    if (vars.modifiers) {
+        $.each(vars.modifiers.split(','), function () {
+            info.maskModifiers.push(this);
+        });
+    }
     if (vars.alphas) {
         $.each(vars.alphas.split(','), function () {
             info.layerAlphas.push(this);
@@ -3465,6 +3491,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
          + 'theme={{{theme}}}'
          + '&layers={{{layers}}}'
          + '&mask={{{mask}}}'
+         + '{{{modifiers}}}'
          + '&alphas={{{alphas}}}'
          + '&accgp={{{accgp}}}'
          + '&basemap={{{basemap}}}'
@@ -3474,6 +3501,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
             theme   : this.themeName,
             layers  : this.layerLids.join(','),
             mask    : this.layerMask.join(','),
+            modifiers : this.maskModifiers.length > 0 ? "&modifiers=" + this.maskModifiers.join(',') : "",
             alphas  : this.layerAlphas.join(','),
             accgp   : this.accordionGroupGid,
             basemap : this.baseLayerName,
@@ -3535,6 +3563,10 @@ module.exports = function ($) {
             }
         });
 
+        if (this.hasOwnProperty("maskModifiers")) {
+            var modifiers = this.maskModifiers.filter(function (val) { return val !== ""; });
+        }
+
         url = window.location.toString();
         url = url.replace(/\?.*$/, '');
         url = url.replace(/\/$/, '');
@@ -3543,6 +3575,7 @@ module.exports = function ($) {
             themeName         : this.currentTheme.name,
             layerLids         : layerLids,
             layerMask         : layerMask,
+            maskModifiers     : modifiers,
             layerAlphas       : layerAlphas,
             accordionGroupGid : this.currentAccordionGroup.gid,
             baseLayerName     : this.currentBaseLayer.name,

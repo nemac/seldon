@@ -20,6 +20,7 @@ function handleMaskModifier(name, index) {
             seldonLayer.openLayersLayer.redraw(true);
         }
     }
+    app.updateShareMapUrl();
 }
 
 module.exports = handleMaskModifier;

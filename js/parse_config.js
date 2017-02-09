@@ -154,6 +154,12 @@ module.exports = function ($) {
             for (i = 0, l = shareUrlInfo.layerMask.length; i < l; i++) {
                 themeOptions.shareUrlMasks[i]=shareUrlInfo.layerMask[i];
             }
+            if (themeOptions.maskModifiers === undefined) {
+                themeOptions.maskModifiers = [];
+            }
+            for (i = 0, l = shareUrlInfo.maskModifiers.length; i < l; i++) {
+                themeOptions.maskModifiers.push(shareUrlInfo.maskModifiers[i]);
+            }
         }
 
         // parse themes
