@@ -2,7 +2,7 @@ module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js'),
         stringContainsChar = require('./stringContainsChar.js');
 
-    var legendConfig = require('./legend_config.js')
+    var getLegendStringFromPixelValue = require('./legend_config.js')
 
     function createIdentifyTool () {
         return new ClickTool(
@@ -153,12 +153,14 @@ module.exports = function ($, app) {
                 for (i = 1; i < result.length; ++i) {
                     var valueLabel = String(result[i][0])
                     var value = result[i][1]
-                    var valueDescription = legendConfig.getLegendStringFromPixelValue(service.name, value)
+                    var valueDescription = getLegendStringFromPixelValue(service.name, value)
+                    var tableRow = valueDescription === '' ? value
+                        : value + ' (' + valueDescription + ')' 
                     if (valueDescription !== '') valueDescription += ': '
                     newTableContents += (''
                         + '<tr class="identify-result">'
                         +   '<td class="label">'+valueLabel.replace("_0","")+':&nbsp&nbsp</td>'
-                        +   '<td>' + valueDescription + value + '</td>'
+                        +   '<td>' + tableRow + '</td>'
                         + '</tr>'
                        );
                 }

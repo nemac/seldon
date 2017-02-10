@@ -10,6 +10,8 @@
  * managing and retrieving these descriptions
  */
 
+module.exports = getLegendStringFromPixelValue
+
 function isLayerInLegendConfig(layerId) {
   return layerId in legendConfig
 }
