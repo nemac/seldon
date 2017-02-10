@@ -49,6 +49,10 @@ module.exports = function ($) {
             }
         });
 
+        if (this.hasOwnProperty("maskModifiers")) {
+            var modifiers = this.maskModifiers.filter(function (val) { return val !== ""; });
+        }
+
         url = window.location.toString();
         url = url.replace(/\?.*$/, '');
         url = url.replace(/\/$/, '');
@@ -57,6 +61,7 @@ module.exports = function ($) {
             themeName         : this.currentTheme.name,
             layerLids         : layerLids,
             layerMask         : layerMask,
+            maskModifiers     : modifiers,
             layerAlphas       : layerAlphas,
             accordionGroupGid : this.currentAccordionGroup.gid,
             baseLayerName     : this.currentBaseLayer.name,
