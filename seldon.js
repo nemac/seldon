@@ -842,11 +842,15 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
         tileSize:          layer.tileSize,
         tileManager:       app.tileManager,
         controls: [
-            new OpenLayers.Control.Navigation({
+            new OpenLayers.Control.Navigation(
+            /*
+            {
                 dragPanOptions: {
                     enableKinetic: true
                 }
-            }),
+            }
+            */
+            ),
             new OpenLayers.Control.Attribution(),
             app.zoomInTool,
             app.zoomOutTool,
