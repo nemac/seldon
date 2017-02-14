@@ -59,7 +59,6 @@ module.exports = function ($) {
             app.maskParentLayers.remove(parentLayer);
             if (parentLayer.visible === "false") {
                 parentLayer.visible = "true";
-                parentLayer.addToLegend()
             } else {
                 parentLayer.deactivate();
             }

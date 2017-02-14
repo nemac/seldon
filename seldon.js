@@ -1350,14 +1350,18 @@ module.exports = function ($, app) {
             app.map.updateSize();
         };
 
-        this.deactivate = function () {
+        this.deactivate = function (options) {
+            options = options || {}
             if (this.openLayersLayer) {
-                this.removeFromLegend()
                 if (this.visible === "true") {
                     app.map.removeLayer(this.openLayersLayer);
                     this.visible = "false";
                 } else { //we are dealing with a inactive parent layer to mask
                     app.setMaskByLayer(false, this);
+                }
+
+                if (options.removeFromLegend) {
+                    this.removeFromLegend()
                 }
 
                 if (this.openLayersLayer.loadingimage) {
@@ -1380,6 +1384,7 @@ module.exports = function ($, app) {
                 .click(function () {
                     that.deactivate();
                     if (that.parentLayer) that.parentLayer.deactivate();
+                    that.removeFromLegend()
                 });
 
             if (this.url.indexOf("vlayers") > -1) {
@@ -1447,7 +1452,7 @@ module.exports = function ($) {
             if ($(this).is(':checked')) {
                 layer.activate();
             } else {
-                layer.deactivate();
+                layer.deactivate({ removeFromLegend: true });
             }
         };
         $checkbox = $(checkbox);
@@ -2985,7 +2990,6 @@ module.exports = function ($) {
             app.maskParentLayers.remove(parentLayer);
             if (parentLayer.visible === "false") {
                 parentLayer.visible = "true";
-                parentLayer.addToLegend()
             } else {
                 parentLayer.deactivate();
             }
@@ -3070,7 +3074,6 @@ module.exports = function ($) {
                     //Remove the mask from app.masks that you just cleared out
                     app.masks.remove(app.masks[m]);
                     $("#"+maskName.replace("MaskFor","")).get(0).checked = false;
-                    $(document.getElementById("lgd" + maskName)).remove();
                 }
             }
             // If it was the only mask in app.Mask (e.g. app.masks.length ==0) to begin with

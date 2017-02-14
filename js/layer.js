@@ -107,14 +107,18 @@ module.exports = function ($, app) {
             app.map.updateSize();
         };
 
-        this.deactivate = function () {
+        this.deactivate = function (options) {
+            options = options || {}
             if (this.openLayersLayer) {
-                this.removeFromLegend()
                 if (this.visible === "true") {
                     app.map.removeLayer(this.openLayersLayer);
                     this.visible = "false";
                 } else { //we are dealing with a inactive parent layer to mask
                     app.setMaskByLayer(false, this);
+                }
+
+                if (options.removeFromLegend) {
+                    this.removeFromLegend()
                 }
 
                 if (this.openLayersLayer.loadingimage) {
@@ -137,6 +141,7 @@ module.exports = function ($, app) {
                 .click(function () {
                     that.deactivate();
                     if (that.parentLayer) that.parentLayer.deactivate();
+                    that.removeFromLegend()
                 });
 
             if (this.url.indexOf("vlayers") > -1) {

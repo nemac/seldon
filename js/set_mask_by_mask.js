@@ -70,7 +70,6 @@ module.exports = function ($) {
                     //Remove the mask from app.masks that you just cleared out
                     app.masks.remove(app.masks[m]);
                     $("#"+maskName.replace("MaskFor","")).get(0).checked = false;
-                    $(document.getElementById("lgd" + maskName)).remove();
                 }
             }
             // If it was the only mask in app.Mask (e.g. app.masks.length ==0) to begin with
