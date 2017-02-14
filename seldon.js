@@ -842,15 +842,7 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
         tileSize:          layer.tileSize,
         tileManager:       app.tileManager,
         controls: [
-            new OpenLayers.Control.Navigation(
-            /*
-            {
-                dragPanOptions: {
-                    enableKinetic: true
-                }
-            }
-            */
-            ),
+            new OpenLayers.Control.Navigation(),
             new OpenLayers.Control.Attribution(),
             app.zoomInTool,
             app.zoomOutTool,
@@ -1324,12 +1316,7 @@ module.exports = function ($, app) {
         this.activate = function () {
             app.map.addLayer(this.createOpenLayersLayer());
             // Only add legend for parent layers
-            if (this.lid.indexOf("MaskFor") > -1) {
-                // Handle mask legend differently
-                app.addMaskToLegend(this);
-            } else {
-                this.addToLegend();
-            }
+            this.addToLegend();
 
             this.emit("activate");
             this.visible = "true";
@@ -1365,12 +1352,11 @@ module.exports = function ($, app) {
 
         this.deactivate = function () {
             if (this.openLayersLayer) {
+                this.removeFromLegend()
                 if (this.visible === "true") {
                     app.map.removeLayer(this.openLayersLayer);
-                    this.removeFromLegend();
                     this.visible = "false";
                 } else { //we are dealing with a inactive parent layer to mask
-                    this.removeFromLegend();
                     app.setMaskByLayer(false, this);
                 }
 
@@ -1386,12 +1372,14 @@ module.exports = function ($, app) {
             var that = this;
             var $legend = $("#legend");
             //clear out old legend graphic if necessary
-            $(document.getElementById("lgd" + this.lid)).remove();
+            var lid = this.parentLayer ? this.parentLayer.lid : this.lid
+            $(document.getElementById("lgd" + lid)).remove();
 
-            this.$legendItem = $(document.createElement("div")).attr("id", "lgd" + this.lid)
+            this.$legendItem = $(document.createElement("div")).attr("id", "lgd" + lid)
                 .prepend($(document.createElement("img")).attr("src", this.legend))
                 .click(function () {
                     that.deactivate();
+                    if (that.parentLayer) that.parentLayer.deactivate();
                 });
 
             if (this.url.indexOf("vlayers") > -1) {
@@ -1402,13 +1390,7 @@ module.exports = function ($, app) {
         };
 
         this.removeFromLegend = function () {
-            if (this.$legendItem) {
-                if (this.lid.indexOf("MaskFor") > -1) {
-                    app.removeMaskFromLegend(this);
-                } else {
-                    this.$legendItem.remove();
-                }
-            }
+            if (this.$legendItem) this.$legendItem.remove();
         };
 
         this.setTransparency = function (transparency) {
@@ -2956,6 +2938,7 @@ module.exports = function ($) {
                 maskName = app.masks[m].maskName;
                 cleanMaskName = maskName.replace("/","");
                 maskLayer = new Layer({
+                    parentLayer   : parentLayer,
                     lid         : parentLayer.lid + cleanMaskName,
                     visible     : 'true',
                     url         : parentLayer.url,
@@ -3002,6 +2985,7 @@ module.exports = function ($) {
             app.maskParentLayers.remove(parentLayer);
             if (parentLayer.visible === "false") {
                 parentLayer.visible = "true";
+                parentLayer.addToLegend()
             } else {
                 parentLayer.deactivate();
             }
@@ -3049,6 +3033,7 @@ module.exports = function ($) {
             for (i = 0; i < maskParentLayers.length; i++) {
                 maskParentLayer = maskParentLayers[i];
                 maskLayer = new Layer({
+                    parentLayer : maskParentLayer,
                     lid         : maskParentLayer.lid + cleanMaskName,
                     visible     : "true",
                     url         : maskParentLayer.url,

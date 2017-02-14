@@ -33,6 +33,7 @@ module.exports = function ($) {
             for (i = 0; i < maskParentLayers.length; i++) {
                 maskParentLayer = maskParentLayers[i];
                 maskLayer = new Layer({
+                    parentLayer : maskParentLayer,
                     lid         : maskParentLayer.lid + cleanMaskName,
                     visible     : "true",
                     url         : maskParentLayer.url,
