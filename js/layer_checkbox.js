@@ -9,7 +9,7 @@ module.exports = function ($) {
             if ($(this).is(':checked')) {
                 layer.activate();
             } else {
-                layer.deactivate();
+                layer.deactivate({ removeFromLegend: true });
             }
         };
         $checkbox = $(checkbox);

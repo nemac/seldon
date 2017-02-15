@@ -33,6 +33,7 @@ module.exports = function ($) {
             for (i = 0; i < maskParentLayers.length; i++) {
                 maskParentLayer = maskParentLayers[i];
                 maskLayer = new Layer({
+                    parentLayer : maskParentLayer,
                     lid         : maskParentLayer.lid + cleanMaskName,
                     visible     : "true",
                     url         : maskParentLayer.url,
@@ -69,7 +70,6 @@ module.exports = function ($) {
                     //Remove the mask from app.masks that you just cleared out
                     app.masks.remove(app.masks[m]);
                     $("#"+maskName.replace("MaskFor","")).get(0).checked = false;
-                    $(document.getElementById("lgd" + maskName)).remove();
                 }
             }
             // If it was the only mask in app.Mask (e.g. app.masks.length ==0) to begin with
