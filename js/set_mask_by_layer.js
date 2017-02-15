@@ -46,7 +46,7 @@ module.exports = function ($) {
                 for (ml = 0; ml < currentMask.maskLayers.length; ml++) {
                     var currentMaskLayer = currentMask.maskLayers[ml];
                     if (currentMaskLayer.parentLayer.lid == parentLayer.lid) {
-                        currentMaskLayer.deactivate();
+                        currentMaskLayer.deactivate({removeFromLegend: true});
                         $('#mask-status'+ currentMaskLayer.parentLayer.lid).text("")
                         maskLayersToDelete.push(currentMaskLayer);
                     }

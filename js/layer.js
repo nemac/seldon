@@ -70,7 +70,8 @@ module.exports = function ($, app) {
             return this.openLayersLayer;
         };
 
-        this.activate = function () {
+        this.activate = function (options) {
+            options = options || {}
             app.map.addLayer(this.createOpenLayersLayer());
             // Only add legend for parent layers
             this.addToLegend();
