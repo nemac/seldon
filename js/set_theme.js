@@ -284,6 +284,20 @@ module.exports = function ($) {
             }
         }
 
+        if (options.maskModifiers !== undefined) {
+            var modifier, checkbox;
+            for (var m = 0; m < options.maskModifiers.length; m++) {
+                modifier = options.maskModifiers[m];
+                checkbox = $("#" + modifier);
+                if (checkbox.data("mask-grouper") === true) {
+                    app.handleMaskModifierGroup(modifier, true);
+                    $("[data-mask-parent='" + modifier + "']").attr('disabled', true);
+                }
+                app.handleMaskModifier(modifier, checkbox.data("index"));
+                checkbox.prop("checked", true);
+            }
+        }
+
         //if zoom parameter on theme to to that extent
         if (theme.zoom) {
             var zoomExtent = {
@@ -304,7 +318,6 @@ module.exports = function ($) {
             $('#mask-status'+ app.maskParentLayers[mp].lid).text("(m)");
             $("#chk"+app.maskParentLayers[mp].lid).prop('checked', true);
         }
-
     }
 
     return setTheme;
