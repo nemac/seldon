@@ -77,6 +77,7 @@ function AccordionGroupSublist (settings) {
     if (!settings) { return; }
     this.layers = [];
     this.label  = settings.label;
+    this.sid = settings.sid
     this.type   = settings.type;
     if (settings.description) this.description = settings.description
 }
@@ -86,15 +87,23 @@ module.exports = AccordionGroupSublist;
 },{}],6:[function(require,module,exports){
 module.exports = function ($) {
   function MoreInfoButton(el) {
-    var dialogDiv = '<div><p class="more-info-content">'+el.description+'<div></p>';
     this.element = document.createElement('button');
     this.element.textContent = '?';
     this.element.className = 'accordion-more-info-button';
+    // If el is a subgroup, use the sid prop; if layer, use lid prop
+    var dialogClass = 'tooltip-for-' + (el.sid ? el.sid : el.lid)
     this.element.onclick = function (event) {
-      $(dialogDiv).dialog({
+      var dialogOpen = $('.'+dialogClass).filter(':visible').length
+      if (!dialogOpen) {
+        var dialogDiv = ''
+          +'<div>'
+            +'<p class="tooltip-content">'+el.description+'</p>'
+          +'</div>'
+        $(dialogDiv).dialog({
           'title' : (el.label || el.name),
-          'dialogClass' : 'more-info-dialog'
-      })
+          'dialogClass' : 'tooltip-dialog ' + dialogClass,
+        })
+      }
     }
   }
 
@@ -2324,6 +2333,7 @@ module.exports = function ($) {
                 $wmsSubgroup = $($wmsSubgroups[j]); // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
                 sublist = new AccordionGroupSublist(
                     $.extend({}, {
+                        sid   : $wmsSubgroup.attr('sid'),
                         label : $wmsSubgroup.attr('label'),
                         type  : $wmsSubgroup.attr('type'),
                         description : ($wmsSubgroup.attr('description') ? $wmsSubgroup.attr('description') : undefined )
