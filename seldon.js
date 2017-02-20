@@ -1743,14 +1743,12 @@ module.exports = function ($, app) {
 },{"./layer_radio_handler.js":32}],34:[function(require,module,exports){
 /**
  * Layer legends often correspond a number with a description
- * with certain colors. When a user clicks on the map
- * while using the identify tool, a GetFeatureInfo request
- * is made to MapServer to get the pixel values
- * for all active layers at the clicked point.
- * This file stores the legend descriptions
- * associated with the pixel values for all
- * relevant layers, and has some functions for
- * managing and retrieving these descriptions
+ * with certain colors. When a user clicks on the map while using
+ * the identify tool, a GetFeatureInfo request is made to MapServer
+ * to get the pixel values for all active layers at the clicked point.
+ * This file stores the legend descriptions associated with the pixel values
+ * for all relevant layers, and has some functions for
+ * managing and retrieving these descriptions.
  */
 
 module.exports = getLegendStringFromPixelValue
@@ -1771,32 +1769,6 @@ function getLegendStringFromPixelValue(layerId, pixelValue) {
     return legendString
   }
   return legendString
-}
-
-
-
-
-
-const legendConfig = {
-
-  'landcover-2010-NALCMS': {
-    '1': 'Temperate or sub-polar needleleaf forest',
-    '3': 'Tropical or sub-tropical broadleaf evergreen forest',
-    '5': 'Temperate or sub-polar broadleaf deciduous forest',
-    '6': 'Mixed forest',
-    '7': 'Tropical or sub-tropical shrubland',
-    '8': 'Temperate or sub-polar shrubland',
-    '9': 'Tropical or sub-tropical grassland',
-    '10': 'Temperate or sub-polar grassland',
-    '13': 'Sub-polar or polar barren-lichen-moss',
-    '14': 'Wetland',
-    '15': 'Cropland',
-    '16': 'Barren land',
-    '17': 'Urban and built-up',
-    '18': 'Water',
-    '19': 'Snow and ice'
-  }
-
 }
 
 
