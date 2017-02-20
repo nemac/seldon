@@ -850,11 +850,7 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
         tileSize:          layer.tileSize,
         tileManager:       app.tileManager,
         controls: [
-            new OpenLayers.Control.Navigation({
-                dragPanOptions: {
-                    enableKinetic: true
-                }
-            }),
+            new OpenLayers.Control.Navigation(),
             new OpenLayers.Control.Attribution(),
             app.zoomInTool,
             app.zoomOutTool,
@@ -1325,15 +1321,11 @@ module.exports = function ($, app) {
             return this.openLayersLayer;
         };
 
-        this.activate = function () {
+        this.activate = function (options) {
+            options = options || {}
             app.map.addLayer(this.createOpenLayersLayer());
             // Only add legend for parent layers
-            if (this.lid.indexOf("MaskFor") > -1) {
-                // Handle mask legend differently
-                app.addMaskToLegend(this);
-            } else {
-                this.addToLegend();
-            }
+            this.addToLegend();
 
             this.emit("activate");
             this.visible = "true";
@@ -1367,15 +1359,18 @@ module.exports = function ($, app) {
             app.map.updateSize();
         };
 
-        this.deactivate = function () {
+        this.deactivate = function (options) {
+            options = options || {}
             if (this.openLayersLayer) {
                 if (this.visible === "true") {
                     app.map.removeLayer(this.openLayersLayer);
-                    this.removeFromLegend();
                     this.visible = "false";
                 } else { //we are dealing with a inactive parent layer to mask
-                    this.removeFromLegend();
                     app.setMaskByLayer(false, this);
+                }
+
+                if (options.removeFromLegend) {
+                    this.removeFromLegend()
                 }
 
                 if (this.openLayersLayer.loadingimage) {
@@ -1390,12 +1385,15 @@ module.exports = function ($, app) {
             var that = this;
             var $legend = $("#legend");
             //clear out old legend graphic if necessary
-            $(document.getElementById("lgd" + this.lid)).remove();
+            var lid = this.parentLayer ? this.parentLayer.lid : this.lid
+            $(document.getElementById("lgd" + lid)).remove();
 
-            this.$legendItem = $(document.createElement("div")).attr("id", "lgd" + this.lid)
+            this.$legendItem = $(document.createElement("div")).attr("id", "lgd" + lid)
                 .prepend($(document.createElement("img")).attr("src", this.legend))
                 .click(function () {
                     that.deactivate();
+                    if (that.parentLayer) that.parentLayer.deactivate();
+                    that.removeFromLegend()
                 });
 
             if (this.url.indexOf("vlayers") > -1) {
@@ -1406,13 +1404,7 @@ module.exports = function ($, app) {
         };
 
         this.removeFromLegend = function () {
-            if (this.$legendItem) {
-                if (this.lid.indexOf("MaskFor") > -1) {
-                    app.removeMaskFromLegend(this);
-                } else {
-                    this.$legendItem.remove();
-                }
-            }
+            if (this.$legendItem) this.$legendItem.remove();
         };
 
         this.setTransparency = function (transparency) {
@@ -1469,7 +1461,7 @@ module.exports = function ($) {
             if ($(this).is(':checked')) {
                 layer.activate();
             } else {
-                layer.deactivate();
+                layer.deactivate({ removeFromLegend: true });
             }
         };
         $checkbox = $(checkbox);
@@ -2992,6 +2984,7 @@ module.exports = function ($) {
                 maskName = app.masks[m].maskName;
                 cleanMaskName = maskName.replace("/","");
                 maskLayer = new Layer({
+                    parentLayer   : parentLayer,
                     lid         : parentLayer.lid + cleanMaskName,
                     visible     : 'true',
                     url         : parentLayer.url,
@@ -3025,7 +3018,7 @@ module.exports = function ($) {
                 for (ml = 0; ml < currentMask.maskLayers.length; ml++) {
                     var currentMaskLayer = currentMask.maskLayers[ml];
                     if (currentMaskLayer.parentLayer.lid == parentLayer.lid) {
-                        currentMaskLayer.deactivate();
+                        currentMaskLayer.deactivate({removeFromLegend: true});
                         $('#mask-status'+ currentMaskLayer.parentLayer.lid).text("")
                         maskLayersToDelete.push(currentMaskLayer);
                     }
@@ -3085,6 +3078,7 @@ module.exports = function ($) {
             for (i = 0; i < maskParentLayers.length; i++) {
                 maskParentLayer = maskParentLayers[i];
                 maskLayer = new Layer({
+                    parentLayer : maskParentLayer,
                     lid         : maskParentLayer.lid + cleanMaskName,
                     visible     : "true",
                     url         : maskParentLayer.url,
@@ -3121,7 +3115,6 @@ module.exports = function ($) {
                     //Remove the mask from app.masks that you just cleared out
                     app.masks.remove(app.masks[m]);
                     $("#"+maskName.replace("MaskFor","")).get(0).checked = false;
-                    $(document.getElementById("lgd" + maskName)).remove();
                 }
             }
             // If it was the only mask in app.Mask (e.g. app.masks.length ==0) to begin with
