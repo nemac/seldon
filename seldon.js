@@ -1040,9 +1040,7 @@ module.exports = function ($) {
         //
         $('#themeCombo').change(function () {
             var i = parseInt($(this).val(), 10);
-            var extent = app.map.getExtent()
             app.setTheme(app.themes[i]);
-            //app.map.zoomToExtent(extent);
         });
         app.addListener("themechange", function () {
             $('#themeCombo').val(app.currentTheme.index);
