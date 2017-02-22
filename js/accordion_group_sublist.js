@@ -4,7 +4,8 @@ function AccordionGroupSublist (settings) {
     this.label  = settings.label;
     this.sid = settings.sid
     this.type   = settings.type;
-    if (settings.description) this.description = settings.description
+    this.description = settings.description
+    this.collapsible = settings.collapsible
 }
 
 module.exports = AccordionGroupSublist;

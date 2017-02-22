@@ -219,17 +219,17 @@ Map Layers & Map Tools Styles
     cursor: pointer;
 }
 
-.ui-accordion-content .sublist-header h4 {
+.sublist.collapsible .sublist-header {
+    cursor: pointer;
+}
+
+.sublist-header h4 {
     display: inline-block;
 }
 
-.ui-accordion-content h4.collapsible:not(.empty) {
-    cursor: pointer;
-    margin: 0px;
-}
-
-.ui-accordion-content h4.collapsible.empty {
-    margin: 1.1em 0 .4em 0;
+.sublist.collapsible h4 {
+    margin-top: 0px;
+    margin-bottom: 2px;
 }
 
 .layer-group {
@@ -238,7 +238,7 @@ Map Layers & Map Tools Styles
     transition: height .3s;
 }
 
-.layer-group.collapsible {
+.sublist.collapsible .layer-group {
     padding-left: 15px;
 }
 
@@ -247,10 +247,9 @@ Map Layers & Map Tools Styles
     overflow: hidden;
 }
 
-.ui-accordion-content h4 span.ui-icon {
+.ui-accordion-header-icon.ui-icon {
     display: inline-block;
     padding-right: 2px;
-    padding-top: 1px;
 }
 
 .layer {

@@ -99,7 +99,8 @@ module.exports = function ($) {
                         sid   : $wmsSubgroup.attr('sid'),
                         label : $wmsSubgroup.attr('label'),
                         type  : $wmsSubgroup.attr('type'),
-                        description : ($wmsSubgroup.attr('description') ? $wmsSubgroup.attr('description') : undefined )
+                        description : $wmsSubgroup.attr('description'),
+                        collapsible : ($wmsSubgroup.attr('collapsible') === "true")
                     })
                 );
 

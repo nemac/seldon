@@ -1,26 +1,8 @@
 module.exports = function ($) {
     function addAccordionSublistItems (s, items, theme, accGp) {
-        var contents = $('<div class="layer-group"></div>');
+        var collapsed = s.collapsible ? 'collapsed ' : ''
+        var contents = $('<div class="'+collapsed+'layer-group"></div>');
 
-        // hotfix for issue. Later refactor so these are not hard coded
-        var theme_labels = [
-          'Archived Near-Real-Time Change Maps (MODIS NDVI)',
-          'Duration Products'
-        ];
-
-        var acc_labels = ['Archived ForWarn Change Maps'];
-      
-        if ($.inArray(theme.label, theme_labels) !== -1 &&
-              $.inArray(accGp.label, acc_labels) !== -1) {
-            var $header = s.contentElement.children('h4');
-            if (items.length === 0) {
-                $header.addClass('collapsible empty');
-            } else {
-                $header.addClass('collapsible')
-                    .prepend('<span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-e"></span>')
-                contents.addClass('collapsible collapsed');
-            }
-        }
         for (var i=0, l=items.length; i<l; i++) {
             contents.append($('<div class="layer"></div>').append(items[i]));
         }
