@@ -14,43 +14,31 @@ module.exports = function ($) {
     function setupCollapsibleSublists () {
         var app = this;
 
-        var theme_labels = [
-          'Archived Near-Real-Time Change Maps (MODIS NDVI)',
-          'Duration Products'
-        ];
-
-        var acc_ids = [
-          'ui-accordion-layerPickerAccordion-panel-5',
-          'ui-accordion-layerPickerAccordion-panel-4'
-        ];
-
+        var $sublists = $('.sublist.collapsible')
         // Set a click handler on accordion section sublist headers
-        $('.ui-accordion-content h4').on('click', function (event) {
+        $sublists.children('.sublist-header').on('click', function (event) {
             var $this = $(this);
-            // Only trigger a collapse on a specific accordion section within the archived themen
-            // The section we want is always the fifth accordion section;
-            // we use its seldon-generated id attribute.
-            if ($.inArray(app.currentTheme.label, theme_labels) !== -1 &&
-                $.inArray($this.parent().parent().attr('id'), acc_ids) !== -1) {
-                // If the sublist is collapsed, uncollapse it and set the header icon
-                var $sublist = $this.siblings('.layer-group');
-                var $icon = $this.children('.ui-icon')
-                if ($sublist.hasClass('collapsed')) {
-                    $sublist.removeClass('collapsed');
-                    $icon.removeClass('ui-icon-triangle-1-e');
-                    $icon.addClass('ui-icon-triangle-1-s');
-                } else {
-                // If the sublist is uncollapse, collapse it and set the header icon
-                    $sublist.addClass('collapsed');
-                    $icon.removeClass('ui-icon-triangle-1-s');
-                    $icon.addClass('ui-icon-triangle-1-e');
-                }
+            var $sublist = $this.parent('.sublist')
+            // If the sublist is collapsed, uncollapse it and set the header icon
+            var $layerGroup = $sublist.children('.layer-group');
+            var $icon = $this.children('.ui-accordion-header-icon')
+            if ($layerGroup.hasClass('collapsed')) {
+                $layerGroup.removeClass('collapsed');
+                $icon.removeClass('ui-icon-triangle-1-e');
+                $icon.addClass('ui-icon-triangle-1-s');
+            } else {
+            // If the sublist is uncollapse, collapse it and set the header icon
+                $layerGroup.addClass('collapsed');
+                $icon.removeClass('ui-icon-triangle-1-s');
+                $icon.addClass('ui-icon-triangle-1-e');
             }
-
         })
     }
     return setupCollapsibleSublists;
 }
+
+
+
 
 },{}],3:[function(require,module,exports){
 function AccordionGroup (settings) {
@@ -79,7 +67,8 @@ function AccordionGroupSublist (settings) {
     this.label  = settings.label;
     this.sid = settings.sid
     this.type   = settings.type;
-    if (settings.description) this.description = settings.description
+    this.description = settings.description
+    this.collapsible = settings.collapsible
 }
 
 module.exports = AccordionGroupSublist;
@@ -142,27 +131,9 @@ module.exports = function ($) {
 },{}],9:[function(require,module,exports){
 module.exports = function ($) {
     function addAccordionSublistItems (s, items, theme, accGp) {
-        var contents = $('<div class="layer-group"></div>');
+        var collapsed = s.collapsible ? 'collapsed ' : ''
+        var contents = $('<div class="'+collapsed+'layer-group"></div>');
 
-        // hotfix for issue. Later refactor so these are not hard coded
-        var theme_labels = [
-          'Archived Near-Real-Time Change Maps (MODIS NDVI)',
-          'Duration Products'
-        ];
-
-        var acc_labels = ['Archived ForWarn Change Maps'];
-      
-        if ($.inArray(theme.label, theme_labels) !== -1 &&
-              $.inArray(accGp.label, acc_labels) !== -1) {
-            var $header = s.contentElement.children('h4');
-            if (items.length === 0) {
-                $header.addClass('collapsible empty');
-            } else {
-                $header.addClass('collapsible')
-                    .prepend('<span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-e"></span>')
-                contents.addClass('collapsible collapsed');
-            }
-        }
         for (var i=0, l=items.length; i<l; i++) {
             contents.append($('<div class="layer"></div>').append(items[i]));
         }
@@ -268,6 +239,7 @@ module.exports = function ($) {
         this.handleMaskModifierGroup  = require("./mask_modifier_group.js")($); 
         this.parseConfig              = require("./parse_config.js")($);
         this.initOpenLayers           = require("./init_openlayers.js");
+        this.setupCollapsibleSublists = require("./accordion_collapsible_sublist_setup.js")($)
         this.removeMaskFromLegend     = function (layer) {};
 
         OpenLayers.Util.onImageLoadErrorColor = 'transparent';
@@ -279,7 +251,7 @@ module.exports = function ($) {
     return App;
 }
 
-},{"./accordion_clear.js":1,"./accordion_group_set.js":4,"./accordion_section_add.js":7,"./accordion_sublist_add.js":8,"./accordion_sublist_item_add.js":9,"./add_mask_legend.js":10,"./count.js":15,"./extent_print.js":18,"./extent_save.js":19,"./extent_zoom.js":20,"./extent_zoom_next.js":21,"./extent_zoom_previous.js":22,"./init_openlayers.js":26,"./launch.js":27,"./mask_modifier.js":37,"./mask_modifier_group.js":38,"./parse_config.js":41,"./set_base_layer.js":46,"./set_mask_by_layer.js":48,"./set_mask_by_mask.js":49,"./set_theme.js":50,"./share_url.js":52,"./update_share_url.js":56}],12:[function(require,module,exports){
+},{"./accordion_clear.js":1,"./accordion_collapsible_sublist_setup.js":2,"./accordion_group_set.js":4,"./accordion_section_add.js":7,"./accordion_sublist_add.js":8,"./accordion_sublist_item_add.js":9,"./add_mask_legend.js":10,"./count.js":15,"./extent_print.js":18,"./extent_save.js":19,"./extent_zoom.js":20,"./extent_zoom_next.js":21,"./extent_zoom_previous.js":22,"./init_openlayers.js":26,"./launch.js":27,"./mask_modifier.js":37,"./mask_modifier_group.js":38,"./parse_config.js":41,"./set_base_layer.js":46,"./set_mask_by_layer.js":48,"./set_mask_by_mask.js":49,"./set_theme.js":50,"./share_url.js":52,"./update_share_url.js":56}],12:[function(require,module,exports){
 function arrayContainsElement (array, element) {
     var i;
     if (array === undefined) {
@@ -911,7 +883,6 @@ module.exports = function ($) {
     function launch (configFile, shareUrlInfo) {
         var deactivateActiveOpenLayersControls = require("./deactivate_controls.js")(this, activeBtn);
         var printMap = require("./print.js")($, this);
-        var setupCollapsibleSublists = require("./accordion_collapsible_sublist_setup.js")($);
         
         var app = this;
 
@@ -983,7 +954,6 @@ module.exports = function ($) {
         });
         app.addListener("themechange", function () {
             app.updateShareMapUrl();
-            setupCollapsibleSublists.bind(app)();
         });
         app.addListener("baselayerchange", function () {
             app.updateShareMapUrl();
@@ -1257,7 +1227,7 @@ module.exports = function ($) {
     return launch;
 }
 
-},{"./accordion_collapsible_sublist_setup.js":2,"./deactivate_controls.js":17,"./print.js":42,"./search.js":44,"./set_google_analytics_events.js":47,"./splash.js":53}],28:[function(require,module,exports){
+},{"./deactivate_controls.js":17,"./print.js":42,"./search.js":44,"./set_google_analytics_events.js":47,"./splash.js":53}],28:[function(require,module,exports){
 module.exports = function ($, app) {
     var stringContainsChar = require('./stringContainsChar.js');
 
@@ -2333,7 +2303,8 @@ module.exports = function ($) {
                         sid   : $wmsSubgroup.attr('sid'),
                         label : $wmsSubgroup.attr('label'),
                         type  : $wmsSubgroup.attr('type'),
-                        description : ($wmsSubgroup.attr('description') ? $wmsSubgroup.attr('description') : undefined )
+                        description : $wmsSubgroup.attr('description'),
+                        collapsible : ($wmsSubgroup.attr('collapsible') === "true")
                     })
                 );
 
@@ -3243,12 +3214,17 @@ module.exports = function ($) {
             var sublistItems = [];
             for (var i = 0, j = accGp.sublists.length; i < j; i++) {
                 var sublist = accGp.sublists[i];
+                var collapsibleClass = sublist.collapsible ? ' collapsible' : ''
+                var collapseHeaderIcon = sublist.collapsible ?
+                    '<span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-e"></span>' : ''
                 var sublistObj = {
                     heading : sublist.label,
                     items : [],
+                    collapsible: sublist.collapsible,
                     contentElement : $(
-                        '<div>'
+                        '<div class="sublist'+collapsibleClass+'">'
                             +'<div class="sublist-header">'
+                                + collapseHeaderIcon
                                 +'<h4>' + sublist.label + '</h4>'
                             +'</div>'
                         +'</div>'
@@ -3402,6 +3378,8 @@ module.exports = function ($) {
         $('#layerPickerDialog').scrollTop(0);
         $('#mapToolsDialog').scrollTop(0);
         app.emit("themechange");
+
+        app.setupCollapsibleSublists()
 
         //jdm 6/28/13: do a check to see if there is a corresponding active mask in options.shareUrlMasks
         //can be multiple mask per a parent layer
