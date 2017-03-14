@@ -2,6 +2,8 @@ module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js'),
         stringContainsChar = require('./stringContainsChar.js');
 
+    var getLegendStringFromPixelValue = require('./legend_config.js')($, app)
+
     function createIdentifyTool () {
         return new ClickTool(
             function (e) {
@@ -149,12 +151,18 @@ module.exports = function ($, app) {
 
                 // loop through the result and build up new table structure
                 for (i = 1; i < result.length; ++i) {
+                    var valueLabel = String(result[i][0])
+                    var value = result[i][1]
+                    var valueDescription = getLegendStringFromPixelValue(service.name, value)
+                    var tableRow = valueDescription === '' ? value
+                        : value + ' (' + valueDescription + ')' 
+                    if (valueDescription !== '') valueDescription += ': '
                     newTableContents += (''
-                                        + '<tr class="identify-result">'
-                                        +   '<td class="label">'+String(result[i][0]).replace("_0","")+':&nbsp&nbsp</td>'
-                                        +   '<td>'+result[i][1]+'</td>'
-                                        + '</tr>'
-                                       );
+                        + '<tr class="identify-result">'
+                        +   '<td class="label">'+valueLabel.replace("_0","")+':&nbsp&nbsp</td>'
+                        +   '<td>' + tableRow + '</td>'
+                        + '</tr>'
+                       );
                 }
 
                 $(newTableContents).insertAfter($group);
