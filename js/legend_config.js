@@ -8,23 +8,26 @@
  * managing and retrieving these descriptions.
  */
 
-module.exports = getLegendStringFromPixelValue
+module.exports = function ($, app) {
 
-function isLayerInLegendConfig(layerId) {
-  return layerId in legendConfig
-}
+  function isLayerInLegendConfig(layerId) {
+    return layerId in app.legendLookup
+  }
 
-function getLegendStringFromPixelValue(layerId, pixelValue) {
-  var legendString = ''
-  if (isLayerInLegendConfig(layerId)) {
-    legendString = legendConfig[layerId][pixelValue]
-    if (!legendString) {
-      console.error('No legend string set for pixel value',
-        pixelValue, 'for layer', layerId
-      )
+  function getLegendStringFromPixelValue(layerId, pixelValue) {
+    var legendString = ''
+    if (isLayerInLegendConfig(layerId)) {
+      legendString = app.legendLookup[layerId][pixelValue]
+      if (!legendString) {
+        console.error('No legend string set for pixel value',
+          pixelValue, 'for layer', layerId
+        )
+      }
     }
     return legendString
   }
-  return legendString
+  
+  return getLegendStringFromPixelValue
 }
+
 

@@ -515,7 +515,7 @@ module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js'),
         stringContainsChar = require('./stringContainsChar.js');
 
-    var getLegendStringFromPixelValue = require('./legend_config.js')
+    var getLegendStringFromPixelValue = require('./legend_config.js')($, app)
 
     function createIdentifyTool () {
         return new ClickTool(
@@ -789,10 +789,11 @@ module.exports = function ($, app) {
 module.exports = function (app) {
     var ShareUrlInfo = require('./share.js');
 
-    function init (config, projection, gisServerType, useProxyScript) {
+    function init (config, projection, legendLookup, gisServerType, useProxyScript) {
         var shareUrlInfo = ShareUrlInfo.parseUrl(window.location.toString());
         app.projection = projection;
         seldon.projection = projection;
+        app.legendLookup = legendLookup
         seldon.gisServerType = gisServerType;
         seldon.useProxyScript = useProxyScript;
         app.launch(config, shareUrlInfo);
@@ -1743,25 +1744,28 @@ module.exports = function ($, app) {
  * managing and retrieving these descriptions.
  */
 
-module.exports = getLegendStringFromPixelValue
+module.exports = function ($, app) {
 
-function isLayerInLegendConfig(layerId) {
-  return layerId in legendConfig
-}
+  function isLayerInLegendConfig(layerId) {
+    return layerId in app.legendLookup
+  }
 
-function getLegendStringFromPixelValue(layerId, pixelValue) {
-  var legendString = ''
-  if (isLayerInLegendConfig(layerId)) {
-    legendString = legendConfig[layerId][pixelValue]
-    if (!legendString) {
-      console.error('No legend string set for pixel value',
-        pixelValue, 'for layer', layerId
-      )
+  function getLegendStringFromPixelValue(layerId, pixelValue) {
+    var legendString = ''
+    if (isLayerInLegendConfig(layerId)) {
+      legendString = app.legendLookup[layerId][pixelValue]
+      if (!legendString) {
+        console.error('No legend string set for pixel value',
+          pixelValue, 'for layer', layerId
+        )
+      }
     }
     return legendString
   }
-  return legendString
+  
+  return getLegendStringFromPixelValue
 }
+
 
 
 },{}],35:[function(require,module,exports){

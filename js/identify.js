@@ -2,7 +2,7 @@ module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js'),
         stringContainsChar = require('./stringContainsChar.js');
 
-    var getLegendStringFromPixelValue = require('./legend_config.js')
+    var getLegendStringFromPixelValue = require('./legend_config.js')($, app)
 
     function createIdentifyTool () {
         return new ClickTool(
