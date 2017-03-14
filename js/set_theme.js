@@ -113,12 +113,17 @@ module.exports = function ($) {
             var sublistItems = [];
             for (var i = 0, j = accGp.sublists.length; i < j; i++) {
                 var sublist = accGp.sublists[i];
+                var collapsibleClass = sublist.collapsible ? ' collapsible' : ''
+                var collapseHeaderIcon = sublist.collapsible ?
+                    '<span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-e"></span>' : ''
                 var sublistObj = {
                     heading : sublist.label,
                     items : [],
+                    collapsible: sublist.collapsible,
                     contentElement : $(
-                        '<div>'
+                        '<div class="sublist'+collapsibleClass+'">'
                             +'<div class="sublist-header">'
+                                + collapseHeaderIcon
                                 +'<h4>' + sublist.label + '</h4>'
                             +'</div>'
                         +'</div>'
@@ -272,6 +277,8 @@ module.exports = function ($) {
         $('#layerPickerDialog').scrollTop(0);
         $('#mapToolsDialog').scrollTop(0);
         app.emit("themechange");
+
+        app.setupCollapsibleSublists()
 
         //jdm 6/28/13: do a check to see if there is a corresponding active mask in options.shareUrlMasks
         //can be multiple mask per a parent layer

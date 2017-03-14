@@ -67,6 +67,7 @@ module.exports = function ($) {
         this.handleMaskModifierGroup  = require("./mask_modifier_group.js")($); 
         this.parseConfig              = require("./parse_config.js")($);
         this.initOpenLayers           = require("./init_openlayers.js");
+        this.setupCollapsibleSublists = require("./accordion_collapsible_sublist_setup.js")($)
         this.removeMaskFromLegend     = function (layer) {};
 
         OpenLayers.Util.onImageLoadErrorColor = 'transparent';
