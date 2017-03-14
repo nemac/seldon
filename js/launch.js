@@ -139,9 +139,6 @@ module.exports = function ($) {
         $('#themeCombo').change(function () {
             var i = parseInt($(this).val(), 10);
             app.setTheme(app.themes[i]);
-                        //jdm (4/28/15) moved to here to account for possibility of
-                        //significant extent change with theme change
-                        app.map.setOptions({maxExtent: app.map.getExtent()});
         });
         app.addListener("themechange", function () {
             $('#themeCombo').val(app.currentTheme.index);

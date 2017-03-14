@@ -77,12 +77,40 @@ function AccordionGroupSublist (settings) {
     if (!settings) { return; }
     this.layers = [];
     this.label  = settings.label;
+    this.sid = settings.sid
     this.type   = settings.type;
+    if (settings.description) this.description = settings.description
 }
 
 module.exports = AccordionGroupSublist;
 
 },{}],6:[function(require,module,exports){
+module.exports = function ($) {
+  function MoreInfoButton(el) {
+    this.element = document.createElement('button');
+    this.element.textContent = '?';
+    this.element.className = 'accordion-more-info-button';
+    // If el is a subgroup, use the sid prop; if layer, use lid prop
+    var dialogClass = 'tooltip-for-' + (el.sid ? el.sid : el.lid)
+    this.element.onclick = function (event) {
+      var dialogOpen = $('.'+dialogClass).filter(':visible').length
+      if (!dialogOpen) {
+        var dialogDiv = ''
+          +'<div>'
+            +'<p class="tooltip-content">'+el.description+'</p>'
+          +'</div>'
+        $(dialogDiv).dialog({
+          'title' : (el.label || el.name),
+          'dialogClass' : 'tooltip-dialog ' + dialogClass,
+        })
+      }
+    }
+  }
+
+  return MoreInfoButton;
+}
+
+},{}],7:[function(require,module,exports){
 module.exports = function ($) {
     function addAccordionSection (accordionGroup, title) {
         var sectionObj = {
@@ -102,7 +130,7 @@ module.exports = function ($) {
     return addAccordionSection;
 }
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 module.exports = function ($) {
     function addAccordionSublists (g, items) {
         $(g.contentElement).append(items);
@@ -111,7 +139,7 @@ module.exports = function ($) {
     return addAccordionSublists;
 }
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 module.exports = function ($) {
     function addAccordionSublistItems (s, items, theme, accGp) {
         var contents = $('<div class="layer-group"></div>');
@@ -124,14 +152,6 @@ module.exports = function ($) {
 
         var acc_labels = ['Archived ForWarn Change Maps'];
       
-        // For FCAV: 
-        // If the accordion section we are considering is
-        // 'Archived ForWarn Change Maps' (in the "Archived..." theme)
-        // then make a few modifications to the sublist:
-        //  - collapse the sublist by default
-        //  - if the sublist is non-empty,
-        //    add a triangle icon to the left of the header
-        //    indicating collapse/expand interaction
         if ($.inArray(theme.label, theme_labels) !== -1 &&
               $.inArray(accGp.label, acc_labels) !== -1) {
             var $header = s.contentElement.children('h4');
@@ -158,7 +178,7 @@ module.exports = function ($) {
     return addAccordionSublistItems;
 }
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 module.exports = function ($) {
     function addMaskToLegend (layer) {
         var app = this;
@@ -178,7 +198,7 @@ module.exports = function ($) {
 }
 
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 module.exports = function ($) {
     var EventEmitter = window.EventEmitter;
 
@@ -259,7 +279,7 @@ module.exports = function ($) {
     return App;
 }
 
-},{"./accordion_clear.js":1,"./accordion_group_set.js":4,"./accordion_section_add.js":6,"./accordion_sublist_add.js":7,"./accordion_sublist_item_add.js":8,"./add_mask_legend.js":9,"./count.js":14,"./extent_print.js":17,"./extent_save.js":18,"./extent_zoom.js":19,"./extent_zoom_next.js":20,"./extent_zoom_previous.js":21,"./init_openlayers.js":25,"./launch.js":26,"./mask_modifier.js":37,"./mask_modifier_group.js":38,"./parse_config.js":41,"./set_base_layer.js":46,"./set_mask_by_layer.js":48,"./set_mask_by_mask.js":49,"./set_theme.js":50,"./share_url.js":52,"./update_share_url.js":56}],11:[function(require,module,exports){
+},{"./accordion_clear.js":1,"./accordion_group_set.js":4,"./accordion_section_add.js":7,"./accordion_sublist_add.js":8,"./accordion_sublist_item_add.js":9,"./add_mask_legend.js":10,"./count.js":15,"./extent_print.js":18,"./extent_save.js":19,"./extent_zoom.js":20,"./extent_zoom_next.js":21,"./extent_zoom_previous.js":22,"./init_openlayers.js":26,"./launch.js":27,"./mask_modifier.js":38,"./mask_modifier_group.js":39,"./parse_config.js":42,"./set_base_layer.js":47,"./set_mask_by_layer.js":49,"./set_mask_by_mask.js":50,"./set_theme.js":51,"./share_url.js":53,"./update_share_url.js":57}],12:[function(require,module,exports){
 function arrayContainsElement (array, element) {
     var i;
     if (array === undefined) {
@@ -275,7 +295,7 @@ function arrayContainsElement (array, element) {
 
 module.exports = arrayContainsElement;
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 function BaseLayer (settings) {
     if (!settings) { return; }
     this.name  = settings.name;
@@ -286,7 +306,7 @@ function BaseLayer (settings) {
 
 module.exports = BaseLayer;
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 // The following creates a new OpenLayers tool class called ClickTool
 // which calls a function whenever the user clicks in the map.  Each
 // instance of ClickTool corresponds to a specific callback function.
@@ -323,7 +343,7 @@ var ClickTool = OpenLayers.Class(OpenLayers.Control, {
 
 module.exports = ClickTool;
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 function count (array, value) {
     var counter = 0,
         i;
@@ -335,7 +355,7 @@ function count (array, value) {
 
 module.exports = count;
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 module.exports = function ($) {
     function createArcGIS93RestParams ($layer) {
         //  $layer is a jQuery object corresponding to a <restLayer> section in the config file.
@@ -378,7 +398,7 @@ module.exports = function ($) {
     return createArcGIS93RestParams;
 }
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 module.exports = function (app, activeBtn) {
     function deactivateActiveOpenLayersControls () {
         var controls,
@@ -401,7 +421,7 @@ module.exports = function (app, activeBtn) {
     return deactivateActiveOpenLayersControls;
 }
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 function printSavedExtents () {
     // This function is for debugging only and is not normally used.  It returns an HTML
     // table showing the current savedExtents list, and the current position within the list.
@@ -427,7 +447,7 @@ function printSavedExtents () {
 
 module.exports = printSavedExtents;
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var extentsAreEqual = require("./extents_equal.js");
 
 // save the current extent into the savedExtents array, if it is different from
@@ -465,7 +485,7 @@ function formatExtent (extent) {
 
 module.exports = saveCurrentExtent;
 
-},{"./extents_equal.js":22}],19:[function(require,module,exports){
+},{"./extents_equal.js":23}],20:[function(require,module,exports){
 function zoomToExtent (extent, save) {
     if (save === undefined) {
         save = true;
@@ -479,7 +499,7 @@ function zoomToExtent (extent, save) {
 
 module.exports = zoomToExtent;
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 function zoomToNextExtent () {
     if (this.currentSavedExtentIndex < this.savedExtents.length-1) {
         ++this.currentSavedExtentIndex;
@@ -489,7 +509,7 @@ function zoomToNextExtent () {
 
 module.exports = zoomToNextExtent;
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 function zoomToPreviousExtent () {
     if (this.currentSavedExtentIndex > 0) {
         --this.currentSavedExtentIndex;
@@ -499,7 +519,7 @@ function zoomToPreviousExtent () {
 
 module.exports = zoomToPreviousExtent;
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 function extentsAreEqual (e1, e2) {
     var tolerance = 0.001;
     return ((Math.abs(e1.left - e2.left)        <= tolerance)
@@ -510,7 +530,7 @@ function extentsAreEqual (e1, e2) {
 
 module.exports = extentsAreEqual;
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js'),
         stringContainsChar = require('./stringContainsChar.js');
@@ -785,7 +805,7 @@ module.exports = function ($, app) {
     return createIdentifyTool;
 }
 
-},{"./clicktool.js":13,"./legend_config.js":34,"./stringContainsChar.js":54}],24:[function(require,module,exports){
+},{"./clicktool.js":14,"./legend_config.js":35,"./stringContainsChar.js":55}],25:[function(require,module,exports){
 module.exports = function (app) {
     var ShareUrlInfo = require('./share.js');
 
@@ -803,7 +823,7 @@ module.exports = function (app) {
     return init;
 }
 
-},{"./share.js":51}],25:[function(require,module,exports){
+},{"./share.js":52}],26:[function(require,module,exports){
 function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
     var app = this;
 
@@ -888,7 +908,7 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
 
 module.exports = initOpenLayers;
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 module.exports = function ($) {
     var createSplashScreen = require("./splash.js")($);
     var handle_search = require("./search.js")($);
@@ -1030,9 +1050,6 @@ module.exports = function ($) {
         $('#themeCombo').change(function () {
             var i = parseInt($(this).val(), 10);
             app.setTheme(app.themes[i]);
-                        //jdm (4/28/15) moved to here to account for possibility of
-                        //significant extent change with theme change
-                        app.map.setOptions({maxExtent: app.map.getExtent()});
         });
         app.addListener("themechange", function () {
             $('#themeCombo').val(app.currentTheme.index);
@@ -1249,7 +1266,7 @@ module.exports = function ($) {
     return launch;
 }
 
-},{"./accordion_collapsible_sublist_setup.js":2,"./deactivate_controls.js":16,"./print.js":42,"./search.js":44,"./set_google_analytics_events.js":47,"./splash.js":53}],27:[function(require,module,exports){
+},{"./accordion_collapsible_sublist_setup.js":2,"./deactivate_controls.js":17,"./print.js":43,"./search.js":45,"./set_google_analytics_events.js":48,"./splash.js":54}],28:[function(require,module,exports){
 module.exports = function ($, app) {
     var stringContainsChar = require('./stringContainsChar.js');
 
@@ -1450,7 +1467,7 @@ module.exports = function ($, app) {
     return Layer;
 }
 
-},{"./stringContainsChar.js":54}],28:[function(require,module,exports){
+},{"./stringContainsChar.js":55}],29:[function(require,module,exports){
 module.exports = function ($) {
     function createLayerToggleCheckbox (layer) {
         // create the checkbox
@@ -1480,7 +1497,7 @@ module.exports = function ($) {
     return createLayerToggleCheckbox;
 }
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 // This function gets called every time the layer properties icon gets clicked
 module.exports = function ($) {
     function createLayerPropertiesDialog (layer) {
@@ -1569,7 +1586,7 @@ module.exports = function ($) {
 }
 
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 module.exports = function ($) {
     var createLayerPropertiesDialog = require("./layer_dialog.js")($);
 
@@ -1587,7 +1604,7 @@ module.exports = function ($) {
     return createLayerPropertiesIcon;
 }
 
-},{"./layer_dialog.js":29}],31:[function(require,module,exports){
+},{"./layer_dialog.js":30}],32:[function(require,module,exports){
 module.exports = function ($, app) {
     var generalRadioHandler = require("./layer_radio_handler.js")($, app);
 
@@ -1623,7 +1640,7 @@ module.exports = function ($, app) {
     return createLayerToggleRadioButton;
 }
 
-},{"./layer_radio_handler.js":32}],32:[function(require,module,exports){
+},{"./layer_radio_handler.js":33}],33:[function(require,module,exports){
 module.exports = function ($, app) {
     var Layer = require('./layer.js')($, app);
 
@@ -1702,7 +1719,7 @@ module.exports = function ($, app) {
     return radioHandler;
 }
 
-},{"./layer.js":27}],33:[function(require,module,exports){
+},{"./layer.js":28}],34:[function(require,module,exports){
 module.exports = function ($, app) {
     var radioHandler = require("./layer_radio_handler.js")($, app);
 
@@ -1733,7 +1750,7 @@ module.exports = function ($, app) {
     return createLayerToggleDropdownBox;
 }
 
-},{"./layer_radio_handler.js":32}],34:[function(require,module,exports){
+},{"./layer_radio_handler.js":33}],35:[function(require,module,exports){
 /**
  * Layer legends often correspond a number with a description
  * with certain colors. When a user clicks on the map while using
@@ -1768,7 +1785,7 @@ module.exports = function ($, app) {
 
 
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 /**
  * Adds functionality that allows users to mark points on a map,
  * then download a csv of the points and some metadata about them.
@@ -2045,7 +2062,7 @@ module.exports = function ($, app) {
     return marker;
 }
 
-},{"../libs/FileSaver/FileSaver.js":57,"./clicktool.js":13}],36:[function(require,module,exports){
+},{"../libs/FileSaver/FileSaver.js":58,"./clicktool.js":14}],37:[function(require,module,exports){
 function Mask (maskName) {
     window.EventEmitter.call(this);
     this.maskName = maskName;
@@ -2054,7 +2071,7 @@ function Mask (maskName) {
 
 module.exports = Mask;
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 function handleMaskModifier(name, index) {
     var app = this;
     var seldonLayer;
@@ -2082,7 +2099,7 @@ function handleMaskModifier(name, index) {
 
 module.exports = handleMaskModifier;
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 module.exports = function ($) {
     /**
      * When a mask grouper is enabled this function removes any modifiers from
@@ -2115,7 +2132,7 @@ module.exports = function ($) {
 }
 
 
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 module.exports = function ($, app) {
     var ClickTool = require('./clicktool.js');
 
@@ -2203,7 +2220,7 @@ module.exports = function ($, app) {
     return createMultigraphTool;
 }
 
-},{"./clicktool.js":13}],40:[function(require,module,exports){
+},{"./clicktool.js":14}],41:[function(require,module,exports){
 module.exports = function ($) {
     //jdm: override of js remove function
     //This is very useful for removing items from array by value
@@ -2258,7 +2275,7 @@ module.exports = function ($) {
     }));
 }
 
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 module.exports = function ($) {
     var createArcGIS93RestParams = require("./create_arcgis_rest_params.js")($);
     var AccordionGroup           = require("./accordion_group.js");
@@ -2355,29 +2372,37 @@ module.exports = function ($) {
             $wmsSubgroups = $wmsGroup.find("wmsSubgroup");
             for (j = 0, ll = $wmsSubgroups.length; j < ll; j++) {
                 $wmsSubgroup = $($wmsSubgroups[j]); // each <wmsSubgroup> corresponds to one 'sublist' in the accordion group
-                sublist = new AccordionGroupSublist({
-                    label : $wmsSubgroup.attr('label'),
-                    type  : $wmsSubgroup.attr('type')
-                });
+                sublist = new AccordionGroupSublist(
+                    $.extend({}, {
+                        sid   : $wmsSubgroup.attr('sid'),
+                        label : $wmsSubgroup.attr('label'),
+                        type  : $wmsSubgroup.attr('type'),
+                        description : ($wmsSubgroup.attr('description') ? $wmsSubgroup.attr('description') : undefined )
+                    })
+                );
+
                 accordionGroup.sublists.push(sublist);
                 $wmsLayers = $wmsSubgroup.find("wmsLayer,restLayer");
                 for (k = 0, lll = $wmsLayers.length; k < lll; k++) {
                     $wmsLayer = $($wmsLayers[k]);
                     if ($wmsLayer[0].tagName === "wmsLayer") {
-                        layer = new Layer({
-                            type             : "WMS",
-                            name             : $wmsLayer.attr('name'),
-                            lid              : $wmsLayer.attr('lid'),
-                            visible          : $wmsLayer.attr('visible'),
-                            url              : $wmsLayer.attr('url'),
-                            srs              : $wmsLayer.attr('srs'),
-                            layers           : $wmsLayer.attr('layers'),
-                            styles           : $wmsLayer.attr('styles'),
-                            identify         : $wmsLayer.attr('identify'),
-                            legend           : $wmsLayer.attr('legend'),
-                            mask             : $wmsLayer.attr('mask'),
-                            selectedInConfig : ($wmsLayer.attr('selected') === "true")
-                        });
+                        layer = new Layer(
+                            $.extend({}, {
+                                type             : "WMS",
+                                name             : $wmsLayer.attr('name'),
+                                lid              : $wmsLayer.attr('lid'),
+                                visible          : $wmsLayer.attr('visible'),
+                                url              : $wmsLayer.attr('url'),
+                                srs              : $wmsLayer.attr('srs'),
+                                layers           : $wmsLayer.attr('layers'),
+                                styles           : $wmsLayer.attr('styles'),
+                                identify         : $wmsLayer.attr('identify'),
+                                legend           : $wmsLayer.attr('legend'),
+                                mask             : $wmsLayer.attr('mask'),
+                                selectedInConfig : ($wmsLayer.attr('selected') === "true"),
+                                description      : ($wmsLayer.attr('description') ? $wmsLayer.attr('description') : undefined)
+                            })
+                        );
                     } else {
                         layer = new Layer({
                             type             : "ArcGIS93Rest",
@@ -2388,8 +2413,9 @@ module.exports = function ($) {
                             identify         : $wmsLayer.attr('identify'),
                             legend           : $wmsLayer.attr('legend'),
                             selectedInConfig : ($wmsLayer.attr('selected') === "true"),
-                            params           : createArcGIS93RestParams($wmsLayer)
-                        });
+                            params           : createArcGIS93RestParams($wmsLayer),
+                            description      : ($wmsLayer.attr('description') ? $wmsLayer.attr('description') : undefined)
+                         })
                     }
                     layer.index = index;
                     sublist.layers.push(layer);
@@ -2500,7 +2526,7 @@ module.exports = function ($) {
     return parseConfig;
 }
 
-},{"./accordion_group.js":3,"./accordion_group_sublist.js":5,"./baselayer.js":12,"./create_arcgis_rest_params.js":15,"./identify.js":23,"./layer.js":27,"./marker.js":35,"./multigraph.js":39,"./theme.js":55}],42:[function(require,module,exports){
+},{"./accordion_group.js":3,"./accordion_group_sublist.js":5,"./baselayer.js":13,"./create_arcgis_rest_params.js":16,"./identify.js":24,"./layer.js":28,"./marker.js":36,"./multigraph.js":40,"./theme.js":56}],43:[function(require,module,exports){
 module.exports = function ($, app) {
     function printMap ($configXML) {
         // go through all layers, and collect a list of objects
@@ -2609,7 +2635,7 @@ module.exports = function ($, app) {
     return printMap;
 };
 
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 function RepeatingOperation (op, yieldEveryIteration) {
     var count = 0;
     var instance = this;
@@ -2625,7 +2651,7 @@ function RepeatingOperation (op, yieldEveryIteration) {
 
 module.exports = RepeatingOperation;
 
-},{}],44:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 /**
  * search.js includes contributions by William Clark (wclark1@unca.edu)
  *
@@ -2653,7 +2679,7 @@ module.exports = function ($) {
     return handle_search;
 }
 
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 (function ($) {
     "use strict";
 
@@ -2668,7 +2694,7 @@ module.exports = function ($) {
     window.seldon = seldon;
 }(jQuery));
 
-},{"./app.js":10,"./init.js":24,"./overrides.js":40}],46:[function(require,module,exports){
+},{"./app.js":11,"./init.js":25,"./overrides.js":41}],47:[function(require,module,exports){
 module.exports = function ($) {
     function setBaseLayer (baseLayer) {
         var app = this;
@@ -2704,7 +2730,7 @@ module.exports = function ($) {
 }
 
 
-},{}],47:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 function ga_events ($) {
 
 
@@ -2973,7 +2999,7 @@ function ga_events ($) {
 
 module.exports = ga_events;
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 module.exports = function ($) {
     function setMaskByLayer (toggle, parentLayer) {
         var Layer = require("./layer.js")($, this);
@@ -2999,7 +3025,8 @@ module.exports = function ($) {
                     mask        : 'false',
                     legend      : parentLayer.legend,
                     index       : parentLayer.index,
-                    parentLayer : parentLayer
+                    parentLayer : parentLayer,
+                    description : (parentLayer.description ? parentLayer.description : undefined)
                 });
                 maskLayer.activate();
 
@@ -3046,7 +3073,7 @@ module.exports = function ($) {
     return setMaskByLayer;
 }
 
-},{"./layer.js":27}],49:[function(require,module,exports){
+},{"./layer.js":28}],50:[function(require,module,exports){
 module.exports = function ($) {
     var Mask = require("./mask.js");
 
@@ -3093,7 +3120,8 @@ module.exports = function ($) {
                     mask        : "false",
                     legend      : maskParentLayer.legend,
                     index       : maskParentLayer.index,
-                    parentLayer : maskParentLayer
+                    parentLayer : maskParentLayer,
+                    description : (maskParentLayer.description ? maskParentLayer.description : undefined)
                 });
                 maskLayer.activate();
                 maskLayer.setTransparency(maskParentLayer.transparency);
@@ -3143,13 +3171,14 @@ module.exports = function ($) {
     return setMaskByMask;
 }
 
-},{"./layer.js":27,"./mask.js":36}],50:[function(require,module,exports){
+},{"./layer.js":28,"./mask.js":37}],51:[function(require,module,exports){
 module.exports = function ($) {
     var RepeatingOperation = require("./repeating_operation.js");
     var ShareUrlInfo = require("./share.js");
     var createLayerToggleCheckbox = require("./layer_checkbox.js")($);
     var createLayerPropertiesIcon = require("./layer_icon.js")($);
     var arrayContainsElement = require("./array_contains_element.js");
+    var MoreInfoButton = require("./accordion_more_info_button.js")($);
 
     function setTheme (theme, options) {
         var createLayerToggleDropdownBox = require("./layer_select.js")($, this);
@@ -3261,8 +3290,19 @@ module.exports = function ($) {
                 var sublistObj = {
                     heading : sublist.label,
                     items : [],
-                    contentElement : $('<div><h4>' + sublist.label + '</h4></div>')
+                    contentElement : $(
+                        '<div>'
+                            +'<div class="sublist-header">'
+                                +'<h4>' + sublist.label + '</h4>'
+                            +'</div>'
+                        +'</div>'
+                    )
                 };
+
+                if (sublist.description) {
+                    var sublistInfoButton = new MoreInfoButton(sublist)
+                    sublistObj.contentElement.children('.sublist-header').append(sublistInfoButton.element)
+                }
 
                 g.sublists.push(sublistObj);
                 sublistItems.push(sublistObj.contentElement);
@@ -3296,21 +3336,29 @@ module.exports = function ($) {
                     var $testForMask = layer.mask;
                     var radioButton;
                     var dropdownBox;
+                    var layerItems = [];
                     if ($testForMask) {
                         maskLabelElem = document.createElement("label");
                         maskTextElem = document.createTextNode(""); //empty until active, if active then put (m)
                         maskLabelElem.setAttribute("id", "mask-status" + layer.lid);
                         maskLabelElem.appendChild(maskTextElem);
-                        sublistLayerItems.push([createLayerToggleCheckbox(layer),
-                                                labelElem,
-                                                createLayerPropertiesIcon(layer),
-                                                maskLabelElem,brElem]);
+                        layerItems.push(
+                            createLayerToggleCheckbox(layer),
+                            labelElem,
+                            createLayerPropertiesIcon(layer),
+                            maskLabelElem
+                        );
+                        if (layer.description) {
+                            var layerInfoButton = new MoreInfoButton(layer);
+                            layerItems.push(layerInfoButton.element);
+                        }
+                        layerItems.push(brElem);
                     } else { //no mask for this layer (most will be of this type outside of FCAV)
                         // add the layer to the accordion group
                         if (sublist.type=="radiobutton") { //radio button type
-                            sublistLayerItems.push([radioButton=createLayerToggleRadioButton(layer, sublist.label.replace(/\s+/g, '')),
+                            layerItems.push(radioButton=createLayerToggleRadioButton(layer, sublist.label.replace(/\s+/g, '')),
                                                     labelElem,
-                                                    createLayerPropertiesIcon(layer),brElem]);
+                                                    createLayerPropertiesIcon(layer),brElem);
                             app.radioButtonList.push(radioButton);
                             app.radioButtonLayers.push(layer);
                         } else if (sublist.type=="dropdownbox") { //dropdownbox type
@@ -3323,16 +3371,24 @@ module.exports = function ($) {
                                 app.dropdownBoxLayers.push(layer);
                             } else {
                                 selectBoxLayers.push(layer);
-                                sublistLayerItems.push([dropdownBox=createLayerToggleDropdownBox(layer, selectBoxLayers, sublist.label.replace(/\s+/g, ''))]);
+                                layerItems.push(dropdownBox=createLayerToggleDropdownBox(layer, selectBoxLayers, sublist.label.replace(/\s+/g, '')));
                                 app.dropdownBoxList.push(dropdownBox);
                                 app.dropdownBoxLayers.push(layer);
                             }
                         } else { // assume checkbox type
-                            sublistLayerItems.push([createLayerToggleCheckbox(layer),
-                                                    labelElem,
-                                                    createLayerPropertiesIcon(layer),brElem]);
+                            layerItems.push(
+                                createLayerToggleCheckbox(layer),
+                                labelElem,
+                                createLayerPropertiesIcon(layer)
+                            );
+                            if (layer.description) {
+                                var layerInfoButton = new MoreInfoButton(layer);
+                                layerItems.push(layerInfoButton.element)
+                            }
+                            layerItems.push(brElem);
                         }
                     }
+                    sublistLayerItems.push(layerItems);
 
                     // Decide whether to activate the layer.  If we received a layer list in the
                     // options arg, active the layer only if it appears in that list.  If we
@@ -3441,7 +3497,7 @@ module.exports = function ($) {
     return setTheme;
 }
 
-},{"./array_contains_element.js":11,"./layer_checkbox.js":28,"./layer_icon.js":30,"./layer_radio.js":31,"./layer_select.js":33,"./repeating_operation.js":43,"./share.js":51}],51:[function(require,module,exports){
+},{"./accordion_more_info_button.js":6,"./array_contains_element.js":12,"./layer_checkbox.js":29,"./layer_icon.js":31,"./layer_radio.js":32,"./layer_select.js":34,"./repeating_operation.js":44,"./share.js":52}],52:[function(require,module,exports){
 function ShareUrlInfo (settings) {
     if (settings === undefined) settings = {};
 
@@ -3548,7 +3604,7 @@ ShareUrlInfo.prototype.urlArgs = function () {
 
 module.exports = ShareUrlInfo;
 
-},{}],52:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 module.exports = function ($) {
     var stringContainsChar = require("./stringContainsChar.js");
     var ShareUrlInfo = require("./share.js");
@@ -3623,7 +3679,7 @@ module.exports = function ($) {
     return shareUrl;
 }
 
-},{"./share.js":51,"./stringContainsChar.js":54}],53:[function(require,module,exports){
+},{"./share.js":52,"./stringContainsChar.js":55}],54:[function(require,module,exports){
 module.exports = function ($) {
     function createSplashScreen () {
         var $document    = $(document),
@@ -3643,14 +3699,14 @@ module.exports = function ($) {
     return createSplashScreen;
 }
 
-},{}],54:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 function stringContainsChar (string, c) {
     return (string.indexOf(c) >= 0);
 }
 
 module.exports = stringContainsChar;
 
-},{}],55:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 function Theme (settings) {
     this.accordionGroups = [];
     if (!settings) { return; }
@@ -3677,7 +3733,7 @@ function Theme (settings) {
 
 module.exports = Theme;
 
-},{}],56:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 module.exports = function ($) {
     function updateShareMapUrl () {
         if (this.currentTheme) {
@@ -3691,7 +3747,7 @@ module.exports = function ($) {
     return updateShareMapUrl;
 }
 
-},{}],57:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 /* FileSaver.js
  * A saveAs() FileSaver implementation.
  * 1.3.2
@@ -3881,4 +3937,4 @@ if (typeof module !== "undefined" && module.exports) {
   });
 }
 
-},{}]},{},[45]);
+},{}]},{},[46]);

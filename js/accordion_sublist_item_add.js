@@ -10,14 +10,6 @@ module.exports = function ($) {
 
         var acc_labels = ['Archived ForWarn Change Maps'];
       
-        // For FCAV: 
-        // If the accordion section we are considering is
-        // 'Archived ForWarn Change Maps' (in the "Archived..." theme)
-        // then make a few modifications to the sublist:
-        //  - collapse the sublist by default
-        //  - if the sublist is non-empty,
-        //    add a triangle icon to the left of the header
-        //    indicating collapse/expand interaction
         if ($.inArray(theme.label, theme_labels) !== -1 &&
               $.inArray(accGp.label, acc_labels) !== -1) {
             var $header = s.contentElement.children('h4');

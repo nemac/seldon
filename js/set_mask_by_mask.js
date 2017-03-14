@@ -44,7 +44,8 @@ module.exports = function ($) {
                     mask        : "false",
                     legend      : maskParentLayer.legend,
                     index       : maskParentLayer.index,
-                    parentLayer : maskParentLayer
+                    parentLayer : maskParentLayer,
+                    description : (maskParentLayer.description ? maskParentLayer.description : undefined)
                 });
                 maskLayer.activate();
                 maskLayer.setTransparency(maskParentLayer.transparency);

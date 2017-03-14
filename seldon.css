@@ -194,6 +194,35 @@ Footer Styles
 Map Layers & Map Tools Styles
 */
 
+.tooltip-dialog {
+    min-width: 380px !important;
+    min-height: 250px !important;
+}
+
+.tooltip-content {
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+.tooltip-content a:link {
+    text-decoration: underline;
+    color: blue;
+}
+
+.accordion-more-info-button {
+    padding: 0px 2px 0px 2px;
+    margin-left: 5px;
+    border: 0;
+    background: #fff;
+    background: transparent;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.ui-accordion-content .sublist-header h4 {
+    display: inline-block;
+}
+
 .ui-accordion-content h4.collapsible:not(.empty) {
     cursor: pointer;
     margin: 0px;
