@@ -47,9 +47,9 @@ module.exports = function ($, app) {
                 popup.id = "#seldonMultigraphMessageDiv"+app.graphCount+"";
 
                 if (!window.multigraph.core.browserHasCanvasSupport() && !window.multigraph.core.browserHasSVGSupport()) {
-                    popup.html('<div id="seldonMultigraph'+app.graphCount+'" style="width: 600px; height: 300px;" ></div>');
+                    popup.html('<div id="seldonMultigraph'+app.graphCount+'" style="overflow-y: hidden; width: 600px; height: 330px;" ></div>');
                 } else {
-                    popup.html('<div class="multigraphLoader"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="seldonMultigraph'+app.graphCount+'" style="width: 600px; height: 300px;" ></div>');
+                    popup.html('<div class="multigraphLoader"><img class="ajax-loader-image" src="icons/ajax-loader.gif"/></div><div id="seldonMultigraph'+app.graphCount+'" style="overflow-y: hidden; width: 600px; height: 330px;" ></div>');
                 }
                 popup.dialog({
                     width     : 600,
