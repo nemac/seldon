@@ -11,30 +11,49 @@ module.exports = function ($) {
 
 },{}],2:[function(require,module,exports){
 module.exports = function ($) {
-    function setupCollapsibleSublists () {
-        var app = this;
+  function setupCollapsibleSublists (ui) {
+    var app = this;
 
-        var $sublists = $('.sublist.collapsible')
-        // Set a click handler on accordion section sublist headers
-        $sublists.children('.sublist-header').on('click', function (event) {
-            var $this = $(this);
-            var $sublist = $this.parent('.sublist')
-            // If the sublist is collapsed, uncollapse it and set the header icon
-            var $layerGroup = $sublist.children('.layer-group');
-            var $icon = $this.children('.ui-accordion-header-icon')
-            if ($layerGroup.hasClass('collapsed')) {
-                $layerGroup.removeClass('collapsed');
-                $icon.removeClass('ui-icon-triangle-1-e');
-                $icon.addClass('ui-icon-triangle-1-s');
-            } else {
-            // If the sublist is uncollapse, collapse it and set the header icon
-                $layerGroup.addClass('collapsed');
-                $icon.removeClass('ui-icon-triangle-1-s');
-                $icon.addClass('ui-icon-triangle-1-e');
-            }
-        })
+    if (ui.newPanel.length === 0) {
+      return
     }
-    return setupCollapsibleSublists;
+
+    var $sublists = ui.newPanel.children('.sublist.collapsible')
+
+    if ($sublists.length === 0) {
+      return
+    }
+
+    // Set a click handler on accordion section sublist headers
+    $sublistHeaders = $sublists.children('.sublist-header')
+
+    $sublistHeaders.each(function () {
+      var $header = $(this)
+      if (!!$header[0].onclick) {
+        return
+      }
+      $header[0].onclick = function (event) {
+        var $this = $(this);
+        var $sublist = $this.parent('.sublist')
+        // If the sublist is collapsed, uncollapse it and set the header icon
+        var $layerGroup = $sublist.children('.layer-group');
+        var $icon = $this.children('.ui-accordion-header-icon')
+        if ($layerGroup.hasClass('collapsed')) {
+          $layerGroup.removeClass('collapsed');
+          $icon.removeClass('ui-icon-triangle-1-e');
+          $icon.addClass('ui-icon-triangle-1-s');
+        } else {
+        // If the sublist is uncollapsed, collapse it and set the header icon
+          $layerGroup.addClass('collapsed');
+          $icon.removeClass('ui-icon-triangle-1-s');
+          $icon.addClass('ui-icon-triangle-1-e');
+        }
+      }
+
+    })
+    
+  }
+  return setupCollapsibleSublists;
 }
 
 
@@ -47,7 +66,7 @@ function AccordionGroup (settings) {
     this.gid              = settings.gid;
     this.name             = settings.name;
     this.label            = settings.label;
-    this.selectedInConfig = settings.selectedInConfig;
+    //this.selectedInConfig = settings.selectedInConfig;
 }
 
 module.exports = AccordionGroup;
@@ -831,8 +850,8 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
 
     app.tileManager = new OpenLayers.TileManager({
         cacheSize: 12,
-        moveDelay: 1000,
-        zoomDelay: 1000
+        moveDelay: 750,
+        zoomDelay: 750
     });
 
     app.map = new OpenLayers.Map('map', {
@@ -867,7 +886,7 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
     app.map.addControl(new OpenLayers.Control.ScaleLine({bottomOutUnits: 'mi'}));
     app.map.addLayers([layer]);
     app.map.setLayerIndex(layer, 0);
-    app.setAccordionGroup(app.setTheme(theme, themeOptions));
+    app.setTheme(theme, themeOptions);
     app.zoomToExtent(initialExtent);
     app.map.events.register("mousemove", app.map, function (e) {
         var pixel = app.map.events.getMousePosition(e);
@@ -894,6 +913,8 @@ module.exports = function ($) {
         var printMap = require("./print.js")($, this);
         
         var app = this;
+
+        app.initialThemeLoad = true;
 
         var $configXML;
 
@@ -928,14 +949,26 @@ module.exports = function ($) {
             zIndex   : 10050,
             position : { my: "left top", at: "left+5 top+100" },
             autoOpen : true,
-            hide     : "fade"
+            hide     : "fade",
+            width    : 330
         });
 
         app.addListener("accordiongroupchange", function () {
             if (app.currentTheme) {
                 $('#layerPickerAccordion').accordion({
                         active      : app.currentTheme.getAccordionGroupIndex(app.currentAccordionGroup),
-                        collapsible : true
+                        collapsible : true,
+                        beforeActivate: function (event, ui) {
+                            if (!app.initialThemeLoad) {
+                                $("#layerPickerDialog").scrollTop(0)
+                            }
+                        },
+                        activate: function (event, ui) {
+                            if (app.initialThemeLoad) {
+                                app.initialThemeLoad = false
+                                $("#layerPickerDialog").scrollTop(755)
+                            }
+                        }
                 });
             }
         });
@@ -1251,7 +1284,6 @@ module.exports = function ($, app) {
         if (this.type == undefined) {
             this.type = "WMS";
         }
-        this.openLayersLayer = undefined;
         this.createOpenLayersLayer = function () {
             if (this.openLayersLayer !== undefined) {
                 return this.openLayersLayer;
@@ -1265,7 +1297,39 @@ module.exports = function ($, app) {
                 ratio            : 1
             };
 
-            if (this.type === "ArcGIS93Rest") {
+            if (this.type === "WMTS") {
+                var settings = {
+                    name: this.name,
+                    url: this.url,
+                    layer: this.layers,
+                    style: this.style,
+                    matrixSet: this.srs,
+                    sphericalMercator: true,
+                    isBaseLayer: false,
+                    transitionEffect: "resize",
+                    format: "image/jpg",
+                }
+                if (this.lid.indexOf("GLAM") > -1) {
+                    $.extend(true, settings, {
+                        serverResolutions: [
+                          156543.033928041,
+                          78271.5169640205,
+                          39135.7584820102,
+                          19567.8792410051,
+                          9783.9396205026,
+                          4891.9698102513,
+                          2445.9849051256,
+                          1222.9924525628,
+                          611.4962262814,
+                          305.7481131407048,
+                        ],
+                        units: "m",
+                        tileOrigin: new OpenLayers.LonLat(-20037508.34, 20037508.34)
+                    })
+                }
+                this.openLayersLayer = new OpenLayers.Layer.WMTS(settings)
+
+            } else if (this.type === "ArcGIS93Rest") {
                 this.openLayersLayer = new OpenLayers.Layer.ArcGIS93Rest(
                     this.name,
                     this.url,
@@ -1311,59 +1375,111 @@ module.exports = function ($, app) {
 
         this.activate = function (options) {
             options = options || {}
-            app.map.addLayer(this.createOpenLayersLayer());
             // Only add legend for parent layers
             this.addToLegend();
 
             this.emit("activate");
-            this.visible = "true";
-            if ((this.mask === "true") && (this.lid.indexOf("MaskFor") === -1)) {
+            if (this.mask === "true" && this.lid.indexOf("MaskFor") === -1) {
                 if (app.masks.length > 0) {
                     app.setMaskByLayer(true, this);
+                } else {
+                    this.visible = "true"
+                    app.map.addLayer(this.createOpenLayersLayer());
+                    var layerInMaskParentLayers = app.maskParentLayers.find(function (layer) {
+                        return layer.lid === this.lid
+                    }, this)
+                    if (layerInMaskParentLayers === undefined) {
+                        app.maskParentLayers.push(this)
+                    }
                 }
+            } else {
+                this.visible = "true";
+                app.map.addLayer(this.createOpenLayersLayer())
+            }
+
+            vectorServices = [ 'vlayers', 'fire', 'ads' ]
+            boundaryServices = [ 'boundaries' ]
+            allVectorServices = vectorServices
+            Array.prototype.push.apply(allVectorServices, boundaryServices)
+
+            var isVectorLayer = function (layer, serviceNames) {
+                return serviceNames.filter(function (serviceName) {
+                    return layer.url && layer.url.indexOf(serviceName + "?") > -1
+                }).length
             }
 
             //View order rules:
-            //1. Vector layers (vlayers) always on top
-            //2. otherwise things go by seldon layer index.
+            // 1. Baselayer (always stays at index 0, so always skip here)
+            // 2. Boundaries (second for loop below)
+            // 3. Non-boundary vector layers
+            // 4. Raster layers (ordered by seldon index)
+            
+            // Note: layers with a higher index draw on top of layers with a lower index
+
             if (app.map.getNumLayers() > 1) {
-                var lyrJustAdded = app.map.layers[app.map.getNumLayers() - 1];
-                if (lyrJustAdded.url && lyrJustAdded.url.indexOf("vlayers") === -1) {
+
+                var lyrJustAdded = app.map.layers[app.map.getNumLayers() - 1]
+
+                if (!isVectorLayer(lyrJustAdded, allVectorServices)) {
+
+                    // Order by seldon index first (based on order the layer appears in the may layer picker)
                     for (var i = app.map.getNumLayers() - 2; i > 0; i--) {
                         var nextLayerDown = app.map.layers[i];
-                        if (nextLayerDown.url && nextLayerDown.url.indexOf("vlayers") === -1) {
+                        if (!isVectorLayer(nextLayerDown, allVectorServices)) {
                             if (nextLayerDown.seldonLayer.index < lyrJustAdded.seldonLayer.index) {
-                                app.map.setLayerIndex(lyrJustAdded, i);
+                                app.map.setLayerIndex(nextLayerDown, app.map.layers.length-1)
+                            } else {
+                                app.map.setLayerIndex(nextLayerDown, i)
                             }
-                        } else {
-                            app.map.setLayerIndex(nextLayerDown, app.map.layers.length-1);
                         }
+
                     }
-                } else {
-                    app.map.setLayerIndex(lyrJustAdded, app.map.layers.length-1);
+
+                }
+
+                for (var i = app.map.getNumLayers() - 1; i > 0; i--) {
+                    var nextLayerDown = app.map.layers[i];
+                    if (isVectorLayer(nextLayerDown, vectorServices)) {
+                        app.map.setLayerIndex(nextLayerDown, app.map.layers.length-1)
+                    }
+                }
+
+                for (var i = app.map.getNumLayers() - 1; i > 0; i--) {
+                    var nextLayerDown = app.map.layers[i];
+                    if (isVectorLayer(nextLayerDown, boundaryServices)) {
+                        app.map.setLayerIndex(nextLayerDown, app.map.layers.length-1)
+                    }
                 }
             }
+
             app.updateShareMapUrl();
             app.map.updateSize();
         };
 
         this.deactivate = function (options) {
             options = options || {}
-            if (this.openLayersLayer) {
-                if (this.visible === "true") {
-                    app.map.removeLayer(this.openLayersLayer);
-                    this.visible = "false";
-                } else { //we are dealing with a inactive parent layer to mask
-                    app.setMaskByLayer(false, this);
-                }
+            if (this.visible === "true") {
+                app.map.removeLayer(this.openLayersLayer);
+                this.visible = "false"
+            }
 
-                if (options.removeFromLegend) {
-                    this.removeFromLegend()
-                }
+            if (!this.parentLayer) {
+                app.setMaskByLayer(false, this);
+            }
 
-                if (this.openLayersLayer.loadingimage) {
-                    this.openLayersLayer.loadingimage.removeClass("loading");
-                }
+            if (options.removeFromLegend) {
+                this.removeFromLegend()
+
+            }
+
+            if (options.removeFromParentMaskLayers) {
+                app.maskParentLayers = app.maskParentLayers.filter(function (layer) {
+                    return layer.lid !== this.lid
+                }, this)
+            }
+
+            if (this.openLayersLayer && this.openLayersLayer.loadingimage) {
+                this.openLayersLayer.loadingimage.removeClass("loading");
             }
 
             this.emit("deactivate");
@@ -1380,7 +1496,9 @@ module.exports = function ($, app) {
                 .prepend($(document.createElement("img")).attr("src", this.legend))
                 .click(function () {
                     that.deactivate();
-                    if (that.parentLayer) that.parentLayer.deactivate();
+                    if (that.parentLayer) {
+                        that.parentLayer.deactivate({ removeFromParentMaskLayers: true });
+                    }
                     that.removeFromLegend()
                 });
 
@@ -1449,7 +1567,7 @@ module.exports = function ($) {
             if ($(this).is(':checked')) {
                 layer.activate();
             } else {
-                layer.deactivate({ removeFromLegend: true });
+                layer.deactivate({ removeFromLegend: true, removeFromParentMaskLayers: true });
             }
         };
         $checkbox = $(checkbox);
@@ -2332,7 +2450,7 @@ module.exports = function ($) {
                 gid              : $wmsGroup.attr('gid'),
                 name             : $wmsGroup.attr('name'),
                 label            : $wmsGroup.attr('label'),
-                selectedInConfig : ($wmsGroup.attr('selected') === "true")
+                //selectedInConfig : ($wmsGroup.attr('selected') === "true")
             });
             app.accordionGroups.push(accordionGroup);
             accordionGroupsByName[accordionGroup.name] = accordionGroup;
@@ -2353,10 +2471,33 @@ module.exports = function ($) {
                 );
 
                 accordionGroup.sublists.push(sublist);
-                $wmsLayers = $wmsSubgroup.find("wmsLayer,restLayer");
+                $wmsLayers = $wmsSubgroup.find("wmsLayer,restLayer, wmtsLayer");
                 for (k = 0, lll = $wmsLayers.length; k < lll; k++) {
                     $wmsLayer = $($wmsLayers[k]);
-                    if ($wmsLayer[0].tagName === "wmsLayer") {
+                    if ($wmsLayer[0].tagName === "wmtsLayer") {
+                        layer = new Layer(
+                            $.extend({}, {
+                                type             : "WMTS",
+                                name             : $wmsLayer.attr('name'),
+                                lid              : $wmsLayer.attr('lid'),
+                                visible          : $wmsLayer.attr('visible'),
+                                url              : $wmsLayer.attr('url'),
+                                srs              : $wmsLayer.attr('srs'),
+                                layers           : $wmsLayer.attr('layers'),
+                                styles           : $wmsLayer.attr('styles'),
+                                identify         : $wmsLayer.attr('identify'),
+                                legend           : $wmsLayer.attr('legend'),
+                                mask             : $wmsLayer.attr('mask'),
+                                selectedInConfig : ($wmsLayer.attr('selected') === "true"),
+                                attribution      : $wmsLayer.attr('attribution'),
+                                format           : $wmsLayer.attr('format'),
+                                numZoomLevels    : $wmsLayer.attr('numZoomLevels'),
+                                description      : ($wmsLayer.attr('description') ? $wmsLayer.attr('description') : undefined),                               
+                                break            : ($wmsLayer.attr('break') == "true" ? true : undefined)
+                            })
+                        )
+                    }
+                    else if ($wmsLayer[0].tagName === "wmsLayer") {
                         layer = new Layer(
                             $.extend({}, {
                                 type             : "WMS",
@@ -2371,7 +2512,8 @@ module.exports = function ($) {
                                 legend           : $wmsLayer.attr('legend'),
                                 mask             : $wmsLayer.attr('mask'),
                                 selectedInConfig : ($wmsLayer.attr('selected') === "true"),
-                                description      : ($wmsLayer.attr('description') ? $wmsLayer.attr('description') : undefined)
+                                description      : ($wmsLayer.attr('description') ? $wmsLayer.attr('description') : undefined),
+                                break            : ($wmsLayer.attr('break') == "true" ? true : undefined)
                             })
                         );
                     } else {
@@ -2385,8 +2527,9 @@ module.exports = function ($) {
                             legend           : $wmsLayer.attr('legend'),
                             selectedInConfig : ($wmsLayer.attr('selected') === "true"),
                             params           : createArcGIS93RestParams($wmsLayer),
-                            description      : ($wmsLayer.attr('description') ? $wmsLayer.attr('description') : undefined)
-                         })
+                            description      : ($wmsLayer.attr('description') ? $wmsLayer.attr('description') : undefined),
+                            break            : ($wmsLayer.attr('break') == "true" ? true : undefined)
+                        })
                     }
                     layer.index = index;
                     sublist.layers.push(layer);
@@ -2448,6 +2591,7 @@ module.exports = function ($) {
                 name           = $viewGroup.attr('name');
                 accordionGroup = accordionGroupsByName[name];
                 if (accordionGroup) {
+                    accordionGroup.selectedInConfig = $viewGroup.attr('selected') === 'true';
                     theme.accordionGroups.push(accordionGroup);
                 } else {
                     displayError("Unknown accordion group name '" + name + "' found in theme '" + theme.name + "'");
@@ -3003,11 +3147,6 @@ module.exports = function ($) {
 
                 app.masks[m].maskLayers.push(maskLayer);
 
-                if (parentLayer.visible === "true") {
-                    parentLayer.deactivate();
-                    parentLayer.visible = "false";
-                }
-
                 $("#" + maskName.replace("MaskFor", "")).get(0).checked = true;
                 $("#mask-status" + parentLayer.lid).text("(m)");
                 $("#chk" + parentLayer.lid).prop('checked', true);
@@ -3029,13 +3168,7 @@ module.exports = function ($) {
                     currentMask.maskLayers.remove(maskLayersToDelete[mld]);
                 }
             }
-            //remove from maskParentLayers and activate parentLayer
-            app.maskParentLayers.remove(parentLayer);
-            if (parentLayer.visible === "false") {
-                parentLayer.visible = "true";
-            } else {
-                parentLayer.deactivate();
-            }
+            
             $('#mask-status'+ parentLayer.lid).text("");
         }
         app.updateShareMapUrl();
@@ -3067,16 +3200,6 @@ module.exports = function ($) {
             app.masks.push(mask);
             var cleanMaskName = maskName.replace("/","");
 
-            // Loop through app.map.layers making sure that
-            // app.maskParentLayers is correct
-            for (i = 0; i < app.map.layers.length; i++) {
-                seldonLayer = app.map.layers[i].seldonLayer;
-                if (seldonLayer && seldonLayer.mask === "true" && app.count(maskParentLayers, seldonLayer) === 0) {
-                    app.maskParentLayers.push(seldonLayer);
-                    seldonLayer.visible = "true";
-                }
-            }
-
             for (i = 0; i < maskParentLayers.length; i++) {
                 maskParentLayer = maskParentLayers[i];
                 maskLayer = new Layer({
@@ -3094,13 +3217,18 @@ module.exports = function ($) {
                     parentLayer : maskParentLayer,
                     description : (maskParentLayer.description ? maskParentLayer.description : undefined)
                 });
-                maskLayer.activate();
-                maskLayer.setTransparency(maskParentLayer.transparency);
-                mask.maskLayers.push(maskLayer);
+
+
                 if (maskParentLayer.visible === "true") {
                     maskParentLayer.deactivate();
                     maskParentLayer.visible = "false";
                 }
+                
+                maskLayer.activate();
+                maskLayer.setTransparency(maskParentLayer.transparency);
+                mask.maskLayers.push(maskLayer);
+
+
                 $("#" + maskName.replace("MaskFor", "")).get(0).checked = true;
                 $('#mask-status' + maskParentLayer.lid).text("(m)");
                 $("#chk" + maskParentLayer.lid).prop('checked', true);
@@ -3123,17 +3251,11 @@ module.exports = function ($) {
             // If it was the only mask in app.Mask (e.g. app.masks.length ==0) to begin with
             // Then loop through app.maskParentLayers and activate those layer
             // Remove those layers from app.maskParentLayers that you just activated
-            if (app.masks.length == 0) {
-                var layersToRemove = [];
+            if (app.masks.length === 0) {
                 for (var mp = 0; mp < app.maskParentLayers.length; mp++) {
                     app.maskParentLayers[mp].activate();
-                    app.maskParentLayers[mp].visible = "true";
-                    layersToRemove.push(app.maskParentLayers[mp]);
                 }
-                for (var l = 0; l < layersToRemove.length; l++) {
-                    app.maskParentLayers.remove(layersToRemove[l]);
-                    $('#mask-status'+ layersToRemove[l].lid).text("");
-                }
+
             }
         }
         app.updateShareMapUrl();
@@ -3167,15 +3289,13 @@ module.exports = function ($) {
             activeMaskLayers = [];
 
         //jdm 1/3/14: set the default forest mask
-        //TODO: There should be a more eloquent way to handle default mask
         if ($.isEmptyObject(options) && (app.masks.length==0)) {
             for (var dm = 0; dm < app.defaultMasks.length; dm++) {
-                //console.log("setMaskByMask at line 247");
                 app.setMaskByMask(true, app.defaultMasks[dm]);
             }
         }
 
-        //jdm (11/1/13): fix for changing themes and accounting for active layers
+        //fix for changing themes and accounting for active layers
         //we have changed a theme here, but we need to account for active layers.
         //This accounts for active mask on theme change also.
         if (options === undefined) {
@@ -3223,6 +3343,9 @@ module.exports = function ($) {
         //Initialize listAccordion
         $layerPickerAccordion.accordion({
             heightStyle : 'content',
+            activate: function (event, ui) {
+                app.setupCollapsibleSublists(ui)
+            },
             change      : function (event, ui) {
                 var accordionGroupIndex = $layerPickerAccordion.accordion('option', 'active');
                 app.setAccordionGroup(theme.accordionGroups[accordionGroupIndex]);
@@ -3249,8 +3372,7 @@ module.exports = function ($) {
             // group only if it equals that setting.  If we did not receive an
             // `accordionGroup` setting in the options are, activate this accordion
             // group if its "selected" attribute was true in the config file.
-            if ((accordionGroupOption && (accGp === accordionGroupOption)) ||
-                (!accordionGroupOption && accGp.selectedInConfig)) {
+            if (accGp.selectedInConfig) {
                 accordionGroup = accGp;
             }
             var g = app.addAccordionSection($layerPickerAccordion, accGp.label);
@@ -3258,6 +3380,7 @@ module.exports = function ($) {
             var sublistItems = [];
             for (var i = 0, j = accGp.sublists.length; i < j; i++) {
                 var sublist = accGp.sublists[i];
+                var sublistEmptyClass = sublist.layers.length > 0 ? '' : ' empty'
                 var collapsibleClass = sublist.collapsible ? ' collapsible' : ''
                 var collapseHeaderIcon = sublist.collapsible ?
                     '<span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-e"></span>' : ''
@@ -3266,7 +3389,7 @@ module.exports = function ($) {
                     items : [],
                     collapsible: sublist.collapsible,
                     contentElement : $(
-                        '<div class="sublist'+collapsibleClass+'">'
+                        '<div class="sublist'+collapsibleClass+sublistEmptyClass+'">'
                             +'<div class="sublist-header">'
                                 + collapseHeaderIcon
                                 +'<h4>' + sublist.label + '</h4>'
@@ -3329,6 +3452,10 @@ module.exports = function ($) {
                             layerItems.push(layerInfoButton.element);
                         }
                         layerItems.push(brElem);
+                        if (layer.break) {
+                            // can't add brElem again, since it references the same DOM node
+                            layerItems.push(document.createElement("br"));
+                        }
                     } else { //no mask for this layer (most will be of this type outside of FCAV)
                         // add the layer to the accordion group
                         if (sublist.type=="radiobutton") { //radio button type
@@ -3362,6 +3489,9 @@ module.exports = function ($) {
                                 layerItems.push(layerInfoButton.element)
                             }
                             layerItems.push(brElem);
+                            if (layer.break) {
+                                layerItems.push(document.createElement("br"));
+                            }
                         }
                     }
                     sublistLayerItems.push(layerItems);
@@ -3370,11 +3500,11 @@ module.exports = function ($) {
                     // options arg, active the layer only if it appears in that list.  If we
                     // received no layer list in the options arg, activate the layer if the layer's
                     // "selected" attribute was true in the config file.
+
                     if (((options.layers !== undefined) &&
                          (arrayContainsElement(options.layers, layer))) ||
                         ((options.layers === undefined) &&
                          layer.selectedInConfig) && (sublist.type!="radiobutton")) {
-                        //console.log("activate at line 449");
                         layer.activate();
                     }
                     //we shouldn't have to re-activate an active layer on theme change
@@ -3423,15 +3553,12 @@ module.exports = function ($) {
         $('#mapToolsDialog').scrollTop(0);
         app.emit("themechange");
 
-        app.setupCollapsibleSublists()
-
         //jdm 6/28/13: do a check to see if there is a corresponding active mask in options.shareUrlMasks
         //can be multiple mask per a parent layer
         if (options.shareUrlMasks !== undefined) {
             for (var m = 0; m < options.shareUrlMasks.length; m++) {
                 //we have already activated the respective parent layers
                 //so so we have to go through the masking process
-                //console.log("setMaskByMask at line 239");
                 app.setMaskByMask(true, "MaskFor"+options.shareUrlMasks[m]);
             }
         }

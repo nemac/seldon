@@ -223,6 +223,10 @@ Map Layers & Map Tools Styles
     cursor: pointer;
 }
 
+.sublist.empty h4 {
+    margin-bottom: 0px;
+}
+
 .sublist-header h4 {
     display: inline-block;
 }

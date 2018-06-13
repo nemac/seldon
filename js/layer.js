@@ -12,7 +12,6 @@ module.exports = function ($, app) {
         if (this.type == undefined) {
             this.type = "WMS";
         }
-        this.openLayersLayer = undefined;
         this.createOpenLayersLayer = function () {
             if (this.openLayersLayer !== undefined) {
                 return this.openLayersLayer;
@@ -26,7 +25,39 @@ module.exports = function ($, app) {
                 ratio            : 1
             };
 
-            if (this.type === "ArcGIS93Rest") {
+            if (this.type === "WMTS") {
+                var settings = {
+                    name: this.name,
+                    url: this.url,
+                    layer: this.layers,
+                    style: this.style,
+                    matrixSet: this.srs,
+                    sphericalMercator: true,
+                    isBaseLayer: false,
+                    transitionEffect: "resize",
+                    format: "image/jpg",
+                }
+                if (this.lid.indexOf("GLAM") > -1) {
+                    $.extend(true, settings, {
+                        serverResolutions: [
+                          156543.033928041,
+                          78271.5169640205,
+                          39135.7584820102,
+                          19567.8792410051,
+                          9783.9396205026,
+                          4891.9698102513,
+                          2445.9849051256,
+                          1222.9924525628,
+                          611.4962262814,
+                          305.7481131407048,
+                        ],
+                        units: "m",
+                        tileOrigin: new OpenLayers.LonLat(-20037508.34, 20037508.34)
+                    })
+                }
+                this.openLayersLayer = new OpenLayers.Layer.WMTS(settings)
+
+            } else if (this.type === "ArcGIS93Rest") {
                 this.openLayersLayer = new OpenLayers.Layer.ArcGIS93Rest(
                     this.name,
                     this.url,
@@ -72,59 +103,111 @@ module.exports = function ($, app) {
 
         this.activate = function (options) {
             options = options || {}
-            app.map.addLayer(this.createOpenLayersLayer());
             // Only add legend for parent layers
             this.addToLegend();
 
             this.emit("activate");
-            this.visible = "true";
-            if ((this.mask === "true") && (this.lid.indexOf("MaskFor") === -1)) {
+            if (this.mask === "true" && this.lid.indexOf("MaskFor") === -1) {
                 if (app.masks.length > 0) {
                     app.setMaskByLayer(true, this);
+                } else {
+                    this.visible = "true"
+                    app.map.addLayer(this.createOpenLayersLayer());
+                    var layerInMaskParentLayers = app.maskParentLayers.find(function (layer) {
+                        return layer.lid === this.lid
+                    }, this)
+                    if (layerInMaskParentLayers === undefined) {
+                        app.maskParentLayers.push(this)
+                    }
                 }
+            } else {
+                this.visible = "true";
+                app.map.addLayer(this.createOpenLayersLayer())
+            }
+
+            vectorServices = [ 'vlayers', 'fire', 'ads' ]
+            boundaryServices = [ 'boundaries' ]
+            allVectorServices = vectorServices
+            Array.prototype.push.apply(allVectorServices, boundaryServices)
+
+            var isVectorLayer = function (layer, serviceNames) {
+                return serviceNames.filter(function (serviceName) {
+                    return layer.url && layer.url.indexOf(serviceName + "?") > -1
+                }).length
             }
 
             //View order rules:
-            //1. Vector layers (vlayers) always on top
-            //2. otherwise things go by seldon layer index.
+            // 1. Baselayer (always stays at index 0, so always skip here)
+            // 2. Boundaries (second for loop below)
+            // 3. Non-boundary vector layers
+            // 4. Raster layers (ordered by seldon index)
+            
+            // Note: layers with a higher index draw on top of layers with a lower index
+
             if (app.map.getNumLayers() > 1) {
-                var lyrJustAdded = app.map.layers[app.map.getNumLayers() - 1];
-                if (lyrJustAdded.url && lyrJustAdded.url.indexOf("vlayers") === -1) {
+
+                var lyrJustAdded = app.map.layers[app.map.getNumLayers() - 1]
+
+                if (!isVectorLayer(lyrJustAdded, allVectorServices)) {
+
+                    // Order by seldon index first (based on order the layer appears in the may layer picker)
                     for (var i = app.map.getNumLayers() - 2; i > 0; i--) {
                         var nextLayerDown = app.map.layers[i];
-                        if (nextLayerDown.url && nextLayerDown.url.indexOf("vlayers") === -1) {
+                        if (!isVectorLayer(nextLayerDown, allVectorServices)) {
                             if (nextLayerDown.seldonLayer.index < lyrJustAdded.seldonLayer.index) {
-                                app.map.setLayerIndex(lyrJustAdded, i);
+                                app.map.setLayerIndex(nextLayerDown, app.map.layers.length-1)
+                            } else {
+                                app.map.setLayerIndex(nextLayerDown, i)
                             }
-                        } else {
-                            app.map.setLayerIndex(nextLayerDown, app.map.layers.length-1);
                         }
+
                     }
-                } else {
-                    app.map.setLayerIndex(lyrJustAdded, app.map.layers.length-1);
+
+                }
+
+                for (var i = app.map.getNumLayers() - 1; i > 0; i--) {
+                    var nextLayerDown = app.map.layers[i];
+                    if (isVectorLayer(nextLayerDown, vectorServices)) {
+                        app.map.setLayerIndex(nextLayerDown, app.map.layers.length-1)
+                    }
+                }
+
+                for (var i = app.map.getNumLayers() - 1; i > 0; i--) {
+                    var nextLayerDown = app.map.layers[i];
+                    if (isVectorLayer(nextLayerDown, boundaryServices)) {
+                        app.map.setLayerIndex(nextLayerDown, app.map.layers.length-1)
+                    }
                 }
             }
+
             app.updateShareMapUrl();
             app.map.updateSize();
         };
 
         this.deactivate = function (options) {
             options = options || {}
-            if (this.openLayersLayer) {
-                if (this.visible === "true") {
-                    app.map.removeLayer(this.openLayersLayer);
-                    this.visible = "false";
-                } else { //we are dealing with a inactive parent layer to mask
-                    app.setMaskByLayer(false, this);
-                }
+            if (this.visible === "true") {
+                app.map.removeLayer(this.openLayersLayer);
+                this.visible = "false"
+            }
 
-                if (options.removeFromLegend) {
-                    this.removeFromLegend()
-                }
+            if (!this.parentLayer) {
+                app.setMaskByLayer(false, this);
+            }
 
-                if (this.openLayersLayer.loadingimage) {
-                    this.openLayersLayer.loadingimage.removeClass("loading");
-                }
+            if (options.removeFromLegend) {
+                this.removeFromLegend()
+
+            }
+
+            if (options.removeFromParentMaskLayers) {
+                app.maskParentLayers = app.maskParentLayers.filter(function (layer) {
+                    return layer.lid !== this.lid
+                }, this)
+            }
+
+            if (this.openLayersLayer && this.openLayersLayer.loadingimage) {
+                this.openLayersLayer.loadingimage.removeClass("loading");
             }
 
             this.emit("deactivate");
@@ -141,7 +224,9 @@ module.exports = function ($, app) {
                 .prepend($(document.createElement("img")).attr("src", this.legend))
                 .click(function () {
                     that.deactivate();
-                    if (that.parentLayer) that.parentLayer.deactivate();
+                    if (that.parentLayer) {
+                        that.parentLayer.deactivate({ removeFromParentMaskLayers: true });
+                    }
                     that.removeFromLegend()
                 });
 

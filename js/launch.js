@@ -12,6 +12,8 @@ module.exports = function ($) {
         
         var app = this;
 
+        app.initialThemeLoad = true;
+
         var $configXML;
 
         $.ajax({
@@ -45,14 +47,27 @@ module.exports = function ($) {
             zIndex   : 10050,
             position : { my: "left top", at: "left+5 top+100" },
             autoOpen : true,
-            hide     : "fade"
+            hide     : "fade",
+            width    : 330
         });
 
         app.addListener("accordiongroupchange", function () {
             if (app.currentTheme) {
                 $('#layerPickerAccordion').accordion({
                         active      : app.currentTheme.getAccordionGroupIndex(app.currentAccordionGroup),
-                        collapsible : true
+                        collapsible : true,
+                        beforeActivate: function (event, ui) {
+                            if (!app.initialThemeLoad) {
+                                $("#layerPickerDialog").scrollTop(0)
+                            }
+                        },
+                        activate: function (event, ui) {
+                            app.setupCollapsibleSublists(ui)
+                            if (app.initialThemeLoad) {
+                                app.initialThemeLoad = false
+                                $("#layerPickerDialog").scrollTop(755)
+                            }
+                        }
                 });
             }
         });

@@ -22,15 +22,13 @@ module.exports = function ($) {
             activeMaskLayers = [];
 
         //jdm 1/3/14: set the default forest mask
-        //TODO: There should be a more eloquent way to handle default mask
         if ($.isEmptyObject(options) && (app.masks.length==0)) {
             for (var dm = 0; dm < app.defaultMasks.length; dm++) {
-                //console.log("setMaskByMask at line 247");
                 app.setMaskByMask(true, app.defaultMasks[dm]);
             }
         }
 
-        //jdm (11/1/13): fix for changing themes and accounting for active layers
+        //fix for changing themes and accounting for active layers
         //we have changed a theme here, but we need to account for active layers.
         //This accounts for active mask on theme change also.
         if (options === undefined) {
@@ -78,6 +76,9 @@ module.exports = function ($) {
         //Initialize listAccordion
         $layerPickerAccordion.accordion({
             heightStyle : 'content',
+            activate: function (event, ui) {
+                app.setupCollapsibleSublists(ui)
+            },
             change      : function (event, ui) {
                 var accordionGroupIndex = $layerPickerAccordion.accordion('option', 'active');
                 app.setAccordionGroup(theme.accordionGroups[accordionGroupIndex]);
@@ -104,8 +105,7 @@ module.exports = function ($) {
             // group only if it equals that setting.  If we did not receive an
             // `accordionGroup` setting in the options are, activate this accordion
             // group if its "selected" attribute was true in the config file.
-            if ((accordionGroupOption && (accGp === accordionGroupOption)) ||
-                (!accordionGroupOption && accGp.selectedInConfig)) {
+            if (accGp.selectedInConfig) {
                 accordionGroup = accGp;
             }
             var g = app.addAccordionSection($layerPickerAccordion, accGp.label);
@@ -113,6 +113,7 @@ module.exports = function ($) {
             var sublistItems = [];
             for (var i = 0, j = accGp.sublists.length; i < j; i++) {
                 var sublist = accGp.sublists[i];
+                var sublistEmptyClass = sublist.layers.length > 0 ? '' : ' empty'
                 var collapsibleClass = sublist.collapsible ? ' collapsible' : ''
                 var collapseHeaderIcon = sublist.collapsible ?
                     '<span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-e"></span>' : ''
@@ -121,7 +122,7 @@ module.exports = function ($) {
                     items : [],
                     collapsible: sublist.collapsible,
                     contentElement : $(
-                        '<div class="sublist'+collapsibleClass+'">'
+                        '<div class="sublist'+collapsibleClass+sublistEmptyClass+'">'
                             +'<div class="sublist-header">'
                                 + collapseHeaderIcon
                                 +'<h4>' + sublist.label + '</h4>'
@@ -184,6 +185,10 @@ module.exports = function ($) {
                             layerItems.push(layerInfoButton.element);
                         }
                         layerItems.push(brElem);
+                        if (layer.break) {
+                            // can't add brElem again, since it references the same DOM node
+                            layerItems.push(document.createElement("br"));
+                        }
                     } else { //no mask for this layer (most will be of this type outside of FCAV)
                         // add the layer to the accordion group
                         if (sublist.type=="radiobutton") { //radio button type
@@ -217,6 +222,9 @@ module.exports = function ($) {
                                 layerItems.push(layerInfoButton.element)
                             }
                             layerItems.push(brElem);
+                            if (layer.break) {
+                                layerItems.push(document.createElement("br"));
+                            }
                         }
                     }
                     sublistLayerItems.push(layerItems);
@@ -225,11 +233,11 @@ module.exports = function ($) {
                     // options arg, active the layer only if it appears in that list.  If we
                     // received no layer list in the options arg, activate the layer if the layer's
                     // "selected" attribute was true in the config file.
+
                     if (((options.layers !== undefined) &&
                          (arrayContainsElement(options.layers, layer))) ||
                         ((options.layers === undefined) &&
                          layer.selectedInConfig) && (sublist.type!="radiobutton")) {
-                        //console.log("activate at line 449");
                         layer.activate();
                     }
                     //we shouldn't have to re-activate an active layer on theme change
@@ -278,15 +286,12 @@ module.exports = function ($) {
         $('#mapToolsDialog').scrollTop(0);
         app.emit("themechange");
 
-        app.setupCollapsibleSublists()
-
         //jdm 6/28/13: do a check to see if there is a corresponding active mask in options.shareUrlMasks
         //can be multiple mask per a parent layer
         if (options.shareUrlMasks !== undefined) {
             for (var m = 0; m < options.shareUrlMasks.length; m++) {
                 //we have already activated the respective parent layers
                 //so so we have to go through the masking process
-                //console.log("setMaskByMask at line 239");
                 app.setMaskByMask(true, "MaskFor"+options.shareUrlMasks[m]);
             }
         }

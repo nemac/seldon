@@ -30,11 +30,6 @@ module.exports = function ($) {
 
                 app.masks[m].maskLayers.push(maskLayer);
 
-                if (parentLayer.visible === "true") {
-                    parentLayer.deactivate();
-                    parentLayer.visible = "false";
-                }
-
                 $("#" + maskName.replace("MaskFor", "")).get(0).checked = true;
                 $("#mask-status" + parentLayer.lid).text("(m)");
                 $("#chk" + parentLayer.lid).prop('checked', true);
@@ -56,13 +51,7 @@ module.exports = function ($) {
                     currentMask.maskLayers.remove(maskLayersToDelete[mld]);
                 }
             }
-            //remove from maskParentLayers and activate parentLayer
-            app.maskParentLayers.remove(parentLayer);
-            if (parentLayer.visible === "false") {
-                parentLayer.visible = "true";
-            } else {
-                parentLayer.deactivate();
-            }
+            
             $('#mask-status'+ parentLayer.lid).text("");
         }
         app.updateShareMapUrl();

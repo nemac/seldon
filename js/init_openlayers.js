@@ -33,8 +33,8 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
 
     app.tileManager = new OpenLayers.TileManager({
         cacheSize: 12,
-        moveDelay: 1000,
-        zoomDelay: 1000
+        moveDelay: 750,
+        zoomDelay: 750
     });
 
     app.map = new OpenLayers.Map('map', {
@@ -69,7 +69,7 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
     app.map.addControl(new OpenLayers.Control.ScaleLine({bottomOutUnits: 'mi'}));
     app.map.addLayers([layer]);
     app.map.setLayerIndex(layer, 0);
-    app.setAccordionGroup(app.setTheme(theme, themeOptions));
+    app.setTheme(theme, themeOptions);
     app.zoomToExtent(initialExtent);
     app.map.events.register("mousemove", app.map, function (e) {
         var pixel = app.map.events.getMousePosition(e);

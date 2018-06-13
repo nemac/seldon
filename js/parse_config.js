@@ -84,7 +84,7 @@ module.exports = function ($) {
                 gid              : $wmsGroup.attr('gid'),
                 name             : $wmsGroup.attr('name'),
                 label            : $wmsGroup.attr('label'),
-                selectedInConfig : ($wmsGroup.attr('selected') === "true")
+                //selectedInConfig : ($wmsGroup.attr('selected') === "true")
             });
             app.accordionGroups.push(accordionGroup);
             accordionGroupsByName[accordionGroup.name] = accordionGroup;
@@ -105,10 +105,33 @@ module.exports = function ($) {
                 );
 
                 accordionGroup.sublists.push(sublist);
-                $wmsLayers = $wmsSubgroup.find("wmsLayer,restLayer");
+                $wmsLayers = $wmsSubgroup.find("wmsLayer,restLayer, wmtsLayer");
                 for (k = 0, lll = $wmsLayers.length; k < lll; k++) {
                     $wmsLayer = $($wmsLayers[k]);
-                    if ($wmsLayer[0].tagName === "wmsLayer") {
+                    if ($wmsLayer[0].tagName === "wmtsLayer") {
+                        layer = new Layer(
+                            $.extend({}, {
+                                type             : "WMTS",
+                                name             : $wmsLayer.attr('name'),
+                                lid              : $wmsLayer.attr('lid'),
+                                visible          : $wmsLayer.attr('visible'),
+                                url              : $wmsLayer.attr('url'),
+                                srs              : $wmsLayer.attr('srs'),
+                                layers           : $wmsLayer.attr('layers'),
+                                styles           : $wmsLayer.attr('styles'),
+                                identify         : $wmsLayer.attr('identify'),
+                                legend           : $wmsLayer.attr('legend'),
+                                mask             : $wmsLayer.attr('mask'),
+                                selectedInConfig : ($wmsLayer.attr('selected') === "true"),
+                                attribution      : $wmsLayer.attr('attribution'),
+                                format           : $wmsLayer.attr('format'),
+                                numZoomLevels    : $wmsLayer.attr('numZoomLevels'),
+                                description      : ($wmsLayer.attr('description') ? $wmsLayer.attr('description') : undefined),                               
+                                break            : ($wmsLayer.attr('break') == "true" ? true : undefined)
+                            })
+                        )
+                    }
+                    else if ($wmsLayer[0].tagName === "wmsLayer") {
                         layer = new Layer(
                             $.extend({}, {
                                 type             : "WMS",
@@ -123,7 +146,8 @@ module.exports = function ($) {
                                 legend           : $wmsLayer.attr('legend'),
                                 mask             : $wmsLayer.attr('mask'),
                                 selectedInConfig : ($wmsLayer.attr('selected') === "true"),
-                                description      : ($wmsLayer.attr('description') ? $wmsLayer.attr('description') : undefined)
+                                description      : ($wmsLayer.attr('description') ? $wmsLayer.attr('description') : undefined),
+                                break            : ($wmsLayer.attr('break') == "true" ? true : undefined)
                             })
                         );
                     } else {
@@ -137,8 +161,9 @@ module.exports = function ($) {
                             legend           : $wmsLayer.attr('legend'),
                             selectedInConfig : ($wmsLayer.attr('selected') === "true"),
                             params           : createArcGIS93RestParams($wmsLayer),
-                            description      : ($wmsLayer.attr('description') ? $wmsLayer.attr('description') : undefined)
-                         })
+                            description      : ($wmsLayer.attr('description') ? $wmsLayer.attr('description') : undefined),
+                            break            : ($wmsLayer.attr('break') == "true" ? true : undefined)
+                        })
                     }
                     layer.index = index;
                     sublist.layers.push(layer);
@@ -200,6 +225,7 @@ module.exports = function ($) {
                 name           = $viewGroup.attr('name');
                 accordionGroup = accordionGroupsByName[name];
                 if (accordionGroup) {
+                    accordionGroup.selectedInConfig = $viewGroup.attr('selected') === 'true';
                     theme.accordionGroups.push(accordionGroup);
                 } else {
                     displayError("Unknown accordion group name '" + name + "' found in theme '" + theme.name + "'");

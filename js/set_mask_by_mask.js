@@ -20,16 +20,6 @@ module.exports = function ($) {
             app.masks.push(mask);
             var cleanMaskName = maskName.replace("/","");
 
-            // Loop through app.map.layers making sure that
-            // app.maskParentLayers is correct
-            for (i = 0; i < app.map.layers.length; i++) {
-                seldonLayer = app.map.layers[i].seldonLayer;
-                if (seldonLayer && seldonLayer.mask === "true" && app.count(maskParentLayers, seldonLayer) === 0) {
-                    app.maskParentLayers.push(seldonLayer);
-                    seldonLayer.visible = "true";
-                }
-            }
-
             for (i = 0; i < maskParentLayers.length; i++) {
                 maskParentLayer = maskParentLayers[i];
                 maskLayer = new Layer({
@@ -47,13 +37,18 @@ module.exports = function ($) {
                     parentLayer : maskParentLayer,
                     description : (maskParentLayer.description ? maskParentLayer.description : undefined)
                 });
-                maskLayer.activate();
-                maskLayer.setTransparency(maskParentLayer.transparency);
-                mask.maskLayers.push(maskLayer);
+
+
                 if (maskParentLayer.visible === "true") {
                     maskParentLayer.deactivate();
                     maskParentLayer.visible = "false";
                 }
+                
+                maskLayer.activate();
+                maskLayer.setTransparency(maskParentLayer.transparency);
+                mask.maskLayers.push(maskLayer);
+
+
                 $("#" + maskName.replace("MaskFor", "")).get(0).checked = true;
                 $('#mask-status' + maskParentLayer.lid).text("(m)");
                 $("#chk" + maskParentLayer.lid).prop('checked', true);
@@ -76,17 +71,11 @@ module.exports = function ($) {
             // If it was the only mask in app.Mask (e.g. app.masks.length ==0) to begin with
             // Then loop through app.maskParentLayers and activate those layer
             // Remove those layers from app.maskParentLayers that you just activated
-            if (app.masks.length == 0) {
-                var layersToRemove = [];
+            if (app.masks.length === 0) {
                 for (var mp = 0; mp < app.maskParentLayers.length; mp++) {
                     app.maskParentLayers[mp].activate();
-                    app.maskParentLayers[mp].visible = "true";
-                    layersToRemove.push(app.maskParentLayers[mp]);
                 }
-                for (var l = 0; l < layersToRemove.length; l++) {
-                    app.maskParentLayers.remove(layersToRemove[l]);
-                    $('#mask-status'+ layersToRemove[l].lid).text("");
-                }
+
             }
         }
         app.updateShareMapUrl();
