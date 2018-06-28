@@ -964,6 +964,7 @@ module.exports = function ($) {
                             }
                         },
                         activate: function (event, ui) {
+                            app.setupCollapsibleSublists(ui)
                             if (app.initialThemeLoad) {
                                 app.initialThemeLoad = false
                                 $("#layerPickerDialog").scrollTop(755)
@@ -1385,10 +1386,10 @@ module.exports = function ($, app) {
                 } else {
                     this.visible = "true"
                     app.map.addLayer(this.createOpenLayersLayer());
-                    var layerInMaskParentLayers = app.maskParentLayers.find(function (layer) {
+                    var layerInMaskParentLayers = app.maskParentLayers.filter(function (layer) {
                         return layer.lid === this.lid
                     }, this)
-                    if (layerInMaskParentLayers === undefined) {
+                    if (layerInMaskParentLayers.length === 0) {
                         app.maskParentLayers.push(this)
                     }
                 }
@@ -1410,11 +1411,12 @@ module.exports = function ($, app) {
 
             //View order rules:
             // 1. Baselayer (always stays at index 0, so always skip here)
-            // 2. Boundaries (second for loop below)
-            // 3. Non-boundary vector layers
+            // 2. Boundaries (last for loop)
+            // 3. Non-boundary vector layers (second loop)
             // 4. Raster layers (ordered by seldon index)
             
-            // Note: layers with a higher index draw on top of layers with a lower index
+            // Note: layers with a higher openlayers index draw on top of layers with a lower index
+            // Layers with a lower seldonLayer index draw on top of layers with a higher seldonLayer index
 
             if (app.map.getNumLayers() > 1) {
 
@@ -1427,9 +1429,7 @@ module.exports = function ($, app) {
                         var nextLayerDown = app.map.layers[i];
                         if (!isVectorLayer(nextLayerDown, allVectorServices)) {
                             if (nextLayerDown.seldonLayer.index < lyrJustAdded.seldonLayer.index) {
-                                app.map.setLayerIndex(nextLayerDown, app.map.layers.length-1)
-                            } else {
-                                app.map.setLayerIndex(nextLayerDown, i)
+                                app.map.setLayerIndex(lyrJustAdded, i)
                             }
                         }
 
@@ -1571,12 +1571,13 @@ module.exports = function ($) {
             }
         };
         $checkbox = $(checkbox);
+        $checkbox.addClass(layer.lid)
         // listen for activate/deactivate events from the layer, and update the checkbox accordingly
         layer.addListener("activate", function () {
-            $checkbox.attr('checked', true);
+            $('input.'+this.lid).attr('checked', true);
         });
         layer.addListener("deactivate", function () {
-            $checkbox.attr('checked', false);
+            $('input.'+this.lid).attr('checked', false);
         });
         // return the new checkbox DOM element
         return checkbox;

@@ -13,12 +13,13 @@ module.exports = function ($) {
             }
         };
         $checkbox = $(checkbox);
+        $checkbox.addClass(layer.lid)
         // listen for activate/deactivate events from the layer, and update the checkbox accordingly
         layer.addListener("activate", function () {
-            $checkbox.attr('checked', true);
+            $('input.'+this.lid).attr('checked', true);
         });
         layer.addListener("deactivate", function () {
-            $checkbox.attr('checked', false);
+            $('input.'+this.lid).attr('checked', false);
         });
         // return the new checkbox DOM element
         return checkbox;
