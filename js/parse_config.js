@@ -171,8 +171,13 @@ module.exports = function ($) {
                         if (themeOptions.layers === undefined) {
                             themeOptions.layers = [];
                         }
-                        themeOptions.layers.push(layer);
-                        layer.setTransparency(100 * (1-shareUrlLayerAlpha[layer.lid]));
+                        layerInThemeOptionsLayers = themeOptions.layers.filter(function (optionLayer) {
+                            return layer.lid === optionLayer.lid
+                        }).length
+                        if (!layerInThemeOptionsLayers) {
+                            themeOptions.layers.push(layer);
+                            layer.setTransparency(100 * (1-shareUrlLayerAlpha[layer.lid]));
+                        }
                     }
                     index = index + 1;
                 }
