@@ -234,10 +234,15 @@ module.exports = function ($) {
                     // received no layer list in the options arg, activate the layer if the layer's
                     // "selected" attribute was true in the config file.
 
-                    if (((options.layers !== undefined) &&
-                         (arrayContainsElement(options.layers, layer))) ||
-                        ((options.layers === undefined) &&
-                         layer.selectedInConfig) && (sublist.type!="radiobutton")) {
+                    if (options.layers !== undefined) {
+                        var layerInOptionsLayers = options.layers.filter(function (optionLayer) {
+                            return layer.lid === optionLayer.lid
+                        }).length
+                        if (layerInOptionsLayers) { layer.activate() }
+                    }
+                    else if (options.layers === undefined &&
+                             layer.selectedInConfig &&
+                             sublist.type!="radiobutton") {
                         layer.activate();
                     }
                     //we shouldn't have to re-activate an active layer on theme change

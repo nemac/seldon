@@ -175,6 +175,7 @@ module.exports = function ($) {
                             return layer.lid === optionLayer.lid
                         }).length
                         if (!layerInThemeOptionsLayers) {
+                            layer.selectedInConfig = true
                             themeOptions.layers.push(layer);
                             layer.setTransparency(100 * (1-shareUrlLayerAlpha[layer.lid]));
                         }
