@@ -97,6 +97,7 @@ module.exports = function ($) {
         // for (var a = 0, b = theme.accordionGroups.length; a < b; a++) {
         var a = 0;
         var defaultAccordionGroup = undefined;
+        var activatedLayers = [];
         var ro1 = new RepeatingOperation(function () {
             var accGp = theme.accordionGroups[a],
                 accordionGroupOption = options.accordionGroup;
@@ -238,12 +239,16 @@ module.exports = function ($) {
                         var layerInOptionsLayers = options.layers.filter(function (optionLayer) {
                             return layer.lid === optionLayer.lid
                         }).length
-                        if (layerInOptionsLayers) { layer.activate() }
+                        if (layerInOptionsLayers) {
+                            layer.activate()
+                            activatedLayers.push(layer)
+                        }
                     }
                     else if (options.layers === undefined &&
                              layer.selectedInConfig &&
                              sublist.type!="radiobutton") {
                         layer.activate();
+                        activatedLayers.push(layer)
                     }
                     //we shouldn't have to re-activate an active layer on theme change
                     //But, rather just verify that it is checked as such
@@ -267,7 +272,7 @@ module.exports = function ($) {
                     accordionGroup = accGp.gid
                 }
                 defaultAccordionGroup = accordionGroup;
-                setThemeContinue(app, theme, options, accordionGroup);
+                setThemeContinue(app, theme, options, accordionGroup, activatedLayers);
             }
         }, 5);
         ro1.step();
@@ -284,7 +289,7 @@ module.exports = function ($) {
     };
 
 
-    function setThemeContinue (app, theme, options, accordionGroup) {
+    function setThemeContinue (app, theme, options, accordionGroup, activatedLayers) {
         app.currentTheme = theme;
         app.setAccordionGroup(accordionGroup);
         $('#layerPickerDialog').scrollTop(0);
@@ -329,6 +334,10 @@ module.exports = function ($) {
             // if we get to this point and don't have an accordion group to open,
             // default to the first one
             accordionGroup = theme.accordionGroups[0];
+        }
+
+        for (var i=0; i<activatedLayers.length; i++) {
+            $("#chk"+activatedLayers[i].lid).prop('checked', true);
         }
 
         for (var mp = 0; mp < app.maskParentLayers.length; mp++) {
