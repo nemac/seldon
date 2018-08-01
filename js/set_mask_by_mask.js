@@ -13,6 +13,9 @@ module.exports = function ($) {
         var i;
         var maskId = "#" + maskName.replace("MaskFor", "");
 
+        $(maskId).get(0).checked = toggle;
+        $("[data-mask-parent='" + maskName + "']").attr('disabled', toggle);
+
         if (toggle) {
             var seldonLayer;
 
@@ -48,8 +51,6 @@ module.exports = function ($) {
                 maskLayer.setTransparency(maskParentLayer.transparency);
                 mask.maskLayers.push(maskLayer);
 
-
-                $("#" + maskName.replace("MaskFor", "")).get(0).checked = true;
                 $('#mask-status' + maskParentLayer.lid).text("(m)");
                 $("#chk" + maskParentLayer.lid).prop('checked', true);
             }
@@ -65,7 +66,6 @@ module.exports = function ($) {
                     }
                     //Remove the mask from app.masks that you just cleared out
                     app.masks.remove(app.masks[m]);
-                    $("#"+maskName.replace("MaskFor","")).get(0).checked = false;
                 }
             }
             // If it was the only mask in app.Mask (e.g. app.masks.length ==0) to begin with
