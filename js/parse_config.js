@@ -147,7 +147,8 @@ module.exports = function ($) {
                                 mask             : $wmsLayer.attr('mask'),
                                 selectedInConfig : ($wmsLayer.attr('selected') === "true"),
                                 description      : ($wmsLayer.attr('description') ? $wmsLayer.attr('description') : undefined),
-                                break            : ($wmsLayer.attr('break') == "true" ? true : undefined)
+                                break            : ($wmsLayer.attr('break') == "true" ? true : undefined),
+                                maxResolution    : $wmsLayer.attr('maxResolution') ? $wmsLayer.attr('maxResolution') : undefined
                             })
                         );
                     } else {

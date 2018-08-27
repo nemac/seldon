@@ -1343,6 +1343,9 @@ module.exports = function ($, app) {
                     options
                 );
             } else {
+                if (this.maxResolution) {
+                    options.maxResolution = parseFloat(this.maxResolution);
+                }
                 var layer = this.layers + (("mask" in this) ? app.maskModifiers.join("") : "");
 
                 this.openLayersLayer = new OpenLayers.Layer.WMS(
@@ -1352,7 +1355,6 @@ module.exports = function ($, app) {
                         projection  : new OpenLayers.Projection(seldon.projection),
                         units       : "m",
                         layers      : layer,
-                        maxExtent   : new OpenLayers.Bounds(app.maxExtent),
                         transparent : true
                     },
                     options
@@ -2514,7 +2516,8 @@ module.exports = function ($) {
                                 mask             : $wmsLayer.attr('mask'),
                                 selectedInConfig : ($wmsLayer.attr('selected') === "true"),
                                 description      : ($wmsLayer.attr('description') ? $wmsLayer.attr('description') : undefined),
-                                break            : ($wmsLayer.attr('break') == "true" ? true : undefined)
+                                break            : ($wmsLayer.attr('break') == "true" ? true : undefined),
+                                maxResolution    : $wmsLayer.attr('maxResolution') ? $wmsLayer.attr('maxResolution') : undefined
                             })
                         );
                     } else {

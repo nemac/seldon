@@ -70,6 +70,9 @@ module.exports = function ($, app) {
                     options
                 );
             } else {
+                if (this.maxResolution) {
+                    options.maxResolution = parseFloat(this.maxResolution);
+                }
                 var layer = this.layers + (("mask" in this) ? app.maskModifiers.join("") : "");
 
                 this.openLayersLayer = new OpenLayers.Layer.WMS(
@@ -79,7 +82,6 @@ module.exports = function ($, app) {
                         projection  : new OpenLayers.Projection(seldon.projection),
                         units       : "m",
                         layers      : layer,
-                        maxExtent   : new OpenLayers.Bounds(app.maxExtent),
                         transparent : true
                     },
                     options
