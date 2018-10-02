@@ -7,7 +7,6 @@ module.exports = function ($) {
         var m, ml, mld;
 
         if (toggle) {
-            app.maskParentLayers.push(parentLayer);
             for (m = 0; m < app.masks.length; m++) {
                 maskName = app.masks[m].maskName;
                 cleanMaskName = maskName.replace("/","");

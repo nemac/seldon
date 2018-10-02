@@ -21,20 +21,13 @@ module.exports = function ($) {
             maskTextElem,
             activeMaskLayers = [];
 
-        //jdm 1/3/14: set the default forest mask
-        if ($.isEmptyObject(options) && (app.masks.length==0)) {
-            for (var dm = 0; dm < app.defaultMasks.length; dm++) {
-                app.setMaskByMask(true, app.defaultMasks[dm]);
-            }
-        }
-
         //fix for changing themes and accounting for active layers
         //we have changed a theme here, but we need to account for active layers.
         //This accounts for active mask on theme change also.
         if (options === undefined) {
             options = {};
             options.layers = [];
-            options.shareUrlMasks = [];
+            options.shareUrlMasks = app.defaultMasks.slice(0);
             var shareUrlInfo = ShareUrlInfo.parseUrl(app.shareUrl());
             //get previously active accordion group e.g. accgp=G04
             var gid = shareUrlInfo.accordionGroupGid;
@@ -56,6 +49,14 @@ module.exports = function ($) {
                         options.layers.push(currLayer.seldonLayer);
                     }
                 }
+            }
+        }
+
+        if (options.shareUrlMasks !== undefined) {
+            for (var m = 0; m < options.shareUrlMasks.length; m++) {
+                //we have already activated the respective parent layers
+                //so so we have to go through the masking process
+                app.setMaskByMask(true, "MaskFor"+options.shareUrlMasks[m]);
             }
         }
 
@@ -240,9 +241,14 @@ module.exports = function ($) {
                             return layer.lid === optionLayer.lid
                         }).length
                         if (layerInOptionsLayers) {
-                            layer.activate()
-                            activatedLayers.push(layer)
-                        }
+                            var duplicateLayerIsActive = app.map.layers.filter(function (oLayer) {
+                                return oLayer.seldonLayer && oLayer.seldonLayer.lid === layer.lid
+                            }).length 
+                            if (!duplicateLayerIsActive) {
+                                layer.activate()
+                                activatedLayers.push(layer)
+                            }
+                       } 
                     }
                     else if (options.layers === undefined &&
                              layer.selectedInConfig &&
@@ -295,16 +301,6 @@ module.exports = function ($) {
         $('#layerPickerDialog').scrollTop(0);
         $('#mapToolsDialog').scrollTop(0);
         app.emit("themechange");
-
-        //jdm 6/28/13: do a check to see if there is a corresponding active mask in options.shareUrlMasks
-        //can be multiple mask per a parent layer
-        if (options.shareUrlMasks !== undefined) {
-            for (var m = 0; m < options.shareUrlMasks.length; m++) {
-                //we have already activated the respective parent layers
-                //so so we have to go through the masking process
-                app.setMaskByMask(true, "MaskFor"+options.shareUrlMasks[m]);
-            }
-        }
 
         if (options.maskModifiers !== undefined) {
             var modifier, checkbox;

@@ -105,24 +105,33 @@ module.exports = function ($, app) {
 
         this.activate = function (options) {
             options = options || {}
-            // Only add legend for parent layers
+
             this.addToLegend();
 
             this.emit("activate");
-            if (this.mask === "true" && this.lid.indexOf("MaskFor") === -1) {
+            // Is "this" a parent layer that supports masking?
+            if (this.mask === "true" && this.lid.indexOf("MaskFor") === -1) { 
+                // Are any masks currently active? 
                 if (app.masks.length > 0) {
+                    // There's at least one mask active.
+                    // Add mask layers to the map for each active mask.
                     app.setMaskByLayer(true, this);
                 } else {
+                    // No active masks, so add parent layer to the map.
                     this.visible = "true"
                     app.map.addLayer(this.createOpenLayersLayer());
-                    var layerInMaskParentLayers = app.maskParentLayers.filter(function (layer) {
-                        return layer.lid === this.lid
-                    }, this)
-                    if (layerInMaskParentLayers.length === 0) {
-                        app.maskParentLayers.push(this)
-                    }
-                }
+               }
+               // Add parent layer to maskParentLayers array, but only if it's not already there... (this is to avoid an infinite for loop elsewhere)
+               var inMaskParentLayers = app.maskParentLayers.filter(function(layer) {
+                   return this === layer;
+               }, this).length;
+               if (!inMaskParentLayers) {
+                   app.maskParentLayers.push(this)
+               }
+ 
             } else {
+                // "this" is either a mask layer or a layer that does not support landscape masks.
+                // Either way, we can just add it to the map.
                 this.visible = "true";
                 app.map.addLayer(this.createOpenLayersLayer())
             }
