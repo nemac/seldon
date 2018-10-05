@@ -3341,7 +3341,7 @@ module.exports = function ($) {
             for (var m = 0; m < options.shareUrlMasks.length; m++) {
                 //we have already activated the respective parent layers
                 //so so we have to go through the masking process
-                app.setMaskByMask(true, "MaskFor"+options.shareUrlMasks[m]);
+                app.setMaskByMask(true, options.shareUrlMasks[m]);
             }
         }
 
