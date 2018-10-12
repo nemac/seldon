@@ -3306,13 +3306,20 @@ module.exports = function ($) {
             maskTextElem,
             activeMaskLayers = [];
 
+
+        if ($.isEmptyObject(options) && (app.masks.length==0)) {
+            for (var dm=0; dm < app.defaultMasks.length; dm++) {
+                app.setMaskByMask(true, app.defaultMasks[dm]);
+            }
+        }
+
         //fix for changing themes and accounting for active layers
         //we have changed a theme here, but we need to account for active layers.
         //This accounts for active mask on theme change also.
         if (options === undefined) {
             options = {};
             options.layers = [];
-            options.shareUrlMasks = app.defaultMasks.slice(0);
+            options.shareUrlMasks = [];
             var shareUrlInfo = ShareUrlInfo.parseUrl(app.shareUrl());
             //get previously active accordion group e.g. accgp=G04
             var gid = shareUrlInfo.accordionGroupGid;
@@ -3341,7 +3348,7 @@ module.exports = function ($) {
             for (var m = 0; m < options.shareUrlMasks.length; m++) {
                 //we have already activated the respective parent layers
                 //so so we have to go through the masking process
-                app.setMaskByMask(true, options.shareUrlMasks[m]);
+                app.setMaskByMask(true, "MaskFor"+options.shareUrlMasks[m]);
             }
         }
 
