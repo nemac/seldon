@@ -775,7 +775,7 @@ module.exports = function ($, app) {
                 // jdm: IE doesn't have textContent on children[i], but Chrome and FireFox do
                 var value = (children[i].textContent) ? children[i].textContent : children[i].text;
                 if ((
-                     stringStartsWith(layerName, "FW2") ||
+                     layerName.indexOf("FW2") >= 0 ||
                      stringStartsWith(layerName, "EFETAC-NASA") ||
                      stringStartsWith(layerName, "RSAC-FHTET")
                     ) && children[i].nodeName === "value_0"
