@@ -774,8 +774,12 @@ module.exports = function ($, app) {
             if (children[i].nodeName !== 'gml:boundedBy') {
                 // jdm: IE doesn't have textContent on children[i], but Chrome and FireFox do
                 var value = (children[i].textContent) ? children[i].textContent : children[i].text;
-                if ((stringStartsWith(layerName, "EFETAC-NASA") || stringStartsWith(layerName, "RSAC-FHTET")) &&
-                    (children[i].nodeName === "value_0")) {
+                if ((
+                     stringStartsWith(layerName, "FW2") ||
+                     stringStartsWith(layerName, "EFETAC-NASA") ||
+                     stringStartsWith(layerName, "RSAC-FHTET")
+                    ) && children[i].nodeName === "value_0"
+                   ) {
                     value = value + sprintf(" (%.2f %%)", parseFloat(value,10) * 200.0 / 255.0 - 100);
                 }
 				if ((stringStartsWith(layerName.toUpperCase(), "NDMI-ARCHIVE") || stringStartsWith(layerName.toUpperCase(), "NDVI-ARCHIVE") || stringStartsWith(layerName.toUpperCase(), "SWIR-ARCHIVE") || stringStartsWith(layerName.toUpperCase(), "SOUTHEAST-NDVI-CURRENT") || stringStartsWith(layerName.toUpperCase(), "SOUTHEAST-NDMI-CURRENT") || stringStartsWith(layerName.toUpperCase(), "SOUTHEAST-SWIR-CURRENT")) &&
