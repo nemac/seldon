@@ -256,7 +256,7 @@ module.exports = function ($, app) {
                      stringStartsWith(layerName, "RSAC-FHTET")
                     ) && children[i].nodeName === "value_0"
                    ) {
-                    value = value + sprintf(" (%.2f %%)", parseFloat(value,10) * 200.0 / 255.0 - 100);
+                    value = value + sprintf(" (%.2f %%)", ((parseFloat(value,10)-127) / 128.0 ));
                 }
 				if ((stringStartsWith(layerName.toUpperCase(), "NDMI-ARCHIVE") || stringStartsWith(layerName.toUpperCase(), "NDVI-ARCHIVE") || stringStartsWith(layerName.toUpperCase(), "SWIR-ARCHIVE") || stringStartsWith(layerName.toUpperCase(), "SOUTHEAST-NDVI-CURRENT") || stringStartsWith(layerName.toUpperCase(), "SOUTHEAST-NDMI-CURRENT") || stringStartsWith(layerName.toUpperCase(), "SOUTHEAST-SWIR-CURRENT")) &&
                     (children[i].nodeName === "value_0")) {
