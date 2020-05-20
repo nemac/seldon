@@ -76,7 +76,8 @@ module.exports = function ($, app) {
                             url   : this.url,
                             srs   : this.projection.projCode,
                             name  : name,
-                            label : label
+                            label : label,
+                            proxyServerType: this.seldonLayer.proxyServerType // allows us to specify server type for proxied layers
                         });
 
                         html = html + Mustache.render(
@@ -145,7 +146,7 @@ module.exports = function ($, app) {
                 // if so handle the xml that comes back differently
                 // on a related note ArcGIS WMS Raster layers do not support
                 // GetFeatureInfo
-                var result = (seldon.gisServerType === "ArcGIS") ?
+                var result = (service.proxyServerType === "ArcGIS" || seldon.gisServerType === "ArcGIS") ?
                     getLayerResultsFromArcXML($gml, service.name, layerIDCount) :
                     getLayerResultsFromGML($gml, service.name);
 

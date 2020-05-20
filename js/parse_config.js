@@ -145,6 +145,7 @@ module.exports = function ($) {
                                 identify         : $wmsLayer.attr('identify'),
                                 legend           : $wmsLayer.attr('legend'),
                                 mask             : $wmsLayer.attr('mask'),
+                                proxyServerType  : ($wmsLayer.attr('proxyServerType')) ? $wmsLayer.attr('proxyServerType') : undefined,
                                 selectedInConfig : ($wmsLayer.attr('selected') === "true"),
                                 description      : ($wmsLayer.attr('description') ? $wmsLayer.attr('description') : undefined),
                                 break            : ($wmsLayer.attr('break') == "true" ? true : undefined),
