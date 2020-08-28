@@ -57,6 +57,14 @@ module.exports = function ($, app) {
                 }
                 this.openLayersLayer = new OpenLayers.Layer.WMTS(settings)
 
+            } else if (this.type = "XYZ") {
+                this.openLayersLayer = new OpenLayers.Layer.XYZ(
+                    this.name,
+                    this.url,
+                    { isBaseLayer: false,
+                      projection  : new OpenLayers.Projection(seldon.projection)
+                    }
+                )
             } else if (this.type === "ArcGIS93Rest") {
                 this.openLayersLayer = new OpenLayers.Layer.ArcGIS93Rest(
                     this.name,

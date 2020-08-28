@@ -105,7 +105,7 @@ module.exports = function ($) {
                 );
 
                 accordionGroup.sublists.push(sublist);
-                $wmsLayers = $wmsSubgroup.find("wmsLayer,restLayer, wmtsLayer");
+                $wmsLayers = $wmsSubgroup.find("wmsLayer,restLayer,wmtsLayer,xyzLayer");
                 for (k = 0, lll = $wmsLayers.length; k < lll; k++) {
                     $wmsLayer = $($wmsLayers[k]);
                     if ($wmsLayer[0].tagName === "wmtsLayer") {
@@ -152,6 +152,24 @@ module.exports = function ($) {
                                 maxResolution    : $wmsLayer.attr('maxResolution') ? $wmsLayer.attr('maxResolution') : undefined
                             })
                         );
+                    }
+                    else if ($wmsLayer[0].tagName === "xyzLayer") {
+                        layer = new Layer(
+                            $.extend({}, {
+                                type             : "XYZ",
+                                name             : $wmsLayer.attr('name'),
+                                lid              : $wmsLayer.attr('lid'),
+                                visible          : $wmsLayer.attr('visible'),
+                                url              : $wmsLayer.attr('url'),
+                                identify         : $wmsLayer.attr('identify'),
+                                legend           : $wmsLayer.attr('legend'),
+                                mask             : $wmsLayer.attr('mask'),
+                                selectedInConfig : ($wmsLayer.attr('selected') === "true"),
+                                description      : ($wmsLayer.attr('description') ? $wmsLayer.attr('description') : undefined),
+                                break            : ($wmsLayer.attr('break') == "true" ? true : undefined),
+                            })
+                        );
+
                     } else {
                         layer = new Layer({
                             type             : "ArcGIS93Rest",
