@@ -122,7 +122,7 @@ module.exports = function ($) {
             var sublistItems = [];
             for (var i = 0, j = accGp.sublists.length; i < j; i++) {
                 var sublist = accGp.sublists[i];
-                var sublistEmptyClass = sublist.layers.length > 0 ? '' : ' empty'
+                var sublistEmptyClass = sublist.layers.length > 0 || sublist.break ? '' : ' empty'
                 var collapsibleClass = sublist.collapsible ? ' collapsible' : ''
                 var collapseHeaderIcon = sublist.collapsible ?
                     '<span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-e"></span>' : ''

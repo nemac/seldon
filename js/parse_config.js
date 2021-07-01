@@ -100,7 +100,8 @@ module.exports = function ($) {
                         label : $wmsSubgroup.attr('label'),
                         type  : $wmsSubgroup.attr('type'),
                         description : $wmsSubgroup.attr('description'),
-                        collapsible : ($wmsSubgroup.attr('collapsible') === "true")
+                        collapsible : ($wmsSubgroup.attr('collapsible') === "true"),
+                        break : ($wmsSubgroup.attr('break') === "true")
                     })
                 );
 
