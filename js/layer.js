@@ -32,10 +32,10 @@ module.exports = function ($, app) {
                     layer: this.layers,
                     style: this.style,
                     matrixSet: this.srs,
-                    sphericalMercator: true,
                     isBaseLayer: false,
                     transitionEffect: "resize",
                     format: "image/jpg",
+                    sphericalMercator: true,
                 }
                 if (this.lid.indexOf("GLAM") > -1) {
                     $.extend(true, settings, {

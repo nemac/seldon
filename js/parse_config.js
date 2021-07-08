@@ -51,7 +51,12 @@ module.exports = function ($) {
                 name     : $image.attr('name'),
                 label    : $image.attr('label'),
                 url      : $image.attr('url'),
-                index    : i
+                index    : i,
+                layer: $image.attr('layers'),
+                type: $image.attr('type'),
+                style: $image.attr('style'),
+                tileMatrixSet: $image.attr('tileMatrixSet'),
+                numZoomLevels: $image.attr('numZoomLevels')
             });
             app.baseLayers.push(baseLayer);
             $baseCombo.append($(document.createElement("option")).attr("value", i).text(baseLayer.label));

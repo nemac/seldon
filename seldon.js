@@ -294,6 +294,11 @@ function BaseLayer (settings) {
     this.label = settings.label;
     this.url   = settings.url;
     this.index = settings.index;
+    this.type  = settings.type;
+    this.style = settings.style;
+    this.layer = settings.layer,
+    this.tileMatrixSet = settings.tileMatrixSet;
+    this.numZoomLevels = settings.numZoomLevels;
 }
 
 module.exports = BaseLayer;
@@ -823,12 +828,49 @@ module.exports = function (app) {
 },{"./share.js":52}],26:[function(require,module,exports){
 function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialExtent) {
     var app = this;
-
-    if (baseLayer.name.indexOf("Google") > -1) {
+    var resolutions = [
+        156543.03390625,    // 0
+        78271.516953125,    // 1
+        39135.7584765625,   // 2
+        19567.87923828125,  // 3
+        9783.939619140625,  // 4
+        4891.9698095703125, // 5
+        2445.9849047851562, // 6
+        1222.9924523925781, // 7
+        611.4962261962891,  // 8
+        305.74811309814453, // 9
+        152.87405654907226, // 10
+        76.43702827453613,  // l1
+        38.218514137268066, // 12
+        19.109257068634033, // 13
+        9.554628534317017,  // 14
+        4.777314267158508,  // 15
+        2.388657133579254,  // 16
+        1.194328566789627,  // 17
+        0.5971642833948135  // 18
+    ]
+    if (baseLayer.type == 'Google') {
         var layer = new OpenLayers.Layer.Google("Google Streets", {numZoomLevels: 20});
-    } else { //assume arcgis
+    } else if (baseLayer.type == 'WMTS')  {
+        var settings = {
+            isBaseLayer: true,
+            name: baseLayer.name,
+            style: baseLayer.style,
+            url: baseLayer.url,
+            layer: baseLayer.name,
+            matrixSet: baseLayer.tileMatrixSet,
+            sphericalMercator: true,
+            resolutions: resolutions
+        }
+        if (baseLayer.numZoomLevels) {
+            var serverResolutions = resolutions.slice(0, baseLayer.numZoomLevels)
+            settings.resolutions = resolutions
+            settings.serverResolutions = serverResolutions
+        }
+        var layer = new OpenLayers.Layer.WMTS(settings)
+    } else if (baseLayer.type == 'ArcGISCache') {
         var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
-            layerInfo: baseLayerInfo
+            layerInfo: baseLayerInfo,
         });
     }
 
@@ -865,7 +907,6 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
         units:             'm',
         resolutions:       layer.resolutions,
         numZoomLevels:     layer.numZoomLevels,
-        tileSize:          layer.tileSize,
         tileManager:       app.tileManager,
         controls: [
             new OpenLayers.Control.Navigation(),
@@ -1311,10 +1352,10 @@ module.exports = function ($, app) {
                     layer: this.layers,
                     style: this.style,
                     matrixSet: this.srs,
-                    sphericalMercator: true,
                     isBaseLayer: false,
                     transitionEffect: "resize",
                     format: "image/jpg",
+                    sphericalMercator: true,
                 }
                 if (this.lid.indexOf("GLAM") > -1) {
                     $.extend(true, settings, {
@@ -2443,7 +2484,12 @@ module.exports = function ($) {
                 name     : $image.attr('name'),
                 label    : $image.attr('label'),
                 url      : $image.attr('url'),
-                index    : i
+                index    : i,
+                layer: $image.attr('layers'),
+                type: $image.attr('type'),
+                style: $image.attr('style'),
+                tileMatrixSet: $image.attr('tileMatrixSet'),
+                numZoomLevels: $image.attr('numZoomLevels')
             });
             app.baseLayers.push(baseLayer);
             $baseCombo.append($(document.createElement("option")).attr("value", i).text(baseLayer.label));
@@ -2865,24 +2911,74 @@ module.exports = function ($) {
 },{"./app.js":11,"./init.js":25,"./overrides.js":41}],47:[function(require,module,exports){
 module.exports = function ($) {
     function setBaseLayer (baseLayer) {
+        // Resolutions for GoogleMapsCompatible Well-Known Scale Set
+        // See Table E.4 in Appendix E of WMTS Spec (https://portal.ogc.org/files/?artifact_id=35326)
+        var resolutions = [
+            156543.03390625,    // 0
+            78271.516953125,    // 1
+            39135.7584765625,   // 2
+            19567.87923828125,  // 3
+            9783.939619140625,  // 4
+            4891.9698095703125, // 5
+            2445.9849047851562, // 6
+            1222.9924523925781, // 7
+            611.4962261962891,  // 8
+            305.74811309814453, // 9
+            152.87405654907226, // 10
+            76.43702827453613,  // l1
+            38.218514137268066, // 12
+            19.109257068634033, // 13
+            9.554628534317017,  // 14
+            4.777314267158508,  // 15
+            2.388657133579254,  // 16
+            1.194328566789627,  // 17
+            0.5971642833948135  // 18
+        ]
         var app = this;
-        if (baseLayer.name.indexOf("Google") > -1) {
+        if (baseLayer.type == 'Google') {
             var layer = new OpenLayers.Layer.Google("Google Streets");
             handleBaseLayer(app, layer, baseLayer);
-        } else { //assuming esri base layer at this point
+        }
+        else if (baseLayer.type == 'ArcGISCache') { //assuming esri base layer at this point
             $.ajax({
                 url: baseLayer.url + '?f=json&pretty=true',
                 dataType: "jsonp",
                 success:  function (layerInfo) {
-                    var layer = new OpenLayers.Layer.ArcGISCache("AGSCache", baseLayer.url, {
-                        layerInfo: layerInfo
-                    });
+                    var options = { layerInfo: layerInfo }
+                    if (baseLayer.numZoomLevels) {
+                        options.numZoomLevels = baseLayer.numZoomLevels
+                        if (baseLayer.numZoomLevels) {
+                            var serverResolutions = resolutions.slice(0, baseLayer.numZoomLevels)
+                            options.serverResolutions = serverResolutions
+                            options.resolutions = resolutions
+                        }
+
+                    }
+                    var layer = new OpenLayers.Layer.ArcGISCache(baseLayer.name, baseLayer.url, options)
                     handleBaseLayer(app, layer, baseLayer);
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert(textStatus);
                 }
             });
+        }
+        else if (baseLayer.type == 'WMTS') {
+            var settings = {
+                isBaseLayer: true,
+                name: baseLayer.name,
+                style: baseLayer.style,
+                url: baseLayer.url,
+                layer: baseLayer.name,
+                matrixSet: baseLayer.tileMatrixSet,
+                sphericalMercator: true
+            }
+            if (baseLayer.numZoomLevels) {
+                var serverResolutions = resolutions.slice(0, baseLayer.numZoomLevels)
+                settings.resolutions = resolutions
+                settings.serverResolutions = serverResolutions
+            }
+            var layer = new OpenLayers.Layer.WMTS(settings)
+            handleBaseLayer(app, layer, baseLayer)
         }
     }
 
