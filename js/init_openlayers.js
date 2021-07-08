@@ -78,8 +78,8 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
         maxExtent:         maxExtentBounds,
         units:             'm',
         resolutions:       layer.resolutions,
-        numZoomLevels:     layer.numZoomLevels,
         tileManager:       app.tileManager,
+        center: [-10986902.689297,4856468.480035],
         controls: [
             new OpenLayers.Control.Navigation(),
             new OpenLayers.Control.Attribution(),
@@ -94,7 +94,6 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
             "moveend": function () { app.emit("extentchange"); },
             "zoomend": function () { app.emit("extentchange"); }
         },
-        zoom: 1,
         projection: new OpenLayers.Projection(seldon.projection)
     });
 
@@ -106,7 +105,11 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
     app.map.addLayers([layer]);
     app.map.setLayerIndex(layer, 0);
     app.setTheme(theme, themeOptions);
-    app.zoomToExtent(initialExtent);
+
+    var defaultZoom = 4
+    app.map.setCenter(app.map.getCenter(), defaultZoom)
+
+    app.saveCurrentExtent()
     app.map.events.register("mousemove", app.map, function (e) {
         var pixel = app.map.events.getMousePosition(e);
         var lonlat = app.map.getLonLatFromPixel(pixel);
