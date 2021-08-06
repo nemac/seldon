@@ -54,7 +54,6 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
     app.map = new OpenLayers.Map('map', {
         units:             'm',
         tileManager:       app.tileManager,
-        center: [-10986902.689297,4856468.480035],
         controls: [
             new OpenLayers.Control.Navigation(),
             new OpenLayers.Control.Attribution(),
@@ -81,18 +80,8 @@ function initOpenLayers (baseLayerInfo, baseLayer, theme, themeOptions, initialE
     app.map.setLayerIndex(layer, 0);
     app.setTheme(theme, themeOptions);
 
-    /*This block of code here feels a little hacky but I put this in here
-      to attempt to restore previous functionality of share links
-      initialExtent is equal to app.maxExtent if null and it shouldn't be null
-      for a share link.*/
-    if (initialExtent != app.maxExtent) {
-      app.zoomToExtent(initialExtent); 
-    } else {
-      var defaultZoom = 5;
-      app.map.setCenter(app.map.getCenter(), defaultZoom);
-      app.saveCurrentExtent();
-    }
-    // End hacky block of code
+    app.zoomToExtent(initialExtent);
+    app.saveCurrentExtent();
 
     app.map.events.register("mousemove", app.map, function (e) {
         var pixel = app.map.events.getMousePosition(e);
