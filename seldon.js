@@ -1317,8 +1317,7 @@ module.exports = function ($, app) {
                 isBaseLayer      : false,
                 transitionEffect : 'resize',
                 buffer           : 0,
-                singleTile       : true,
-                ratio            : 1
+                tileSize         : new OpenLayers.Size(2048,2048)
             };
 
             if (this.type === "WMTS") {
@@ -1378,7 +1377,6 @@ module.exports = function ($, app) {
                     options.maxResolution = parseFloat(this.maxResolution);
                 }
                 var layer = this.layers + (("mask" in this) ? app.maskModifiers.join("") : "");
-
                 this.openLayersLayer = new OpenLayers.Layer.WMS(
                     this.name,
                     this.url,
@@ -1386,7 +1384,7 @@ module.exports = function ($, app) {
                         projection  : new OpenLayers.Projection(seldon.projection),
                         units       : "m",
                         layers      : layer,
-                        transparent : true
+                        transparent : true,
                     },
                     options
                 );
