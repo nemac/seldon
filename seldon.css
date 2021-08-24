@@ -236,6 +236,11 @@ Map Layers & Map Tools Styles
     margin-bottom: 2px;
 }
 
+.sublist .sublist-info {
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
 .layer-group {
     overflow: auto;
     height: auto;

@@ -4,7 +4,7 @@ function AccordionGroupSublist (settings) {
     this.label  = settings.label;
     this.sid = settings.sid
     this.type   = settings.type;
-    this.description = settings.description
+    this.info = settings.info
     this.collapsible = settings.collapsible
     this.break = settings.break
 }
