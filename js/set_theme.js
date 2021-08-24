@@ -126,6 +126,7 @@ module.exports = function ($) {
                 var collapsibleClass = sublist.collapsible ? ' collapsible' : ''
                 var collapseHeaderIcon = sublist.collapsible ?
                     '<span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-e"></span>' : ''
+                var sublistInfo = sublist.info ? '<div class="sublist-info">' + sublist.info + '</div>' : ''
                 var sublistObj = {
                     heading : sublist.label,
                     items : [],
@@ -135,6 +136,7 @@ module.exports = function ($) {
                             +'<div class="sublist-header">'
                                 + collapseHeaderIcon
                                 +'<h4>' + sublist.label + '</h4>'
+                                + sublistInfo
                             +'</div>'
                         +'</div>'
                     )
