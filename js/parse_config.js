@@ -203,7 +203,7 @@ module.exports = function ($) {
                         if (!layerInThemeOptionsLayers) {
                             layer.selectedInConfig = true
                             themeOptions.layers.push(layer);
-                            layer.setTransparency(100 * (1-shareUrlLayerAlpha[layer.lid]));
+                            layer.transparency = 100 * (1-shareUrlLayerAlpha[layer.lid])
                         }
                     }
                     index = index + 1;

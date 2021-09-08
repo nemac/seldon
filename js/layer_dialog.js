@@ -1,5 +1,14 @@
 // This function gets called every time the layer properties icon gets clicked
 module.exports = function ($) {
+
+    function updateTransparency (layer, value) {
+        try {
+            layer.setTransparency(value);
+        } catch (e) {
+            var errTxt = e.message;
+        }
+    }
+
     function createLayerPropertiesDialog (layer) {
         var localTransparency = 0;
         var $html = $(''
@@ -31,13 +40,7 @@ module.exports = function ($) {
             step  : 1,
             value : localTransparency,
             slide : function(event, ui) {
-                try {
-                    layer.setTransparency(ui.value);
-                }
-                catch(err) {
-                    var errTxt = err.message;
-                    // layer.setTransparency($('input.transparency-text').val());
-                }
+                updateTransparency(layer, ui.value)
             }
         });
         //This seems redundant as there is already a listener on the slider object

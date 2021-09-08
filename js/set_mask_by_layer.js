@@ -23,7 +23,8 @@ module.exports = function ($) {
                     legend      : parentLayer.legend,
                     index       : parentLayer.index,
                     parentLayer : parentLayer,
-                    description : (parentLayer.description ? parentLayer.description : undefined)
+                    description : (parentLayer.description ? parentLayer.description : undefined),
+                    transparency: parentLayer.transparency
                 });
                 maskLayer.activate();
 

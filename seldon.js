@@ -1301,7 +1301,6 @@ module.exports = function ($, app) {
         EventEmitter.call(this);
         if (!settings) { return; }
         $.extend(true, this, settings); // copy all properties from `settings` into `this`
-        this.transparency = 0;
         if (this.index == undefined) {
             this.index = 0;
         }
@@ -1438,6 +1437,8 @@ module.exports = function ($, app) {
                 app.map.addLayer(this.createOpenLayersLayer())
             }
 
+            this.setTransparency()
+
             vectorServices = [ 'vlayers', 'fire', 'ads' ]
             boundaryServices = [ 'boundaries' ]
             allVectorServices = vectorServices
@@ -1554,11 +1555,10 @@ module.exports = function ($, app) {
         };
 
         this.setTransparency = function (transparency) {
+            this.transparency = parseFloat(transparency) || this.transparency || 0
             if (this.openLayersLayer) {
-                this.openLayersLayer.setOpacity(1 - parseFloat(transparency)/100.0);
+                this.openLayersLayer.setOpacity(1.0 - parseFloat(this.transparency)/100.0);
             }
-            this.transparency = transparency;
-
             //Comment this out for now
             //Essentially emits the following two commands:
             try {
@@ -1569,8 +1569,6 @@ module.exports = function ($, app) {
                 var errTxt = err.Message;
             }
 
-            // Handle transparency for mask
-            // Still need to make this parent-layer specific
             if (app.map !== undefined) {
                 var currentLayer, openLayersLayer, lid;
                 var i;
@@ -1581,7 +1579,7 @@ module.exports = function ($, app) {
 
                     if (stringContainsChar(currentLayer.name, 'Mask')) {
                         if (openLayersLayer && (lid.substring(0, lid.indexOf("MaskFor")) === this.lid)) {
-                            openLayersLayer.setOpacity(1 - parseFloat(transparency)/100.0);
+                            openLayersLayer.setOpacity(1 - parseFloat(this.transparency)/100.0);
                             currentLayer.seldonLayer.transparency = transparency;
                         }
                     }
@@ -1629,6 +1627,15 @@ module.exports = function ($) {
 },{}],30:[function(require,module,exports){
 // This function gets called every time the layer properties icon gets clicked
 module.exports = function ($) {
+
+    function updateTransparency (layer, value) {
+        try {
+            layer.setTransparency(value);
+        } catch (e) {
+            var errTxt = e.message;
+        }
+    }
+
     function createLayerPropertiesDialog (layer) {
         var localTransparency = 0;
         var $html = $(''
@@ -1660,13 +1667,7 @@ module.exports = function ($) {
             step  : 1,
             value : localTransparency,
             slide : function(event, ui) {
-                try {
-                    layer.setTransparency(ui.value);
-                }
-                catch(err) {
-                    var errTxt = err.message;
-                    // layer.setTransparency($('input.transparency-text').val());
-                }
+                updateTransparency(layer, ui.value)
             }
         });
         //This seems redundant as there is already a listener on the slider object
@@ -2610,7 +2611,7 @@ module.exports = function ($) {
                         if (!layerInThemeOptionsLayers) {
                             layer.selectedInConfig = true
                             themeOptions.layers.push(layer);
-                            layer.setTransparency(100 * (1-shareUrlLayerAlpha[layer.lid]));
+                            layer.transparency = 100 * (1-shareUrlLayerAlpha[layer.lid])
                         }
                     }
                     index = index + 1;
@@ -3263,7 +3264,8 @@ module.exports = function ($) {
                     legend      : parentLayer.legend,
                     index       : parentLayer.index,
                     parentLayer : parentLayer,
-                    description : (parentLayer.description ? parentLayer.description : undefined)
+                    description : (parentLayer.description ? parentLayer.description : undefined),
+                    transparency: parentLayer.transparency
                 });
                 maskLayer.activate();
 
