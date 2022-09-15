@@ -55,7 +55,7 @@ module.exports = function ($, app) {
                     width     : 600,
                     resizable : false,
                     position  : { my: "center+" + offset + " center+" + offset, at: "center", of: window },
-                    title     : Mustache.render('MODIS NDVI for Lat: {{{lat}}} Lon: {{{lon}}}',
+                    title     : Mustache.render('Sentinel-3 NDVI for Lat: {{{lat}}} Lon: {{{lon}}}',
                                                 {
                                                     lat : sprintf("%.4f", lonlat.lat),
                                                     lon : sprintf("%.4f", lonlat.lon)
